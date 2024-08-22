@@ -1,0 +1,480 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		407886072C770F790071FE5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 407886062C770F790071FE5F /* Assets.xcassets */; };
+		4078860B2C770F790071FE5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4078860A2C770F790071FE5F /* Preview Assets.xcassets */; };
+		407886162C7710490071FE5F /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 407886152C7710490071FE5F /* Calls-Swift */; };
+		407886192C7710E60071FE5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886182C7710E60071FE5F /* ContentView.swift */; };
+		4078861F2C7711540071FE5F /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078861E2C7711540071FE5F /* Main.swift */; };
+		407886242C7717F10071FE5F /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886232C7717F10071FE5F /* Global.swift */; };
+		407886282C771DD10071FE5F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886272C771DD10071FE5F /* Model.swift */; };
+		4078862A2C771FAD0071FE5F /* VideoDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886292C771FAD0071FE5F /* VideoDevices.swift */; };
+		4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078862B2C7720680071FE5F /* AudioDeviceManager.swift */; };
+		407886332C7729930071FE5F /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886322C7729930071FE5F /* WebRTCClient.swift */; };
+		407886352C772BFF0071FE5F /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886342C772BFF0071FE5F /* YouView.swift */; };
+		407886372C772C150071FE5F /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886362C772C150071FE5F /* MeView.swift */; };
+		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
+		4078863B2C773A9D0071FE5F /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078863A2C773A9D0071FE5F /* MainController.swift */; };
+		407886502C7799440071FE5F /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 4078864F2C7799440071FE5F /* WebRTC */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		407886472C778CA10071FE5F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		407885FF2C770F780071FE5F /* calls-swift-testApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "calls-swift-testApp.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		407886062C770F790071FE5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		407886082C770F790071FE5F /* calls_swift_testApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = calls_swift_testApp.entitlements; sourceTree = "<group>"; };
+		4078860A2C770F790071FE5F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		407886182C7710E60071FE5F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4078861E2C7711540071FE5F /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
+		407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "calls-swift-testApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		407886232C7717F10071FE5F /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
+		407886272C771DD10071FE5F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		407886292C771FAD0071FE5F /* VideoDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDevices.swift; sourceTree = "<group>"; };
+		4078862B2C7720680071FE5F /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
+		407886322C7729930071FE5F /* WebRTCClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
+		407886342C772BFF0071FE5F /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
+		407886362C772C150071FE5F /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
+		407886382C7733550071FE5F /* Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
+		4078863A2C773A9D0071FE5F /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
+		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		407885FC2C770F780071FE5F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				407886162C7710490071FE5F /* Calls-Swift in Frameworks */,
+				407886502C7799440071FE5F /* WebRTC in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		407885F62C770F780071FE5F = {
+			isa = PBXGroup;
+			children = (
+				407886012C770F780071FE5F /* calls-swift-testApp */,
+				407886002C770F780071FE5F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		407886002C770F780071FE5F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				407885FF2C770F780071FE5F /* calls-swift-testApp.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		407886012C770F780071FE5F /* calls-swift-testApp */ = {
+			isa = PBXGroup;
+			children = (
+				407886442C778C650071FE5F /* Info.plist */,
+				407886062C770F790071FE5F /* Assets.xcassets */,
+				407886082C770F790071FE5F /* calls_swift_testApp.entitlements */,
+				407886092C770F790071FE5F /* Preview Content */,
+				4078861E2C7711540071FE5F /* Main.swift */,
+				407886182C7710E60071FE5F /* ContentView.swift */,
+				4078863A2C773A9D0071FE5F /* MainController.swift */,
+				407886322C7729930071FE5F /* WebRTCClient.swift */,
+				407886382C7733550071FE5F /* Controller.swift */,
+				407886232C7717F10071FE5F /* Global.swift */,
+				407886272C771DD10071FE5F /* Model.swift */,
+				407886292C771FAD0071FE5F /* VideoDevices.swift */,
+				4078862B2C7720680071FE5F /* AudioDeviceManager.swift */,
+				407886342C772BFF0071FE5F /* YouView.swift */,
+				407886362C772C150071FE5F /* MeView.swift */,
+				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
+			);
+			path = "calls-swift-testApp";
+			sourceTree = "<group>";
+		};
+		407886092C770F790071FE5F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				4078860A2C770F790071FE5F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		407885FE2C770F780071FE5F /* calls-swift-testApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4078860E2C770F790071FE5F /* Build configuration list for PBXNativeTarget "calls-swift-testApp" */;
+			buildPhases = (
+				407885FB2C770F780071FE5F /* Sources */,
+				407885FC2C770F780071FE5F /* Frameworks */,
+				407885FD2C770F780071FE5F /* Resources */,
+				407886472C778CA10071FE5F /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "calls-swift-testApp";
+			packageProductDependencies = (
+				407886152C7710490071FE5F /* Calls-Swift */,
+				4078864F2C7799440071FE5F /* WebRTC */,
+			);
+			productName = "calls-swift-testApp";
+			productReference = 407885FF2C770F780071FE5F /* calls-swift-testApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		407885F72C770F780071FE5F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					407885FE2C770F780071FE5F = {
+						CreatedOnToolsVersion = 15.4;
+						LastSwiftMigration = 1540;
+					};
+				};
+			};
+			buildConfigurationList = 407885FA2C770F780071FE5F /* Build configuration list for PBXProject "calls-swift-testApp" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 407885F62C770F780071FE5F;
+			packageReferences = (
+				407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */,
+				4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */,
+			);
+			productRefGroup = 407886002C770F780071FE5F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				407885FE2C770F780071FE5F /* calls-swift-testApp */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		407885FD2C770F780071FE5F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4078860B2C770F790071FE5F /* Preview Assets.xcassets in Resources */,
+				407886072C770F790071FE5F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		407885FB2C770F780071FE5F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4078861F2C7711540071FE5F /* Main.swift in Sources */,
+				4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */,
+				407886392C7733550071FE5F /* Controller.swift in Sources */,
+				407886352C772BFF0071FE5F /* YouView.swift in Sources */,
+				4078863B2C773A9D0071FE5F /* MainController.swift in Sources */,
+				407886372C772C150071FE5F /* MeView.swift in Sources */,
+				407886332C7729930071FE5F /* WebRTCClient.swift in Sources */,
+				4078862A2C771FAD0071FE5F /* VideoDevices.swift in Sources */,
+				407886282C771DD10071FE5F /* Model.swift in Sources */,
+				407886242C7717F10071FE5F /* Global.swift in Sources */,
+				407886192C7710E60071FE5F /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4078860C2C770F790071FE5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		4078860D2C770F790071FE5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		4078860F2C770F790071FE5F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "calls-swift-testApp/calls_swift_testApp.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"calls-swift-testApp/Preview Content\"";
+				DEVELOPMENT_TEAM = W2V29MV569;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "calls-swift-testApp/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Calls Test App";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Conference Calls";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Conference Calls";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		407886102C770F790071FE5F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = "calls-swift-testApp/calls_swift_testApp.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"calls-swift-testApp/Preview Content\"";
+				DEVELOPMENT_TEAM = W2V29MV569;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "calls-swift-testApp/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Calls Test App";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Conference Calls";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Conference Calls";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
+				SWIFT_OBJC_INTEROP_MODE = objcxx;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		407885FA2C770F780071FE5F /* Build configuration list for PBXProject "calls-swift-testApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4078860C2C770F790071FE5F /* Debug */,
+				4078860D2C770F790071FE5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4078860E2C770F790071FE5F /* Build configuration list for PBXNativeTarget "calls-swift-testApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4078860F2C770F790071FE5F /* Debug */,
+				407886102C770F790071FE5F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tech41-de/calls-swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+		4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/alexpiezo/WebRTC.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 95.4638.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		407886152C7710490071FE5F /* Calls-Swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */;
+			productName = "Calls-Swift";
+		};
+		4078864F2C7799440071FE5F /* WebRTC */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */;
+			productName = WebRTC;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 407885F72C770F780071FE5F /* Project object */;
+}
