@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		407886072C770F790071FE5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 407886062C770F790071FE5F /* Assets.xcassets */; };
 		4078860B2C770F790071FE5F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4078860A2C770F790071FE5F /* Preview Assets.xcassets */; };
-		407886162C7710490071FE5F /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 407886152C7710490071FE5F /* Calls-Swift */; };
 		407886192C7710E60071FE5F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886182C7710E60071FE5F /* ContentView.swift */; };
 		4078861F2C7711540071FE5F /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078861E2C7711540071FE5F /* Main.swift */; };
 		407886242C7717F10071FE5F /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886232C7717F10071FE5F /* Global.swift */; };
@@ -22,6 +21,8 @@
 		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
 		4078863B2C773A9D0071FE5F /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078863A2C773A9D0071FE5F /* MainController.swift */; };
 		408488B02C784ED0003197F1 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 408488AF2C784ED0003197F1 /* WebRTC */; };
+		408488B52C786CA9003197F1 /* CloudflareCallsApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */; };
+		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -55,6 +56,7 @@
 		407886382C7733550071FE5F /* Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		4078863A2C773A9D0071FE5F /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareCallsApi.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				407886162C7710490071FE5F /* Calls-Swift in Frameworks */,
+				408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */,
 				408488B02C784ED0003197F1 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -105,6 +107,7 @@
 				407886342C772BFF0071FE5F /* YouView.swift */,
 				407886362C772C150071FE5F /* MeView.swift */,
 				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
+				408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -135,8 +138,8 @@
 			);
 			name = "calls-swift-testApp";
 			packageProductDependencies = (
-				407886152C7710490071FE5F /* Calls-Swift */,
 				408488AF2C784ED0003197F1 /* WebRTC */,
+				408488B72C7877BB003197F1 /* Calls-Swift */,
 			);
 			productName = "calls-swift-testApp";
 			productReference = 407885FF2C770F780071FE5F /* calls-swift-testApp.app */;
@@ -168,8 +171,8 @@
 			);
 			mainGroup = 407885F62C770F780071FE5F;
 			packageReferences = (
-				407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */,
 				408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */,
+				408488B62C7877BB003197F1 /* XCRemoteSwiftPackageReference "calls-swift" */,
 			);
 			productRefGroup = 407886002C770F780071FE5F /* Products */;
 			projectDirPath = "";
@@ -206,6 +209,7 @@
 				407886332C7729930071FE5F /* WebRTCClient.swift in Sources */,
 				4078862A2C771FAD0071FE5F /* VideoDevices.swift in Sources */,
 				407886282C771DD10071FE5F /* Model.swift in Sources */,
+				408488B52C786CA9003197F1 /* CloudflareCallsApi.swift in Sources */,
 				407886242C7717F10071FE5F /* Global.swift in Sources */,
 				407886192C7710E60071FE5F /* ContentView.swift in Sources */,
 			);
@@ -357,7 +361,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
@@ -405,7 +409,7 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
@@ -447,14 +451,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tech41-de/calls-swift";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
 		408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/webrtc-sdk/Specs.git";
@@ -463,18 +459,26 @@
 				minimumVersion = 125.6422.4;
 			};
 		};
+		408488B62C7877BB003197F1 /* XCRemoteSwiftPackageReference "calls-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/tech41-de/calls-swift";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		407886152C7710490071FE5F /* Calls-Swift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */;
-			productName = "Calls-Swift";
-		};
 		408488AF2C784ED0003197F1 /* WebRTC */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */;
 			productName = WebRTC;
+		};
+		408488B72C7877BB003197F1 /* Calls-Swift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 408488B62C7877BB003197F1 /* XCRemoteSwiftPackageReference "calls-swift" */;
+			productName = "Calls-Swift";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -96,6 +96,10 @@ final class WebRTCClient: NSObject {
         }
     }
     
+    func getLocalDescription() ->RTCSessionDescription{
+        return self.peerConnection.localDescription!
+    }
+    
     func answer(completion: @escaping (_ sdp: RTCSessionDescription) -> Void)  {
         let constrains = RTCMediaConstraints(mandatoryConstraints: self.mediaConstrains, optionalConstraints: nil)
         self.peerConnection.answer(for: constrains) { (sdp, error) in
@@ -112,6 +116,14 @@ final class WebRTCClient: NSObject {
     
     func set(remoteCandidate: RTCIceCandidate, completion: @escaping (Error?) -> ()) {
         self.peerConnection.add(remoteCandidate)
+    }
+    
+    func getLocalVideoTrackId()->String{
+        return localVideoTrack!.trackId
+    }
+    
+    func getLocalVideoTrackMid()->String{
+        return self.peerConnection.transceivers.first!.mid
     }
     
     // MARK: Media

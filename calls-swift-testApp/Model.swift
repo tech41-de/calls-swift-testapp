@@ -32,6 +32,7 @@ class Model : ObservableObject{
     @Published var isConnected = false
     @Published var webRtcClientA : WebRTCClient?
     @Published var webRtcClientB : WebRTCClient?
+    @Published var sdpLocal : String = ""
     
 #if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
@@ -44,7 +45,7 @@ class Model : ObservableObject{
 #endif
 
     @Published var trackIdLocalVideo =  ""
-    @Published  var trackIdLocalAudio =  ""
+    @Published var trackIdLocalAudio =  ""
     @Published var midLocalVideo =  ""
     @Published var midLocalAudio =  ""
     
@@ -57,8 +58,7 @@ class Model : ObservableObject{
     
     @Published var videoWidth : CGFloat = 0
     @Published var videoHeight :CGFloat = 0
-    
-    let api = Calls()
+    @Published var localVideoTrackId = ""
     
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{

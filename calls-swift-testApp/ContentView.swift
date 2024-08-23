@@ -6,8 +6,18 @@
 //
 
 import SwiftUI
-import Calls_Swift
 import WebRTC
+
+struct MyButtonStyle: ButtonStyle {
+    func makeBody(configuration: Self.Configuration) -> some View {
+        configuration.label
+            .padding(5)
+            .foregroundColor(configuration.isPressed ? Color.gray : Color.white)
+            .background(configuration.isPressed ? Color.white : Color.gray)
+            .cornerRadius(4.0)
+    }
+}
+
 
 extension Binding {
     func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
@@ -21,6 +31,14 @@ extension Binding {
 }
 
 struct ContentView: View {
+    
+    let api = CloudflareCallsApi.shared
+    
+    @State var sessionIdInvite = ""
+    @State var trackNameInvite = ""
+    
+    @State var localVideoTrackId = ""
+    
     @State var serverURL = ""
     @State var appId = ""
     @State var appSecret = ""
@@ -104,7 +122,8 @@ struct ContentView: View {
     }
     
     var body: some View {
-        VStack{
+        VStack(alignment: .leading, spacing:5){
+            /*@START_MENU_TOKEN@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
             Text("\(errorMsg)").foregroundStyle(.red)
             HStack{
                 let fontSize:CGFloat = 9
@@ -115,7 +134,7 @@ struct ContentView: View {
             Button(isHidden ? "show config" : "hide config"){
                 isHidden = !isHidden
                 defaults.set(isHidden, forKey: "isHidden")
-            }.contentShape(Rectangle())
+            }.buttonStyle(MyButtonStyle())
             if !isHidden{
                 VStack {
                     Text("Cloudflare Calls Configuration ")
@@ -128,18 +147,11 @@ struct ContentView: View {
                         defaults.set(appId, forKey: "appId")
                         defaults.set(appSecret, forKey: "appSecret")
                         defaults.set(isHidden, forKey: "isHidden")
-                    }
+                    }.buttonStyle(MyButtonStyle())
                 }
             }
             Divider()
-            HStack{
-                Button("Start new session"){
-                    Model.shared.mainController?.offerSDP()
-                } .contentShape(Rectangle())
-                Button("New Tracks"){
-                    Model.shared.mainController?.startTracks()
-                } .contentShape(Rectangle())
-            }
+            
             HStack{
                 MeView()
                 GeometryReader{ g in
@@ -154,6 +166,32 @@ struct ContentView: View {
                     }
                 }
             }
+
+            VStack{
+                Text("Session")
+                Button("Start new session"){
+                    Model.shared.mainController?.offerSDP()
+                } .buttonStyle(MyButtonStyle())
+                TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
+                TextField("Track Name Local", text: $localVideoTrackId).textSelection(.enabled)
+            }.padding(5).border(.gray, width: 1)
+      
+            VStack{
+                Text("Tracks")
+                Button("Set Local Tracks"){
+                    Task{
+                        await api.SetLocalTracks(sessionId: sessionId, sdp: Model.shared.sdpLocal, mid: "0", trackName: localVideoTrackId)
+                    }
+                }.buttonStyle(MyButtonStyle())
+                Button("Set Remote Tracks"){
+                    Task{
+                        api.SetRemoteTracks(sessionId:sessionIdInvite, trackName:trackNameInvite)
+                    }
+                }.buttonStyle(MyButtonStyle())
+                TextField("Session Id Remote", text: $sessionIdInvite).textSelection(.enabled)
+                TextField("Track Name Remote", text: $trackNameInvite).textSelection(.enabled)
+            }.padding(5).border(.gray, width: 1)
+            
             TextField("Debug", text: $debugStr,  axis: .vertical).lineLimit(5...10)
             Spacer()
             
@@ -193,7 +231,7 @@ struct ContentView: View {
             print(serverURL)
             print(appId)
             print(appSecret)
-            Model.shared.api.configure(serverUrl: serverURL, appId: appId, secret: appSecret)
+            api.configure(serverUrl: serverURL, appId: appId, secret: appSecret)
             AudioDeviceManager().setupAudio()
             VideoDevices().findDevices()
             
@@ -209,6 +247,7 @@ struct ContentView: View {
             isConnected = m.isConnected ? "✅" : "❌"
             isLoggedOn = m.isLoggedOn ? "✅" : "❌"
             errorMsg = m.errorMsg
+            localVideoTrackId = m.localVideoTrackId
           }
     }
 }

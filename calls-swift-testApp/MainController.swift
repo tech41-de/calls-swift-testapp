@@ -8,7 +8,6 @@
 import SwiftUI
 import AVFoundation
 import WebRTC
-import Calls_Swift
 
 extension MainController: WebRTCClientDelegate {
     
@@ -137,32 +136,21 @@ class MainController {
         }
     }
     
-
-    func startTracks() {
-        Task{
-            let sdp = Calls.SessionDescription(sdp: "", type: "offer")
-            let tracks = [Calls.Track]()
-            var newTrack = Calls.NewTrack(sessionDescription:sdp, tracks:tracks)
-            await Model.shared.api.newTracks(sessionId: Model.shared.sessionId, newTrack: newTrack){ newTracks, error in
-               print(newTracks)
-            }
-        }
-    }
-    
     func offerSDP() {
         self.webRTCClient.offer { (sdp) in
             self.hasLocalSdp = true
             print(sdp)
             
             Task{
-                await Model.shared.api.newSession(sdp: sdp.sdp){ sessionId, sdp, error in
+                Model.shared.sdpLocal = sdp.sdp
+                await CloudflareCallsApi.shared.api.newSession(sdp: sdp.sdp){ sessionId, sdp, error in
                     Model.shared.sessionId = sessionId
                     Model.shared.hasSDPRemote = "✅"
                     print(sdp)
                     let sdp = RTCSessionDescription(type: .answer, sdp: sdp)
                     self.webRTCClient.set(remoteSdp: sdp){err in
-                       
-                       print(err)
+                        print(err)
+                        Model.shared.localVideoTrackId = self.webRTCClient.getLocalVideoTrackId()
                     }
                 }
             }
