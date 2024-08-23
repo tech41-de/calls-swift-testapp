@@ -21,12 +21,12 @@ struct MeView : NSViewRepresentable{
 }
 #else
 struct MeView : UIViewRepresentable{
-    func makeNSView(context: Context) ->RTCMTLNSVideoView{
+    func makeUIView(context: Context) ->RTCMTLVideoView{
        // Model.shared.meView.setSize(CGSize(width:400, height:300))
         return Model.shared.meView
     }
     
-    func updateNSView(_ nsView: RTCMTLNSVideoView, context: Context) {
+    func updateUIView(_ nsView: RTCMTLVideoView, context: Context) {
        
     }
 }

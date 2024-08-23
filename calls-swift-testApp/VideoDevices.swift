@@ -11,11 +11,18 @@ import AVFoundation
 class VideoDevices{
     
     func getDevice(name:String) ->AVCaptureDevice?{ // .continuityCamera .external
-        var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.deskViewCamera]
+        var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera]
+#if os(macOS)
         if #available(macOS 14.0, *) {
             items.append(AVCaptureDevice.DeviceType.continuityCamera)
             items.append(AVCaptureDevice.DeviceType.external)
         }
+        if #available(macOS 10.0, *) {
+            items.append(AVCaptureDevice.DeviceType.deskViewCamera)
+        }
+#else
+        
+#endif
         let device = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
         for device in device.devices{
             if device.localizedName == name{
@@ -33,12 +40,18 @@ class VideoDevices{
             }
             
         }
-        var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.deskViewCamera]
-    
+        var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera]
+#if os(macOS)
         if #available(macOS 14.0, *) {
             items.append(AVCaptureDevice.DeviceType.continuityCamera)
             items.append(AVCaptureDevice.DeviceType.external)
         }
+        if #available(macOS 10.0, *) {
+            items.append(AVCaptureDevice.DeviceType.deskViewCamera)
+        }
+#else
+        
+#endif
    
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
     

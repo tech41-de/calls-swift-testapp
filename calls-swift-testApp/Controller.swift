@@ -25,7 +25,11 @@ class Controller{
         }
         Model.shared.audioInDevice = name
         UserDefaults.standard.set(name, forKey: "audioIn")
+#if os(macOS)
         AudioDeviceManager().setInputDevice(uid: device.uid)
+#else
+        AudioDeviceManager().setInputDevice(name: name)
+#endif
         Model.shared.webRtcClientA!.updateAudioInputDevice()
     }
     
@@ -35,7 +39,11 @@ class Controller{
         }
         Model.shared.audioOutDevice = name
         UserDefaults.standard.set(name, forKey: "audioOut")
+#if os(macOS)
         AudioDeviceManager().setOutputDevice(uid: device.uid)
+#else
+        AudioDeviceManager().setOutputDevice(name: name)
+#endif
         Model.shared.webRtcClientA!.updateAudioOutputDevice()
     }
 }

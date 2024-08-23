@@ -8,6 +8,7 @@
 // https://github.com/alexpiezo/WebRTC.git // has link errors on IoS - importWebRTC
 // https://github.com/stasel/WebRTC // has link errors on Mac - importWebRTC
 // https://github.com/livekit/webrtc-xcframework.git // needs prefixing with LK - import LiveKitWebRTC
+// https://github.com/webrtc-sdk/Specs // Misses RTCMTLNSVideoView
 
 import SwiftUI
 

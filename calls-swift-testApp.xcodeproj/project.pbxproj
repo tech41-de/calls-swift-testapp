@@ -21,7 +21,7 @@
 		407886372C772C150071FE5F /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886362C772C150071FE5F /* MeView.swift */; };
 		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
 		4078863B2C773A9D0071FE5F /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078863A2C773A9D0071FE5F /* MainController.swift */; };
-		407886502C7799440071FE5F /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 4078864F2C7799440071FE5F /* WebRTC */; };
+		408488B02C784ED0003197F1 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 408488AF2C784ED0003197F1 /* WebRTC */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -63,7 +63,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				407886162C7710490071FE5F /* Calls-Swift in Frameworks */,
-				407886502C7799440071FE5F /* WebRTC in Frameworks */,
+				408488B02C784ED0003197F1 /* WebRTC in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,7 +136,7 @@
 			name = "calls-swift-testApp";
 			packageProductDependencies = (
 				407886152C7710490071FE5F /* Calls-Swift */,
-				4078864F2C7799440071FE5F /* WebRTC */,
+				408488AF2C784ED0003197F1 /* WebRTC */,
 			);
 			productName = "calls-swift-testApp";
 			productReference = 407885FF2C770F780071FE5F /* calls-swift-testApp.app */;
@@ -169,7 +169,7 @@
 			mainGroup = 407885F62C770F780071FE5F;
 			packageReferences = (
 				407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */,
-				4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */,
+				408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */,
 			);
 			productRefGroup = 407886002C770F780071FE5F /* Products */;
 			projectDirPath = "";
@@ -336,7 +336,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "calls-swift-testApp/calls_swift_testApp.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"calls-swift-testApp/Preview Content\"";
 				DEVELOPMENT_TEAM = W2V29MV569;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -366,6 +366,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
@@ -383,7 +384,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = "calls-swift-testApp/calls_swift_testApp.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"calls-swift-testApp/Preview Content\"";
 				DEVELOPMENT_TEAM = W2V29MV569;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -413,6 +414,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
@@ -453,12 +455,12 @@
 				kind = branch;
 			};
 		};
-		4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */ = {
+		408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/alexpiezo/WebRTC.git";
+			repositoryURL = "https://github.com/webrtc-sdk/Specs.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 95.4638.0;
+				minimumVersion = 125.6422.4;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -469,9 +471,9 @@
 			package = 407886142C7710490071FE5F /* XCRemoteSwiftPackageReference "calls-swift" */;
 			productName = "Calls-Swift";
 		};
-		4078864F2C7799440071FE5F /* WebRTC */ = {
+		408488AF2C784ED0003197F1 /* WebRTC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 4078864E2C7799440071FE5F /* XCRemoteSwiftPackageReference "WebRTC" */;
+			package = 408488AE2C784ED0003197F1 /* XCRemoteSwiftPackageReference "Specs" */;
 			productName = WebRTC;
 		};
 /* End XCSwiftPackageProductDependency section */

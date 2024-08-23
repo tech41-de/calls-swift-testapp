@@ -63,10 +63,18 @@ struct ContentView: View {
     
     func setupWebRTC(){
         Model.shared.mainController = MainController( webRTCClient: Model.shared.webRtcClientA!)
+        
+#if os(macOS)
         let remoteRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
+        let localRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
+#else
+        let remoteRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
+        let localRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
+#endif
+        
         Model.shared.youView.addSubview(remoteRenderer)
         
-        let localRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
+       
         Model.shared.meView.addSubview(localRenderer)
         
         Model.shared.webRtcClientA!.startCaptureLocalVideo(renderer: localRenderer)
@@ -107,7 +115,7 @@ struct ContentView: View {
             Button(isHidden ? "show config" : "hide config"){
                 isHidden = !isHidden
                 defaults.set(isHidden, forKey: "isHidden")
-            }
+            }.contentShape(Rectangle())
             if !isHidden{
                 VStack {
                     Text("Cloudflare Calls Configuration ")
@@ -127,7 +135,10 @@ struct ContentView: View {
             HStack{
                 Button("Start new session"){
                     Model.shared.mainController?.offerSDP()
-                }
+                } .contentShape(Rectangle())
+                Button("New Tracks"){
+                    Model.shared.mainController?.startTracks()
+                } .contentShape(Rectangle())
             }
             HStack{
                 MeView()

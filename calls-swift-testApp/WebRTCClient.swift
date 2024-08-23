@@ -120,6 +120,8 @@ final class WebRTCClient: NSObject {
             return
         }
         print("Start to capture width: \(Model.shared.camera)")
+        
+        /*
         let camera = VideoDevices().getDevice(name: Model.shared.camera)
         
         let formats = RTCCameraVideoCapturer.supportedFormats(for: camera!)
@@ -135,23 +137,23 @@ final class WebRTCClient: NSObject {
         print("Capturing local Camera with \(fps) \(format)")
         capturer.startCapture(with: camera!, format: format!, fps: Int(fps!.maxFrameRate)) // fps.maxFrameRate
         self.localVideoTrack?.add(renderer)
-
+        */
         
-        /*
+        let camera = VideoDevices().getDevice(name: Model.shared.camera)
         guard let frontCamera = camera,
             let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
                 
                 let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
                 let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
                 return width1 < width2
-            }).first,
+            }).last,
         
             // choose highest fps
             let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
             return
         }
-         */
-
+        capturer.startCapture(with: camera!, format: format, fps: Int(fps.maxFrameRate)) // fps.maxFrameRate
+        self.localVideoTrack?.add(renderer)
     }
     
     func renderRemoteVideo(to renderer: RTCVideoRenderer) {
@@ -204,7 +206,7 @@ final class WebRTCClient: NSObject {
         let device = Model.shared.getAudioInDevice(name:Model.shared.audioInDevice)
         
         // TODO this is not working
-        let audioConstrains = RTCMediaConstraints(mandatoryConstraints:["audio":"{'deviceId': '\(device!.uid)'}"], optionalConstraints: nil)
+        let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
         let audioSource = WebRTCClient.factory.audioSource(with: audioConstrains)
         audioSource.volume = 1.0
         let audioTrack = WebRTCClient.factory.audioTrack(with: audioSource, trackId: "audio0")

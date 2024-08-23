@@ -22,12 +22,12 @@ struct YouView : NSViewRepresentable{
 }
 #else
 struct YouView : UIViewRepresentable{
-    func makeNSView(context: Context) ->RTCMTLNSVideoView{
+    func makeUIView(context: Context) ->RTCMTLVideoView{
         //Model.shared.youView.setSize(CGSize(width:150, height:150))
-        return Model.shared.youView!
+        return Model.shared.youView
     }
     
-    func updateNSView(_ nsView: RTCMTLNSVideoView, context: Context) {
+    func updateUIView(_ nsView: RTCMTLVideoView, context: Context) {
        
     }
 }

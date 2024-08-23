@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import AVFoundation
+
 import WebRTC
 import Calls_Swift
 
@@ -28,15 +30,19 @@ class Model : ObservableObject{
     @Published var audioOutDevice = ""
     @Published var camera = ""
     @Published var isConnected = false
-    @Published var audioInputDefaultDevice : AudioDeviceID? // the devices pre app Start
-    @Published var audioOutputDefaultDevice : AudioDeviceID?
-    
     @Published var webRtcClientA : WebRTCClient?
     @Published var webRtcClientB : WebRTCClient?
     
+#if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
     @Published var meView = RTCMTLNSVideoView()
-    
+    @Published var audioInputDefaultDevice : AudioDeviceID? // the devices pre app Start
+    @Published var audioOutputDefaultDevice : AudioDeviceID?
+#else
+    @Published var youView = RTCMTLVideoView()
+    @Published var meView = RTCMTLVideoView()
+#endif
+
     @Published var trackIdLocalVideo =  ""
     @Published  var trackIdLocalAudio =  ""
     @Published var midLocalVideo =  ""

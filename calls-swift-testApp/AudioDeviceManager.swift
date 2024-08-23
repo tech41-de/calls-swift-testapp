@@ -9,6 +9,7 @@ import Foundation
 import AVFoundation
 import AudioToolbox
 
+#if os(macOS)
 class AudioDevices{
     var audioDeviceID:AudioDeviceID
 
@@ -362,3 +363,20 @@ class AudioDeviceManager{
         }
     }
 }
+#else
+// ios version
+class AudioDeviceManager{
+    func setInputDevice(name:String){
+        // TODO
+    }
+
+    func setOutputDevice(name:String){
+        // TODO
+    }
+    
+    func setupAudio(){
+        // TODO
+    }
+}
+
+#endif

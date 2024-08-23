@@ -75,7 +75,7 @@ extension MainController: SignalClientDelegate {
     }
 }
  */
-    
+
 class MainController {
     //private let signalClient: SignalingClient
     private let webRTCClient: WebRTCClient
@@ -134,6 +134,18 @@ class MainController {
     private var mute: Bool = false {
         didSet {
            // let title = "Mute: \(self.mute ? "on" : "off")"
+        }
+    }
+    
+
+    func startTracks() {
+        Task{
+            let sdp = Calls.SessionDescription(sdp: "", type: "offer")
+            let tracks = [Calls.Track]()
+            var newTrack = Calls.NewTrack(sessionDescription:sdp, tracks:tracks)
+            await Model.shared.api.newTracks(sessionId: Model.shared.sessionId, newTrack: newTrack){ newTracks, error in
+               print(newTracks)
+            }
         }
     }
     
