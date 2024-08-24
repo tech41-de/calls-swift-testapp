@@ -12,15 +12,23 @@ enum States{
     case CONFIGURE
     case AUDIO_SETUP
     case VIDEOO_SETUP
+    case START_SESSION // setup Peer
+    case NEW_SESSION // Cloudflare New Session
+    case NEW_LOCAL_TRACKS
+    case NEW_REMOTE_TRACKS
 }
 
 class STM{
-    static let  shared = STM()
+    static let shared = STM()
+   
     private init(){}
+    
     let defaults = UserDefaults.standard
     let api = CloudflareCallsApi.shared
+    let m = Model.shared
     
     func exec(state:States){
+        m.currentstate = state
         switch(state){
         case .BOOT:
             if defaults.string(forKey: "appSecret") == nil{
@@ -45,6 +53,30 @@ class STM{
             
         case .VIDEOO_SETUP:
             VideoDeviceManager().setup()
+            break
+
+        case .START_SESSION:
+            Task{
+                m.webRtcClient.setupPeer()
+            }
+            break
+        
+        case .NEW_SESSION:
+            Task{
+               await m.webRtcClient.newSession(sdp: m.sdpLocal)
+            }
+            break
+            
+        case .NEW_LOCAL_TRACKS:
+            Task{
+               await m.webRtcClient.localTracks()
+            }
+            break
+            
+        case  .NEW_REMOTE_TRACKS:
+            Task{
+                await m.webRtcClient.remoteTracks()
+            }
             break
         }
     }

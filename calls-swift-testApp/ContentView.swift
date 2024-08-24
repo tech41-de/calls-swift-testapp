@@ -78,8 +78,8 @@ struct ContentView: View {
 #endif
         Model.shared.youView.addSubview(remoteRenderer)
         Model.shared.meView.addSubview(localRenderer)
-        Model.shared.webRtcClientA!.startCaptureLocalVideo(renderer: localRenderer)
-        Model.shared.webRtcClientA!.renderRemoteVideo(to: remoteRenderer)
+       // Model.shared.webRtcClientA!.startCaptureLocalVideo(renderer: localRenderer)
+        //Model.shared.webRtcClientA!.renderRemoteVideo(to: remoteRenderer)
     }
      
     var body: some View {
@@ -132,7 +132,8 @@ struct ContentView: View {
             VStack{
                 Text("Session")
                 Button("Start new session"){
-                    Model.shared.mainController?.offerSDP()
+                    STM.shared.exec(state: .START_SESSION)
+                    //Model.shared.mainController?.offerSDP()
                 } .buttonStyle(MyButtonStyle())
                 TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
                 TextField("Track Name Local", text: $localVideoTrackId).textSelection(.enabled)
@@ -157,7 +158,6 @@ struct ContentView: View {
             TextField("Debug", text: $debugStr,  axis: .vertical).lineLimit(5...10)
             Spacer()
             
-            Text("Session Id: \(sessionId)").font(.system(size: 9))
             HStack(){
                 Picker(selection: $m.camera.onChange(videoInChanged), label:Text("Camera")) {
                     ForEach(m.videoDevices, id: \.self) {

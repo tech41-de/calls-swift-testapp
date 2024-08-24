@@ -31,6 +31,8 @@ class Model : ObservableObject{
     @Published var isConnected = false
     @Published var webRtcClientA : WebRTCClient?
     @Published var sdpLocal : String = ""
+    @Published var webRtcClient = WebRTC_Client()
+    @Published var currentstate = States.BOOT
     
 #if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
