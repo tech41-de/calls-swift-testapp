@@ -196,18 +196,17 @@ final class WebRTCClient: NSObject {
     }
     
      func createMediaSenders() {
-        let streamId = "stream"
-        
+
         // Audio
         let audioTrack = self.createAudioTrack()
         //rtcRtpSender = self.peerConnection.add(audioTrack, streamIds: [streamId])
-        Model.shared.trackIdLocalAudio =  audioTrack.trackId
+         Model.shared.localAudioTrackId =  audioTrack.trackId
         
         // Video
         let videoTrack = self.createVideoTrack(trackId: "video0")
         self.localVideoTrack = videoTrack
         print("transciever count \(self.peerConnection.transceivers.count)")
-        
+         Model.shared.localVideoTrackId =  videoTrack.trackId
         let ini = RTCRtpTransceiverInit()
         ini.direction = .sendOnly
          
@@ -216,21 +215,21 @@ final class WebRTCClient: NSObject {
         var transVideo = self.peerConnection.addTransceiver(with: audioTrack, init: ini)
         var transAudio =  self.peerConnection.addTransceiver(with: videoTrack, init: ini)
         
+   
 
        // self.peerConnection.add(videoTrack, streamIds: [streamId])
         print("transciever count \(self.peerConnection.transceivers.count)")
-       // self.remoteVideoTrack = self.peerConnection.transceivers.first {
-            //$0.mediaType == .video
-        //}?.receiver.track as? RTCVideoTrack
+
+         self.remoteVideoTrack = transVideo!.receiver.track as? RTCVideoTrack
+         /*
+        self.remoteVideoTrack = self.peerConnection.transceivers.first {
+            $0.mediaType == .video
+        }?.receiver.track as? RTCVideoTrack
+         */
          for t in self.peerConnection.transceivers{
              print(" mid \(t.mid) \(t.sender) \(t.receiver) \(t.isStopped) \(t.direction)")
          }
-        
-       
-        print(peerConnection.transceivers.first!.mid)
-        print(peerConnection.transceivers.first!.direction == .sendOnly)
 
-        
         // Data
         if let dataChannel = createDataChannel() {
             dataChannel.delegate = self

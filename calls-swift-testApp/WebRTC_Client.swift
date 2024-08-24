@@ -17,6 +17,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     private var localAudioTrack: RTCAudioTrack?
     private var remoteVideoTrack: RTCVideoTrack?
     
+    var haveFirstPeer = false
+    
     // RTCPeerConnectionDelegate
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
         print("peerConnectionShouldNegotiate")
@@ -27,11 +29,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
-        if peerConnection.iceConnectionState == .connected{
+        if peerConnection.iceConnectionState == .connected &&  Model.shared.isConnected == false{
             Model.shared.isConnected = true
-            if Model.shared.currentstate == .NEW_SESSION{
-                STM.shared.exec(state: .NEW_LOCAL_TRACKS)
-            }
+          
         }
         print("didChange RTCIceConnectionState")
     }
@@ -109,6 +109,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
             Task{
                 do{
                     await try peerConnection!.setRemoteDescription(desc);
+                    STM.shared.exec(state: .NEW_LOCAL_TRACKS)
                 }catch{
                     print(error)
                 }
@@ -120,6 +121,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
         localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "audio0")
+ 
         let videoSource = WebRTC_Client.factory.videoSource()
         localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: "video0")
         let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
@@ -153,39 +155,105 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
                 Task{
                     try await self.peerConnection!.setLocalDescription(sdp!)
                     Model.shared.sdpLocal = sdp!.sdp
+                    
+                    Model.shared.localAudioTrackId = transceiverAudio!.sender.track!.trackId
+                    Model.shared.localVideoTrackId = transceiverVideo!.sender.track!.trackId
+                    
+                    print( Model.shared.localAudioTrackId)
+                    
+                    var localTracks =  [Calls.LocalTrack]()
+                    
+                    for t in self.peerConnection!.transceivers{
+                        if t.mediaType == .audio{
+                            let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"audio0")
+                            localTracks.append(t)
+                        }
+                        if t.mediaType == .video{
+                            let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"video0")
+                            localTracks.append(t)
+                        }
+                    }
+                    let desc = Calls.SessionDescription( type:"offer",  sdp: Model.shared.sdpLocal)
+                    let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
+                    
+                    await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
+                        let sdpStr = newTracksResponse!.sessionDescription.sdp
+                        let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
+                      
+                        self.peerConnection!.setRemoteDescription(sdp){ error in
+                            print(error)
+                        }
+                    }
                 }
             }catch{
                 print(error)
             }
         }
-        
-        var localTracks =  [Calls.LocalTrack]()
-        
-        for t in peerConnection!.transceivers{
-            if t.mediaType == .audio{
-                let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"audio0")
-                localTracks.append(t)
-            }
-            if t.mediaType == .video{
-                let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"video0")
-                localTracks.append(t)
-            }
-        }
-        let desc = Calls.SessionDescription( type:"offer",  sdp: Model.shared.sdpLocal)
-        let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
-        
-        await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
-            let sdpStr = newTracksResponse!.sessionDescription.sdp
-            let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
-          
-            self.peerConnection!.setRemoteDescription(sdp){ error in
-                print(error)
-            }
-       
-        }
     }
     
     func remoteTracks() async{
+        var tracks = [Calls.RemoteTrack]()
+        print(Model.shared.sessionIdRemote)
+        print(Model.shared.trackIdAudioRemote)
+        print(Model.shared.trackIdVideoRemote)
         
+        let trackAudio = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName:Model.shared.trackIdAudioRemote)
+        tracks.append(trackAudio)
+        
+        let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.trackIdVideoRemote)
+        tracks.append(trackVideo)
+        
+        let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
+        await Model.shared.api.newTracks(sessionId: Model.shared.sessionId, newTracksRemote:newTracksRemote){newTracksResponse, error in
+            
+            // Renegotiate
+            guard let res = newTracksResponse else {
+                print(error)
+                return
+            }
+            let isRenegotiate = res.requiresImmediateRenegotiation
+            if isRenegotiate{
+                Task{
+                    print("isRenegotiate")
+                    print(res.sessionDescription.type)
+                    if res.sessionDescription.type == "answer"{
+                        print("this is wrong, should be an offer")
+                        return
+                    }
+                    let desc = RTCSessionDescription(type: .offer, sdp: res.sessionDescription.sdp)
+                    do{
+                        try await self.peerConnection!.setRemoteDescription(desc)
+                    }
+                    catch{
+                        print(error)
+                    }
+                    let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
+                    self.peerConnection!.answer(for: constraints){answer,arg  in
+                        Task{
+                            try await self.peerConnection!.setLocalDescription(answer!)
+                            
+                            // Renegotiate
+                            let n = Calls.NewReq(sdp: res.sessionDescription.sdp, type: "answer")
+                            let newDesc = Calls.NewDesc(sessionDescription: n)
+                            await Model.shared.api.renegotiate(sessionId: Model.shared.sessionId, sdp:newDesc){ res in
+                                print(res)
+                                print("count \(self.peerConnection!.transceivers.count)")
+                                for t in self.peerConnection!.transceivers{
+                                    print(t.mediaType)
+                                    print(t.receiver.track!.trackId)
+                                    
+                                    if (t.mediaType == .video){
+                                        print("Adding video remote \(t.receiver.track?.trackId)")
+                                        self.remoteVideoTrack = t.receiver.track as? RTCVideoTrack
+                                        self.remoteVideoTrack?.add(Model.shared.youView)
+                                        print("added remote Video")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

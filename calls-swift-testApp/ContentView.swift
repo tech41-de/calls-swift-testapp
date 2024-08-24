@@ -31,10 +31,12 @@ extension Binding {
 
 struct ContentView: View {
     @ObservedObject var m = Model.shared
-    
-    @State var sessionIdInvite = ""
-    @State var trackNameInvite = ""
+
     @State var localVideoTrackId = ""
+    @State var localAudioTrackId = ""
+    @State var trackIdVideoRemote = ""
+    @State var trackIdAudioRemote = ""
+    @State var sessionIdRemote = ""
     @State var serverURL = ""
     @State var appId = ""
     @State var appSecret = ""
@@ -49,7 +51,7 @@ struct ContentView: View {
     @State var errorMsg = ""
     @State var sessionId = ""
 
-    let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
     
     func videoInChanged(_ tag: String) {
@@ -83,7 +85,6 @@ struct ContentView: View {
      
     var body: some View {
         VStack(alignment: .leading, spacing:5){
-            /*@START_MENU_TOKEN@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
             Text("\(errorMsg)").foregroundStyle(.red)
             HStack{
                 let fontSize:CGFloat = 9
@@ -129,24 +130,52 @@ struct ContentView: View {
             }
 
             VStack{
-                Text("Session")
+                Text("Local Tracks")
                 Button("Start new session"){
                     STM.shared.exec(state: .START_SESSION)
-                    //Model.shared.mainController?.offerSDP()
                 } .buttonStyle(MyButtonStyle())
-                TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
-                TextField("Track Name Local", text: $localVideoTrackId).textSelection(.enabled)
+                HStack{
+                    TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
+                    Text("Session Id")
+                }
+                
+                HStack{
+                    TextField("Track Id Audio Local", text: $localAudioTrackId).textSelection(.enabled)
+                    Text("Track ID Audio ")
+                }
+                
+                HStack{
+                    TextField("Track Id Video Local", text: $localVideoTrackId).textSelection(.enabled)
+                    Text("Track ID Video")
+                }
+                
             }.padding(5).border(.gray, width: 1)
       
             VStack{
-                Text("Tracks")
+                Text("Remote Tracks")
                 Button("Set Remote Tracks"){
+                    Model.shared.sessionIdRemote = sessionIdRemote
+                    print(sessionIdRemote)
+                    print(Model.shared.sessionIdRemote)
+                    Model.shared.trackIdAudioRemote = trackIdAudioRemote
+                    Model.shared.trackIdVideoRemote = trackIdVideoRemote
+
                     Task{
-                        STM.shared.exec(state:.NEW_REMOTE_TRACKS)
+                        await m.webRtcClient.remoteTracks()
                     }
                 }.buttonStyle(MyButtonStyle())
-                TextField("Session Id Remote", text: $sessionIdInvite).textSelection(.enabled)
-                TextField("Track Name Remote", text: $trackNameInvite).textSelection(.enabled)
+                HStack{
+                    TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
+                    Text("Session Id")
+                }
+                HStack{
+                    TextField("Track ID Audio", text: $trackIdAudioRemote).textSelection(.enabled)
+                    Text("Track ID Audio ")
+                }
+                HStack{
+                    TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled)
+                    Text("Track ID Video")
+                }
             }.padding(5).border(.gray, width: 1)
             
             TextField("Debug", text: $debugStr,  axis: .vertical).lineLimit(5...10)
@@ -191,6 +220,7 @@ struct ContentView: View {
             isLoggedOn = m.isLoggedOn ? "✅" : "❌"
             errorMsg = m.errorMsg
             localVideoTrackId = m.localVideoTrackId
+            localAudioTrackId = m.localAudioTrackId
           }
     }
 }

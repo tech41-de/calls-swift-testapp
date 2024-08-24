@@ -8,6 +8,7 @@
 import Foundation
 
 enum States{
+    case COLD
     case BOOT
     case CONFIGURE
     case AUDIO_SETUP
@@ -27,8 +28,15 @@ class STM{
     let m = Model.shared
     
     func exec(state:States){
+        if (state == m.currentstate ){
+            return
+        }
         m.currentstate = state
         switch(state){
+            
+        case .COLD:
+            break
+
         case .BOOT:
             if defaults.string(forKey: "appSecret") == nil{
                 defaults.set("https://rtc.live.cloudflare.com/v1/apps/", forKey: "serverURL")

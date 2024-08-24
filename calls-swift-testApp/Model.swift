@@ -33,7 +33,7 @@ class Model : ObservableObject{
     @Published var webRtcClientA : WebRTCClient?
     @Published var sdpLocal : String = ""
     @Published var webRtcClient = WebRTC_Client()
-    @Published var currentstate = States.BOOT
+    @Published var currentstate = States.COLD
     
 #if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
@@ -45,8 +45,6 @@ class Model : ObservableObject{
     @Published var meView = RTCMTLVideoView()
 #endif
 
-    @Published var trackIdLocalVideo =  ""
-    @Published var trackIdLocalAudio =  ""
     @Published var midLocalVideo =  ""
     @Published var midLocalAudio =  ""
     
@@ -55,11 +53,17 @@ class Model : ObservableObject{
     @Published var hasConfig = false
     @Published var isLoggedOn = false
     @Published var errorMsg = ""
+ 
+    
+    @Published var localVideoTrackId = ""
+    @Published var localAudioTrackId = ""
+    
+    @Published var sessionIdRemote = ""
+    @Published var trackIdAudioRemote = ""
     @Published var trackIdVideoRemote = ""
     
     @Published var videoWidth : CGFloat = 0
     @Published var videoHeight :CGFloat = 0
-    @Published var localVideoTrackId = ""
     
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{
