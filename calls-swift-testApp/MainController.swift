@@ -150,17 +150,11 @@ class MainController {
                     let sdp = RTCSessionDescription(type: .answer, sdp: sdp)
                     self.webRTCClient.set(remoteSdp: sdp){err in
                         print(err)
+                        self.webRTCClient.createMediaSenders()
                         Model.shared.localVideoTrackId = self.webRTCClient.getLocalVideoTrackId()
                     }
                 }
             }
-        }
-    }
-    
-    func answerSDP() {
-        self.webRTCClient.answer { (localSdp) in
-            self.hasLocalSdp = true
-           // self.signalClient.send(sdp: localSdp)
         }
     }
     
@@ -173,20 +167,5 @@ class MainController {
         self.remoteCandidateCount = 0
         self.speakerOn = true
         self.webRTCClient.delegate = self
-       // self.signalClient.delegate = self
-        //self.signalClient.connect()
     }
-    
-    /*
-    func bindViews(){
-        let remoteRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:150, height:150))
-        Model.shared.youView.addSubview(remoteRenderer)
-        
-        let localRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:150, height:150))
-        Model.shared.myView.addSubview(localRenderer)
-        
-       self.webRTCClient.startCaptureLocalVideo(renderer: localRenderer)
-       self.webRTCClient.renderRemoteVideo(to: remoteRenderer)
-    }
-     */
 }

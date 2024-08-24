@@ -366,16 +366,84 @@ class AudioDeviceManager{
 #else
 // ios version
 class AudioDeviceManager{
+    
+    let session = AVAudioSession.sharedInstance()
+
     func setInputDevice(name:String){
-        // TODO
+        let availableInputs = self.session.currentRoute.inputs
+        for device in availableInputs{
+            if device.portName == name{
+                do{
+                    try self.session.setPreferredInput(device)
+                }
+                catch{
+                    print(error)
+                }
+            }
+        }
     }
 
     func setOutputDevice(name:String){
-        // TODO
+        let availableOutputs = self.session.currentRoute.outputs
+        for device in availableOutputs{
+            if device.portName == name{
+                do{
+                   // TODO
+                }
+                catch{
+                    print(error)
+                }
+            }
+        }
     }
     
-    func setupAudio(){
-        // TODO
+    func setSpeacker(on:Bool){
+        do{
+            if on{
+                try self.session.overrideOutputAudioPort(AVAudioSession.PortOverride.speaker)
+            }else{
+                try self.session.overrideOutputAudioPort(AVAudioSession.PortOverride.none)
+            }
+        }
+        catch{
+            print(error)
+        }
+    }
+    
+    func setup(){
+        session.requestRecordPermission(){ ok in
+            print("Audio Permission given \(ok)")
+            if !ok{
+                return
+            }
+            do{
+                try self.session.setCategory(.playAndRecord, mode:.videoChat , policy:.default , options: [.mixWithOthers, .allowBluetooth])
+                try self.session.setActive(true, options: .notifyOthersOnDeactivation)
+                try self.session.overrideOutputAudioPort(AVAudioSession.PortOverride.none)
+                // Inputs
+                let availableInputs = self.session.currentRoute.inputs
+                
+                DispatchQueue.main.async {
+                    Model.shared.audioInDevices.removeAll()
+                    for device in availableInputs{
+                        print(device.portName)
+                        Model.shared.audioInDevices.append(ADevice(uid:device.uid, name: device.portName))
+                    }
+                    Model.shared.audioInDevice = Model.shared.audioInDevices[0].name
+                    
+                    // Inputs
+                    let availableOutputs = self.session.currentRoute.outputs
+                    Model.shared.audioOutDevices.removeAll()
+                    for device in availableOutputs{
+                        print(device.portName)
+                        Model.shared.audioOutDevices.append(ADevice(uid:device.uid, name: device.portName))
+                    }
+                    Model.shared.audioOutDevice = Model.shared.audioOutDevices[0].name
+                }
+            }catch{
+                print(error)
+            }
+        }
     }
 }
 

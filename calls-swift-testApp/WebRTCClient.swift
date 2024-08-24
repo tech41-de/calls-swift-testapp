@@ -81,7 +81,8 @@ final class WebRTCClient: NSObject {
         self.peerConnection = peerConnection
         
         super.init()
-        self.createMediaSenders()
+        self.createInactiveTransceiver()
+       // self.createMediaSenders()
         self.peerConnection.delegate = self
     }
     
@@ -151,7 +152,7 @@ final class WebRTCClient: NSObject {
         self.localVideoTrack?.add(renderer)
         */
         
-        let camera = VideoDevices().getDevice(name: Model.shared.camera)
+        let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
         guard let frontCamera = camera,
             let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
                 
@@ -177,7 +178,6 @@ final class WebRTCClient: NSObject {
         self.peerConnection.removeTrack(rtcRtpSender!)
         let newAudioTrack = createAudioTrack()
         rtcRtpSender =  self.peerConnection.add(newAudioTrack, streamIds: [streamId])
-        //Controller.shared.OfferSDP()
     }
     
     func updateAudioOutputDevice(){
@@ -185,22 +185,51 @@ final class WebRTCClient: NSObject {
         self.peerConnection.removeTrack(rtcRtpSender!)
         let newAudioTrack = createAudioTrack()
         rtcRtpSender = self.peerConnection.add(newAudioTrack, streamIds: [streamId])
-       // Controller.shared.OfferSDP()
     }
     
-    private func createMediaSenders() {
+    private func createInactiveTransceiver() {
+        let ini = RTCRtpTransceiverInit()
+        ini.direction = .inactive
+        print(peerConnection.transceivers.count)
+        self.peerConnection.addTransceiver(of: .audio, init:ini)
+        print(peerConnection.transceivers.count)
+    }
+    
+     func createMediaSenders() {
         let streamId = "stream"
         
         // Audio
         let audioTrack = self.createAudioTrack()
-        rtcRtpSender = self.peerConnection.add(audioTrack, streamIds: [streamId])
+        //rtcRtpSender = self.peerConnection.add(audioTrack, streamIds: [streamId])
         Model.shared.trackIdLocalAudio =  audioTrack.trackId
         
         // Video
         let videoTrack = self.createVideoTrack(trackId: "video0")
         self.localVideoTrack = videoTrack
-        self.peerConnection.add(videoTrack, streamIds: [streamId])
-        self.remoteVideoTrack = self.peerConnection.transceivers.first { $0.mediaType == .video }?.receiver.track as? RTCVideoTrack
+        print("transciever count \(self.peerConnection.transceivers.count)")
+        
+        let ini = RTCRtpTransceiverInit()
+        ini.direction = .sendOnly
+         
+         print(peerConnection.transceivers.count)
+         
+        var transVideo = self.peerConnection.addTransceiver(with: audioTrack, init: ini)
+        var transAudio =  self.peerConnection.addTransceiver(with: videoTrack, init: ini)
+        
+
+       // self.peerConnection.add(videoTrack, streamIds: [streamId])
+        print("transciever count \(self.peerConnection.transceivers.count)")
+       // self.remoteVideoTrack = self.peerConnection.transceivers.first {
+            //$0.mediaType == .video
+        //}?.receiver.track as? RTCVideoTrack
+         for t in self.peerConnection.transceivers{
+             print(" mid \(t.mid) \(t.sender) \(t.receiver) \(t.isStopped) \(t.direction)")
+         }
+        
+       
+        print(peerConnection.transceivers.first!.mid)
+        print(peerConnection.transceivers.first!.direction == .sendOnly)
+
         
         // Data
         if let dataChannel = createDataChannel() {

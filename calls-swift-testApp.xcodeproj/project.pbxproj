@@ -13,7 +13,7 @@
 		4078861F2C7711540071FE5F /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078861E2C7711540071FE5F /* Main.swift */; };
 		407886242C7717F10071FE5F /* Global.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886232C7717F10071FE5F /* Global.swift */; };
 		407886282C771DD10071FE5F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886272C771DD10071FE5F /* Model.swift */; };
-		4078862A2C771FAD0071FE5F /* VideoDevices.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886292C771FAD0071FE5F /* VideoDevices.swift */; };
+		4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886292C771FAD0071FE5F /* VideoDeviceManager.swift */; };
 		4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078862B2C7720680071FE5F /* AudioDeviceManager.swift */; };
 		407886332C7729930071FE5F /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886322C7729930071FE5F /* WebRTCClient.swift */; };
 		407886352C772BFF0071FE5F /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886342C772BFF0071FE5F /* YouView.swift */; };
@@ -23,6 +23,7 @@
 		408488B02C784ED0003197F1 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 408488AF2C784ED0003197F1 /* WebRTC */; };
 		408488B52C786CA9003197F1 /* CloudflareCallsApi.swift in Sources */ = {isa = PBXBuildFile; fileRef = 408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */; };
 		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
+		4093E9052C79B71F0007618E /* STM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9042C79B71F0007618E /* STM.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -48,7 +49,7 @@
 		407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "calls-swift-testApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		407886232C7717F10071FE5F /* Global.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Global.swift; sourceTree = "<group>"; };
 		407886272C771DD10071FE5F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
-		407886292C771FAD0071FE5F /* VideoDevices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDevices.swift; sourceTree = "<group>"; };
+		407886292C771FAD0071FE5F /* VideoDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDeviceManager.swift; sourceTree = "<group>"; };
 		4078862B2C7720680071FE5F /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
 		407886322C7729930071FE5F /* WebRTCClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
 		407886342C772BFF0071FE5F /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
@@ -57,6 +58,7 @@
 		4078863A2C773A9D0071FE5F /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudflareCallsApi.swift; sourceTree = "<group>"; };
+		4093E9042C79B71F0007618E /* STM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STM.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -102,12 +104,13 @@
 				407886382C7733550071FE5F /* Controller.swift */,
 				407886232C7717F10071FE5F /* Global.swift */,
 				407886272C771DD10071FE5F /* Model.swift */,
-				407886292C771FAD0071FE5F /* VideoDevices.swift */,
+				407886292C771FAD0071FE5F /* VideoDeviceManager.swift */,
 				4078862B2C7720680071FE5F /* AudioDeviceManager.swift */,
 				407886342C772BFF0071FE5F /* YouView.swift */,
 				407886362C772C150071FE5F /* MeView.swift */,
 				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
 				408488B42C786CA9003197F1 /* CloudflareCallsApi.swift */,
+				4093E9042C79B71F0007618E /* STM.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -204,10 +207,11 @@
 				4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */,
 				407886392C7733550071FE5F /* Controller.swift in Sources */,
 				407886352C772BFF0071FE5F /* YouView.swift in Sources */,
+				4093E9052C79B71F0007618E /* STM.swift in Sources */,
 				4078863B2C773A9D0071FE5F /* MainController.swift in Sources */,
 				407886372C772C150071FE5F /* MeView.swift in Sources */,
 				407886332C7729930071FE5F /* WebRTCClient.swift in Sources */,
-				4078862A2C771FAD0071FE5F /* VideoDevices.swift in Sources */,
+				4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */,
 				407886282C771DD10071FE5F /* Model.swift in Sources */,
 				408488B52C786CA9003197F1 /* CloudflareCallsApi.swift in Sources */,
 				407886242C7717F10071FE5F /* Global.swift in Sources */,
@@ -270,6 +274,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Video Calls";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Video Calls";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -325,6 +331,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Video Calls";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Video Calls";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;

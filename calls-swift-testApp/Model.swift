@@ -11,10 +11,9 @@ import AVFoundation
 import WebRTC
 import Calls_Swift
 
-struct ADevice{
-    var id = ""
+struct ADevice : Hashable{
+    var uid = ""
     var name = ""
-    var uid :UInt32 = 0
 }
 
 class Model : ObservableObject{
@@ -31,7 +30,6 @@ class Model : ObservableObject{
     @Published var camera = ""
     @Published var isConnected = false
     @Published var webRtcClientA : WebRTCClient?
-    @Published var webRtcClientB : WebRTCClient?
     @Published var sdpLocal : String = ""
     
 #if os(macOS)

@@ -8,7 +8,11 @@
 import Foundation
 import AVFoundation
 
-class VideoDevices{
+class VideoDeviceManager{
+    
+    func setup(){
+        findDevices() 
+    }
     
     func getDevice(name:String) ->AVCaptureDevice?{ // .continuityCamera .external
         var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera]
@@ -52,21 +56,21 @@ class VideoDevices{
 #else
         
 #endif
-   
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
-    
-    
         print("Video devices found \(devices.devices.count)")
         Model.shared.videoDevices.removeAll()
         for device in devices.devices {
-            Model.shared.videoDevices.append(ADevice(id:device.uniqueID, name:device.localizedName))
+            Model.shared.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
         }
         
+        /*
         if (UserDefaults.standard.string(forKey: "videoIn") != nil){
             Model.shared.camera = UserDefaults.standard.string(forKey: "videoIn")!
         }else{
             Model.shared.camera = Model.shared.videoDevices[Model.shared.videoDevices.count - 1].name
         }
+         */
+        Model.shared.camera = Model.shared.videoDevices[0].name
         print("Using camera \(Model.shared.camera)")
     }
 }

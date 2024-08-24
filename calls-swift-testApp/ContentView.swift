@@ -18,7 +18,6 @@ struct MyButtonStyle: ButtonStyle {
     }
 }
 
-
 extension Binding {
     func onChange(_ handler: @escaping (Value) -> Void) -> Binding<Value> {
         return Binding(
@@ -31,27 +30,16 @@ extension Binding {
 }
 
 struct ContentView: View {
-    
-    let api = CloudflareCallsApi.shared
+    @ObservedObject var m = Model.shared
     
     @State var sessionIdInvite = ""
     @State var trackNameInvite = ""
-    
     @State var localVideoTrackId = ""
-    
     @State var serverURL = ""
     @State var appId = ""
     @State var appSecret = ""
     @State var isHidden = false
     @State var debugStr = ""
-    @State var audioInOptions = [""]
-    @State var audioOutOptions = [""]
-    @State var videoInOptions = [""]
-    
-    @State var selectedAudioIn  = ""
-    @State var selectedAudioOut  = ""
-    @State var selectedVideoIn  = ""
-    
     @State private var signal = "❌"
     @State private var hasSDPLocal = "❌"
     @State private var hasSDPRemote = "❌"
@@ -59,15 +47,14 @@ struct ContentView: View {
     @State private var hasConfig = "❌"
     @State private var isLoggedOn = "❌"
     @State var errorMsg = ""
-    @State var m = Model.shared
     @State var sessionId = ""
-
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    let api = CloudflareCallsApi.shared
+    let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
-   
     
     func videoInChanged(_ tag: String) {
-        Model.shared.camera = tag
+        m.camera = tag
         UserDefaults.standard.set(tag, forKey: "videoIn")
     }
     
@@ -89,38 +76,12 @@ struct ContentView: View {
         let remoteRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
         let localRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
 #endif
-        
         Model.shared.youView.addSubview(remoteRenderer)
-        
-       
         Model.shared.meView.addSubview(localRenderer)
-        
         Model.shared.webRtcClientA!.startCaptureLocalVideo(renderer: localRenderer)
-        //self.webRTCClient.renderRemoteVideo(to: remoteRenderer)
-        
+        Model.shared.webRtcClientA!.renderRemoteVideo(to: remoteRenderer)
     }
-    
-    func updateDevies(){
-        let m = Model.shared
-        videoInOptions.removeAll()
-        for d in  m.videoDevices{
-            videoInOptions.append(d.name)
-        }
-        
-        audioInOptions.removeAll()
-        for d in  m.audioInDevices{
-            audioInOptions.append(d.name)
-        }
-        
-        audioOutOptions.removeAll()
-        for d in  m.audioOutDevices{
-            audioOutOptions.append(d.name)
-        }
-        selectedVideoIn = m.camera
-        selectedAudioIn = m.audioInDevice
-        selectedAudioOut = m.audioOutDevice
-    }
-    
+     
     var body: some View {
         VStack(alignment: .leading, spacing:5){
             /*@START_MENU_TOKEN@*/Text("Placeholder")/*@END_MENU_TOKEN@*/
@@ -147,6 +108,7 @@ struct ContentView: View {
                         defaults.set(appId, forKey: "appId")
                         defaults.set(appSecret, forKey: "appSecret")
                         defaults.set(isHidden, forKey: "isHidden")
+                        STM.shared.exec(state: .CONFIGURE)
                     }.buttonStyle(MyButtonStyle())
                 }
             }
@@ -185,7 +147,7 @@ struct ContentView: View {
                 }.buttonStyle(MyButtonStyle())
                 Button("Set Remote Tracks"){
                     Task{
-                        api.SetRemoteTracks(sessionId:sessionIdInvite, trackName:trackNameInvite)
+                        api.SetRemoteTracks(sessionId:sessionIdInvite, mid:"0", trackName:trackNameInvite)
                     }
                 }.buttonStyle(MyButtonStyle())
                 TextField("Session Id Remote", text: $sessionIdInvite).textSelection(.enabled)
@@ -197,45 +159,32 @@ struct ContentView: View {
             
             Text("Session Id: \(sessionId)").font(.system(size: 9))
             HStack(){
-                Picker(selection: $selectedVideoIn.onChange(videoInChanged), label:Text("Camera")) {
-                    ForEach(videoInOptions, id: \.self) {
-                        Text($0)
+                Picker(selection: $m.camera.onChange(videoInChanged), label:Text("Camera")) {
+                    ForEach(m.videoDevices, id: \.self) {
+                        Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
                 
-                Picker(selection: $selectedAudioIn.onChange(audioInChanged), label:Text("Audio In")) {
-                    ForEach(audioInOptions, id: \.self) {
-                        Text($0)
+                Picker(selection: $m.audioInDevice.onChange(audioInChanged), label:Text("Audio In")) {
+                    ForEach(m.audioInDevices, id: \.self) {
+                        Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
                 
-                Picker(selection: $selectedAudioOut.onChange(audioOutChanged), label:Text("Audio Out")) {
-                    ForEach(audioOutOptions, id: \.self) {
-                        Text($0)
+                Picker(selection: $m.audioOutDevice.onChange(audioOutChanged), label:Text("Audio Out")) {
+                    ForEach(m.audioOutDevices, id: \.self) {
+                        Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
             }
             
         }.padding()
         .onAppear(){
-            if defaults.string(forKey: "appId") == nil{
-                defaults.set("https://rtc.live.cloudflare.com/v1", forKey: "serverURL")
-                defaults.set("", forKey: "appId")
-                defaults.set("", forKey: "appSecret")
-                defaults.set(false, forKey: "isHidden")
-            }
+            STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!
             isHidden = defaults.bool(forKey: "isHidden")
-            print(serverURL)
-            print(appId)
-            print(appSecret)
-            api.configure(serverUrl: serverURL, appId: appId, secret: appSecret)
-            AudioDeviceManager().setupAudio()
-            VideoDevices().findDevices()
-            
-            updateDevies()
         }
         .onReceive(timer) { input in
             let m = Model.shared
