@@ -17,6 +17,7 @@ struct ADevice : Hashable{
 }
 
 class Model : ObservableObject{
+    let api = Calls()
     
     static let shared = Model()
     @Published var signalIndicator = "❌"

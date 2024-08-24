@@ -143,6 +143,7 @@ class MainController {
             
             Task{
                 Model.shared.sdpLocal = sdp.sdp
+                /*
                 await CloudflareCallsApi.shared.api.newSession(sdp: sdp.sdp){ sessionId, sdp, error in
                     Model.shared.sessionId = sessionId
                     Model.shared.hasSDPRemote = "✅"
@@ -154,6 +155,7 @@ class MainController {
                         Model.shared.localVideoTrackId = self.webRTCClient.getLocalVideoTrackId()
                     }
                 }
+                 */
             }
         }
     }

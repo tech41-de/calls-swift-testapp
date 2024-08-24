@@ -24,7 +24,6 @@ class STM{
     private init(){}
     
     let defaults = UserDefaults.standard
-    let api = CloudflareCallsApi.shared
     let m = Model.shared
     
     func exec(state:States){
@@ -42,7 +41,7 @@ class STM{
             break
             
         case .CONFIGURE:
-            api.configure(serverUrl: defaults.string(forKey: "serverURL")!, appId: defaults.string(forKey: "appId")!, secret: defaults.string(forKey: "appSecret")!)
+            Model.shared.api.configure(serverUrl: defaults.string(forKey: "serverURL")!, appId: defaults.string(forKey: "appId")!, secret: defaults.string(forKey: "appSecret")!)
             exec(state: .AUDIO_SETUP)
             break
             

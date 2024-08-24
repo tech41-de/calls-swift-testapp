@@ -48,8 +48,7 @@ struct ContentView: View {
     @State private var isLoggedOn = "❌"
     @State var errorMsg = ""
     @State var sessionId = ""
-    
-    let api = CloudflareCallsApi.shared
+
     let timer = Timer.publish(every: 5, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
     
@@ -141,14 +140,9 @@ struct ContentView: View {
       
             VStack{
                 Text("Tracks")
-                Button("Set Local Tracks"){
-                    Task{
-                        await api.SetLocalTracks(sessionId: sessionId, sdp: Model.shared.sdpLocal, mid: "0", trackName: localVideoTrackId)
-                    }
-                }.buttonStyle(MyButtonStyle())
                 Button("Set Remote Tracks"){
                     Task{
-                        api.SetRemoteTracks(sessionId:sessionIdInvite, mid:"0", trackName:trackNameInvite)
+                        STM.shared.exec(state:.NEW_REMOTE_TRACKS)
                     }
                 }.buttonStyle(MyButtonStyle())
                 TextField("Session Id Remote", text: $sessionIdInvite).textSelection(.enabled)
