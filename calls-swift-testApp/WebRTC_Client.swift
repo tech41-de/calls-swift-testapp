@@ -10,6 +10,20 @@ import AVFoundation
 import WebRTC
 import Calls_Swift
 
+extension WebRTC_Client {
+    func peerConnection(_ peerConnection: RTCPeerConnection, didAdd receiver: RTCRtpReceiver, streams: [RTCMediaStream]) {
+        if let videoTrack = receiver.track as? RTCVideoTrack {
+            // Handle the incoming video track
+            print("Received remote video track")
+        }
+
+        if let audioTrack = receiver.track as? RTCAudioTrack {
+            // Handle the incoming audio track
+            print("Received remote audio track")
+        }
+    }
+}
+
 class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     
     private var videoCapturer: RTCVideoCapturer?
@@ -31,7 +45,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
         if peerConnection.iceConnectionState == .connected &&  Model.shared.isConnected == false{
             Model.shared.isConnected = true
-          
+            
         }
         print("didChange RTCIceConnectionState")
     }
@@ -57,7 +71,11 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         print("didRemove RTCIceCandidate")
     }
     
-    
+    // Halluzination WebRTC?
+    func peerConnection(_ peerConnection: RTCPeerConnection, didAdd receiver: RTCRtpReceiver){
+        print("didAdd RTCRtpReceiver")
+    }
+
     func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
         print("didOpen RTCDataChannel")
     }
@@ -71,6 +89,36 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     }()
     
     private var peerConnection: RTCPeerConnection?
+    
+    func setupStream() async{
+        let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
+        let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
+        localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "audio0")
+ 
+        let videoSource = WebRTC_Client.factory.videoSource()
+        localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: "video0")
+        let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
+        guard let frontCamera = camera,
+            let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
+                let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
+                let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
+                return width1 < width2
+            }).last,
+        
+            // choose highest fps
+            let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
+            return
+        }
+
+        let capturer = RTCCameraVideoCapturer(delegate: videoSource)
+        do{
+            try await capturer.startCapture(with: camera!, format: format, fps: Int(fps.maxFrameRate))
+        }catch{
+            print(error)
+        }
+        self.localVideoTrack?.add(Model.shared.meView)
+        self.videoCapturer = capturer
+    }
     
     func setupPeer(){
         let config = RTCConfiguration()
@@ -101,97 +149,81 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     }
     
     func newSession(sdp:String) async{
-        await Model.shared.api.newSession(sdp: sdp){ [self] sessionId, sdp, error in
-            Model.shared.sessionId = sessionId
-            Model.shared.hasSDPRemote = "✅"
-            
-            let desc = RTCSessionDescription(type: .answer , sdp: sdp)
-            Task{
-                do{
-                    await try peerConnection!.setRemoteDescription(desc);
-                    STM.shared.exec(state: .NEW_LOCAL_TRACKS)
-                }catch{
-                    print(error)
+        do{
+            let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
+            peerConnection?.offer(for: c){sdp,_ in
+                Task{
+                    do{
+                        try await self.peerConnection!.setLocalDescription(sdp!);
+                        await Model.shared.api.newSession(sdp: sdp!.sdp){ [self] sessionId, sdp, error in
+                            Model.shared.sessionId = sessionId
+                            Model.shared.hasSDPRemote = "✅"
+                            let desc = RTCSessionDescription(type: .answer , sdp: sdp)
+                            Task{
+                                do{
+                                    await try peerConnection!.setRemoteDescription(desc);
+                                    STM.shared.exec(state: .NEW_LOCAL_TRACKS)
+                                }catch{
+                                    print(error)
+                                }
+                            }
+                        }
+                    }catch{
+                        print(error)
+                    }
                 }
             }
+        }catch{
+            print(error)
         }
     }
     
     func localTracks() async{
-        let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
-        let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
-        localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "audio0")
- 
-        let videoSource = WebRTC_Client.factory.videoSource()
-        localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: "video0")
-        let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
-        guard let frontCamera = camera,
-            let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
-                let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
-                let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
-                return width1 < width2
-            }).last,
+        let initalize = RTCRtpTransceiverInit()
         
-            // choose highest fps
-            let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
-            return
-        }
-
-        let capturer = RTCCameraVideoCapturer(delegate: videoSource)
+        // buildl tranceivers
+        initalize.direction = .sendOnly
+        let transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
+        let transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
+        
+        let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
+        Model.shared.localAudioTrackId = transceiverAudio!.sender.track!.trackId
+        Model.shared.localVideoTrackId = transceiverVideo!.sender.track!.trackId
         do{
-            try await capturer.startCapture(with: camera!, format: format, fps: Int(fps.maxFrameRate))
+            let sdp = try await peerConnection!.offer(for: constraints)
+            try await self.peerConnection!.setLocalDescription(sdp)
+            Model.shared.sdpLocal = sdp.sdp
+            var localTracks = [Calls.LocalTrack]()
+            for t in self.peerConnection!.transceivers{
+                if t.mediaType == .audio{
+                    let tr = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:Model.shared.localAudioTrackId)
+                    localTracks.append(tr)
+                    
+                }
+                if t.mediaType == .video{
+                    let tr = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:Model.shared.localVideoTrackId)
+                    localTracks.append(tr)
+                }
+            }
+            let desc = Calls.SessionDescription( type:"offer",  sdp: Model.shared.sdpLocal)
+            let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
+            
+            // New Track API Request!
+            await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
+                let sdpStr = newTracksResponse!.sessionDescription.sdp
+                let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
+                self.peerConnection!.setRemoteDescription(sdp){ error in
+                    print(error)
+                }
+            }
         }catch{
             print(error)
         }
-        self.localVideoTrack?.add(Model.shared.meView)
-        self.videoCapturer = capturer
-        let initalize = RTCRtpTransceiverInit()
-        initalize.direction = .sendOnly
-        let transceiverAudio = peerConnection?.addTransceiver(with: localAudioTrack!, init: initalize)
-        let transceiverVideo = peerConnection?.addTransceiver(with: localVideoTrack!, init: initalize)
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
-        peerConnection!.offer(for: constraints){sdp, error in
-            do{
-                Task{
-                    try await self.peerConnection!.setLocalDescription(sdp!)
-                    Model.shared.sdpLocal = sdp!.sdp
-                    
-                    Model.shared.localAudioTrackId = transceiverAudio!.sender.track!.trackId
-                    Model.shared.localVideoTrackId = transceiverVideo!.sender.track!.trackId
-                    
-                    print( Model.shared.localAudioTrackId)
-                    
-                    var localTracks =  [Calls.LocalTrack]()
-                    
-                    for t in self.peerConnection!.transceivers{
-                        if t.mediaType == .audio{
-                            let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"audio0")
-                            localTracks.append(t)
-                        }
-                        if t.mediaType == .video{
-                            let t = Calls.LocalTrack(location: "local", mid: t.mid, trackName:"video0")
-                            localTracks.append(t)
-                        }
-                    }
-                    let desc = Calls.SessionDescription( type:"offer",  sdp: Model.shared.sdpLocal)
-                    let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
-                    
-                    await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
-                        let sdpStr = newTracksResponse!.sessionDescription.sdp
-                        let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
-                      
-                        self.peerConnection!.setRemoteDescription(sdp){ error in
-                            print(error)
-                        }
-                    }
-                }
-            }catch{
-                print(error)
-            }
-        }
+        
     }
     
     func remoteTracks() async{
+        
         var tracks = [Calls.RemoteTrack]()
         print(Model.shared.sessionIdRemote)
         print(Model.shared.trackIdAudioRemote)
@@ -204,6 +236,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         tracks.append(trackVideo)
         
         let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
+        
+        // API Call for new Tracks
         await Model.shared.api.newTracks(sessionId: Model.shared.sessionId, newTracksRemote:newTracksRemote){newTracksResponse, error in
             
             // Renegotiate

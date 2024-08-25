@@ -13,6 +13,7 @@ enum States{
     case CONFIGURE
     case AUDIO_SETUP
     case VIDEOO_SETUP
+    case START_STREAM
     case START_SESSION // setup Peer
     case NEW_SESSION // Cloudflare New Session
     case NEW_LOCAL_TRACKS
@@ -60,6 +61,13 @@ class STM{
             
         case .VIDEOO_SETUP:
             VideoDeviceManager().setup()
+            exec(state: .START_STREAM)
+            break
+            
+        case .START_STREAM:
+            Task{
+                await m.webRtcClient.setupStream()
+            }
             break
 
         case .START_SESSION:
