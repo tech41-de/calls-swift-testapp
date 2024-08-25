@@ -17,12 +17,12 @@ extension WebRTC_Client {
         if let videoTrack = receiver.track as? RTCVideoTrack {
             self.remoteVideoTrack = videoTrack as RTCVideoTrack
             self.remoteVideoTrack!.add(Model.shared.youView)
-            print("Added remote video track \( self.remoteVideoTrack!.trackId)")
+            print("Added remote video track \( self.remoteVideoTrack?.trackId)")
         }
 
         if let audioTrack = receiver.track as? RTCAudioTrack {
             self.remoteAudioTrack = audioTrack as RTCAudioTrack
-            print("Added remote audio track \(self.remoteVideoTrack!.trackId)")
+            print("Added remote audio track \(self.remoteVideoTrack?.trackId)")
         }
     }
 }
@@ -218,14 +218,14 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         initalize.direction = .sendOnly
         transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
         transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
- 
+        
         DispatchQueue.main.async {
-            Model.shared.localAudioTrackId = self.transceiverAudio!.sender.track!.trackId
-            Model.shared.localVideoTrackId = self.transceiverVideo!.sender.track!.trackId
+            Model.shared.localAudioTrackId = self.localAudioTrack!.trackId
+            Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
         }
         do{
-            let sdp = await try  peerConnection?.offer(for: constraint)
-            await try peerConnection?.setLocalDescription(sdp!)
+            let sdp = try await peerConnection?.offer(for: constraint)
+            try await peerConnection?.setLocalDescription(sdp!)
             
             // call API Local Tracks
             var localTracks = [Calls.LocalTrack]()
@@ -246,17 +246,14 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
                 guard let sdpStr = newTracksResponse?.sessionDescription.sdp else{
                     return
                 }
-              let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
-              self.peerConnection!.setRemoteDescription(sdp){ error in
-                  print(error)
-              }
+                let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
+                self.peerConnection!.setRemoteDescription(sdp){ error in
+                    print(error)
+                }
             }
         }catch{
             print(error)
         }
-        
-        
-       
     }
     
     func renegotiate() async{
@@ -287,6 +284,10 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     
     func remoteTracks() async{
         print("Starting RemoteTracks")
+        print("Starting \(Model.shared.sessionIdRemote)")
+        print("Adding Audio Track \(Model.shared.trackIdAudioRemote)")
+        print("Adding Video Track \(Model.shared.trackIdVideoRemote)")
+       
         var tracks = [Calls.RemoteTrack]()
         let trackAudio = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName:Model.shared.trackIdAudioRemote)
         tracks.append(trackAudio)
