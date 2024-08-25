@@ -29,6 +29,7 @@ class Model : ObservableObject{
     @Published var signalIndicator = "❌"
     @Published var hasSDPLocal = "❌"
     @Published var hasSDPRemote = "❌"
+    @Published var sdpRemote = ""
     @Published var audioInDevices = [ADevice]()
     @Published var audioOutDevices = [ADevice]()
     @Published var videoDevices = [ADevice]()
@@ -68,7 +69,7 @@ class Model : ObservableObject{
     @Published var videoHeight :CGFloat = 0
     
     var webRtcClient =  WebRTC_Client() // left
-    
+
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{
             if d.name == name{
