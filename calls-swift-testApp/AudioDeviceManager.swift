@@ -16,6 +16,10 @@ class AudioDevices{
     init(deviceID:AudioDeviceID) {
         self.audioDeviceID = deviceID
     }
+    
+    func setup(){
+        
+    }
 
     var hasInput: Bool {
         get {
@@ -183,6 +187,10 @@ class AudioDeviceFinder {
 }
 
 class AudioDeviceManager{
+    
+    func setup(){
+        
+    }
 
     func setupAudio(){
         requestMicrophonePermission(){ hasPermission in

@@ -100,10 +100,13 @@ struct ContentView: View {
             Divider()
             
             if isHidden{
-                HStack{
+                ZStack{
                     GeometryReader{ g in
-                        MeView(width:g.size.width / 2)
-                        YouView(width:g.size.width / 2).onAppear(){
+                        let width = g.size.width / 2 - 2
+                        MeView(width:width).frame(width:width).offset(x:0)
+                        Divider().frame(width:2)
+                        YouView(width:width).frame(width:width).offset(x:width)
+                            .onAppear(){
                             Model.shared.videoWidth = g.size.width / 2
                             Model.shared.videoHeight = g.size.height
                         }
@@ -181,7 +184,7 @@ struct ContentView: View {
             
         }.padding()
         .onAppear(){
-         
+  
             
             STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!

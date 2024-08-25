@@ -37,8 +37,6 @@ class Model : ObservableObject{
     @Published var audioOutDevice = ""
     @Published var camera = ""
     @Published var isConnected = false
-
-    @Published var sdpLocal : String = ""
     @Published var currentstate = States.COLD
     
 #if os(macOS)

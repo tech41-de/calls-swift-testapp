@@ -81,7 +81,7 @@ class STM{
         
         case .NEW_SESSION:
             Task{
-               await m.webRtcClient.newSession(sdp: m.sdpLocal)
+               await m.webRtcClient.newSession()
             }
             break
             

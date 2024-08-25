@@ -113,7 +113,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
                 let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
                 let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
                 return width1 < width2
-            }).last,
+            }).first,
         
             // choose highest fps? TODO choose
             let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
@@ -123,11 +123,11 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
         do{
             try await capturer.startCapture(with: camera!, format: format, fps: Int(fps.maxFrameRate))
+            videoCapturer = capturer
         }catch{
             print(error)
         }
         localVideoTrack!.add(Model.shared.meView)
-        videoCapturer = capturer
     }
     
     func setupPeer() async{
@@ -152,7 +152,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
             let sdp = try await peerConnection.offer(for: constraint)
             try await peerConnection.setLocalDescription(sdp)
             DispatchQueue.main.async {
-                Model.shared.sdpLocal = sdp.sdp
                 Model.shared.hasSDPLocal = "✅"
                 STM.shared.exec(state: .NEW_SESSION)
             }
@@ -162,51 +161,48 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         }
     }
     
-    func newSession(sdp:String) async{
+    func newSession() async{
         print("Starting newSession")
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
-        peerConnection?.offer(for: c){sdp,_ in
-            Task{
-                do{
-                    try await self.peerConnection!.setLocalDescription(sdp!);
-                    await Model.shared.api.newSession(sdp: sdp!.sdp){ [self] sessionId, sdp, error in
-                        DispatchQueue.main.async {
-                            Model.shared.sessionId = sessionId
-                            Model.shared.hasSDPRemote = "✅"
-                        }
-                        let desc = RTCSessionDescription(type: .answer , sdp: sdp)
+        do{
+            let sdp = try await peerConnection!.offer(for: c)
+            try await self.peerConnection!.setLocalDescription(sdp);
+            await Model.shared.api.newSession(sdp: sdp.sdp){ [self] sessionId, sdp, error in
+                DispatchQueue.main.async {
+                    Model.shared.sessionId = sessionId
+                    Model.shared.hasSDPRemote = "✅"
+                }
+                let desc = RTCSessionDescription(type: .answer , sdp: sdp)
+                Task{
+                    do{
+                        try await peerConnection!.setRemoteDescription(desc);
                         Task{
-                            do{
-                                try await peerConnection!.setRemoteDescription(desc);
-                                Task{
-                                    var counter = 5
-                                    while(!Model.shared.isConnected && counter > 0 ){
-                                        try await Task.sleep(nanoseconds: UInt64(1 * Double(NSEC_PER_SEC)))
-                                        counter -= 1
-                                    }
-                                    if counter > 0{
-                                        STM.shared.exec(state: .NEW_LOCAL_TRACKS)
-                                    }else{
-                                        print("timeout conneting to STUN, check Internet connection")
-                                    }
-                                }
-                            }catch{
-                                print(error)
+                            var counter = 5
+                            while(!Model.shared.isConnected && counter > 0 ){
+                                try await Task.sleep(nanoseconds: UInt64(1 * Double(NSEC_PER_SEC)))
+                                counter -= 1
+                            }
+                            if counter > 0{
+                                STM.shared.exec(state: .NEW_LOCAL_TRACKS)
+                            }else{
+                                print("timeout conneting to STUN, check Internet connection")
                             }
                         }
+                    }catch{
+                        print(error)
                     }
-                }catch{
-                    print(error)
                 }
             }
+        }catch{
+            print(error)
         }
     }
-    
+  
     func localTracks() async{
         print("Starting LocalTracks")
         // remove the temp audio rack
-        let sender = peerConnection?.transceivers.first?.sender
-        peerConnection!.removeTrack(sender!)
+       // let sender = peerConnection?.transceivers.first?.sender
+       // peerConnection!.removeTrack(sender!)
         
         let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
@@ -224,7 +220,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         }
         do{
             let sdp = try await peerConnection!.offer(for: constraint)
-            try await peerConnection?.setLocalDescription(sdp)
+            try await peerConnection!.setLocalDescription(sdp)
             
             // call API Local Tracks
             var localTracks = [Calls.LocalTrack]()

@@ -18,7 +18,6 @@ struct MeView : NSViewRepresentable{
     }
     
     func makeNSView(context: Context) ->RTCMTLNSVideoView{
-       // Model.shared.meView.setSize(CGSize(width:400, height:300))
         return Model.shared.meView
     }
     
@@ -32,11 +31,10 @@ struct MeView : UIViewRepresentable{
     var width:CGFloat = 0
     
     init(width:CGFloat){
-       // Model.shared.meView.setSize(CGSize(width:400, height:300))
+        self.width = width
     }
     
     func makeUIView(context: Context) ->RTCMTLVideoView{
-       // Model.shared.meView.setSize(CGSize(width:400, height:300))
         return Model.shared.meView
     }
     
