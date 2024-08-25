@@ -106,7 +106,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     func setupStream() async{
         let videoSource = WebRTC_Client.factory.videoSource()
         videoLocalId = "v_" + UUID().uuidString
-        
         localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: videoLocalId)
         let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
         guard let frontCamera = camera,
@@ -127,8 +126,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         }catch{
             print(error)
         }
-        self.localVideoTrack?.add(Model.shared.meView)
-        self.videoCapturer = capturer
+        localVideoTrack!.add(Model.shared.meView)
+        videoCapturer = capturer
     }
     
     func setupPeer() async{
@@ -224,8 +223,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
             Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
         }
         do{
-            let sdp = try await peerConnection?.offer(for: constraint)
-            try await peerConnection?.setLocalDescription(sdp!)
+            let sdp = try await peerConnection!.offer(for: constraint)
+            try await peerConnection?.setLocalDescription(sdp)
             
             // call API Local Tracks
             var localTracks = [Calls.LocalTrack]()
@@ -233,9 +232,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
             let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
             localTracks.append(trAudio)
             localTracks.append(trVideo)
-            let desc = Calls.SessionDescription( type:"offer",  sdp:sdp!.sdp)
+            let desc = Calls.SessionDescription( type:"offer",  sdp:sdp.sdp)
             let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
-            
             // New Track API Request!
             await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
                 if(error.count > 0)

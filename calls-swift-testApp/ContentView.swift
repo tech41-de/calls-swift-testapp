@@ -106,8 +106,6 @@ struct ContentView: View {
                         YouView(width:g.size.width / 2).onAppear(){
                             Model.shared.videoWidth = g.size.width / 2
                             Model.shared.videoHeight = g.size.height
-                            print(Model.shared.videoWidth)
-                            print(Model.shared.videoHeight )
                         }
                     }
                 }.frame(maxHeight:300)
@@ -139,8 +137,6 @@ struct ContentView: View {
                 Text("Remote Tracks")
                 Button("Set Remote Tracks"){
                     Model.shared.sessionIdRemote = sessionIdRemote
-                    print(sessionIdRemote)
-                    print(Model.shared.sessionIdRemote)
                     Model.shared.trackIdAudioRemote = trackIdAudioRemote
                     Model.shared.trackIdVideoRemote = trackIdVideoRemote
 

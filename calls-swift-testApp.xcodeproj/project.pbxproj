@@ -18,7 +18,6 @@
 		407886352C772BFF0071FE5F /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886342C772BFF0071FE5F /* YouView.swift */; };
 		407886372C772C150071FE5F /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886362C772C150071FE5F /* MeView.swift */; };
 		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
-		4078863B2C773A9D0071FE5F /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078863A2C773A9D0071FE5F /* MainController.swift */; };
 		408488B02C784ED0003197F1 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 408488AF2C784ED0003197F1 /* WebRTC */; };
 		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
 		4093E9052C79B71F0007618E /* STM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9042C79B71F0007618E /* STM.swift */; };
@@ -53,7 +52,6 @@
 		407886342C772BFF0071FE5F /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
 		407886362C772C150071FE5F /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
 		407886382C7733550071FE5F /* Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
-		4078863A2C773A9D0071FE5F /* MainController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4093E9042C79B71F0007618E /* STM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STM.swift; sourceTree = "<group>"; };
 		4093E9062C79D2510007618E /* WebRTC_Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTC_Client.swift; sourceTree = "<group>"; };
@@ -97,7 +95,6 @@
 				407886092C770F790071FE5F /* Preview Content */,
 				4078861E2C7711540071FE5F /* Main.swift */,
 				407886182C7710E60071FE5F /* ContentView.swift */,
-				4078863A2C773A9D0071FE5F /* MainController.swift */,
 				407886382C7733550071FE5F /* Controller.swift */,
 				407886232C7717F10071FE5F /* Global.swift */,
 				407886272C771DD10071FE5F /* Model.swift */,
@@ -206,7 +203,6 @@
 				4093E9072C79D2510007618E /* WebRTC_Client.swift in Sources */,
 				407886352C772BFF0071FE5F /* YouView.swift in Sources */,
 				4093E9052C79B71F0007618E /* STM.swift in Sources */,
-				4078863B2C773A9D0071FE5F /* MainController.swift in Sources */,
 				407886372C772C150071FE5F /* MeView.swift in Sources */,
 				4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */,
 				407886282C771DD10071FE5F /* Model.swift in Sources */,
