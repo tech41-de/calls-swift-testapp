@@ -7,7 +7,6 @@
 
 import SwiftUI
 import AVFoundation
-
 import WebRTC
 import Calls_Swift
 
@@ -17,9 +16,16 @@ struct ADevice : Hashable{
 }
 
 class Model : ObservableObject{
+    
+    private init(){
+        youView.videoContentMode = .scaleAspectFit
+        meView.videoContentMode = .scaleAspectFit
+    }
+    
     let api = Calls()
     
     static let shared = Model()
+    @Published var hasRemoteTracks = "❌"
     @Published var signalIndicator = "❌"
     @Published var hasSDPLocal = "❌"
     @Published var hasSDPRemote = "❌"
@@ -30,9 +36,8 @@ class Model : ObservableObject{
     @Published var audioOutDevice = ""
     @Published var camera = ""
     @Published var isConnected = false
-    @Published var webRtcClientA : WebRTCClient?
+
     @Published var sdpLocal : String = ""
-    @Published var webRtcClient = WebRTC_Client()
     @Published var currentstate = States.COLD
     
 #if os(macOS)
@@ -47,14 +52,11 @@ class Model : ObservableObject{
 
     @Published var midLocalVideo =  ""
     @Published var midLocalAudio =  ""
-    
-    @Published var mainController : MainController?
     @Published var sessionId = ""
     @Published var hasConfig = false
     @Published var isLoggedOn = false
     @Published var errorMsg = ""
  
-    
     @Published var localVideoTrackId = ""
     @Published var localAudioTrackId = ""
     
@@ -64,6 +66,8 @@ class Model : ObservableObject{
     
     @Published var videoWidth : CGFloat = 0
     @Published var videoHeight :CGFloat = 0
+    
+    var webRtcClient =  WebRTC_Client() // left
     
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{

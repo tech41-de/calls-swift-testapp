@@ -11,8 +11,15 @@ import WebRTC
 
 #if os(macOS)
 struct YouView : NSViewRepresentable{
+    
+    var width:CGFloat = 0
+    
+    init(width:CGFloat){
+        self.width = width
+    }
+    
     func makeNSView(context: Context) ->RTCMTLNSVideoView{
-        //Model.shared.youView.setSize(CGSize(width:150, height:150))
+        //Model.shared.meView.setSize(CGSize(width:400, height:300))
         return Model.shared.youView
     }
     
@@ -22,8 +29,15 @@ struct YouView : NSViewRepresentable{
 }
 #else
 struct YouView : UIViewRepresentable{
+    
+    var width:CGFloat = 0
+    
+    init(width:CGFloat){
+        self.width = width
+    }
+    
     func makeUIView(context: Context) ->RTCMTLVideoView{
-        //Model.shared.youView.setSize(CGSize(width:150, height:150))
+      //  Model.shared.meView.setSize(CGSize(width:400, height:300))
         return Model.shared.youView
     }
     

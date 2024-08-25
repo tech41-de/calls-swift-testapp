@@ -60,8 +60,11 @@ class STM{
             break
             
         case .VIDEOO_SETUP:
-            VideoDeviceManager().setup()
-            exec(state: .START_STREAM)
+            DispatchQueue.main.async { [self] in
+                VideoDeviceManager().setup()
+                exec(state: .START_STREAM)
+            }
+           
             break
             
         case .START_STREAM:
@@ -72,7 +75,7 @@ class STM{
 
         case .START_SESSION:
             Task{
-                m.webRtcClient.setupPeer()
+                await m.webRtcClient.setupPeer()
             }
             break
         

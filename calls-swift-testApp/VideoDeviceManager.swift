@@ -10,6 +10,7 @@ import AVFoundation
 
 class VideoDeviceManager{
     
+    @MainActor
     func setup(){
         findDevices() 
     }
@@ -36,6 +37,7 @@ class VideoDeviceManager{
         return nil
     }
     
+    @MainActor
     func findDevices() {
         AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
             if !isAuthorized {
@@ -58,6 +60,7 @@ class VideoDeviceManager{
 #endif
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
         print("Video devices found \(devices.devices.count)")
+        
         Model.shared.videoDevices.removeAll()
         for device in devices.devices {
             Model.shared.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))

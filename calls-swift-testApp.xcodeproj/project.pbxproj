@@ -15,7 +15,6 @@
 		407886282C771DD10071FE5F /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886272C771DD10071FE5F /* Model.swift */; };
 		4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886292C771FAD0071FE5F /* VideoDeviceManager.swift */; };
 		4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4078862B2C7720680071FE5F /* AudioDeviceManager.swift */; };
-		407886332C7729930071FE5F /* WebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886322C7729930071FE5F /* WebRTCClient.swift */; };
 		407886352C772BFF0071FE5F /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886342C772BFF0071FE5F /* YouView.swift */; };
 		407886372C772C150071FE5F /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886362C772C150071FE5F /* MeView.swift */; };
 		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
@@ -51,7 +50,6 @@
 		407886272C771DD10071FE5F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		407886292C771FAD0071FE5F /* VideoDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDeviceManager.swift; sourceTree = "<group>"; };
 		4078862B2C7720680071FE5F /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
-		407886322C7729930071FE5F /* WebRTCClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebRTCClient.swift; sourceTree = "<group>"; };
 		407886342C772BFF0071FE5F /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
 		407886362C772C150071FE5F /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
 		407886382C7733550071FE5F /* Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
@@ -110,7 +108,6 @@
 				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
 				4093E9042C79B71F0007618E /* STM.swift */,
 				4093E9062C79D2510007618E /* WebRTC_Client.swift */,
-				407886322C7729930071FE5F /* WebRTCClient.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -211,7 +208,6 @@
 				4093E9052C79B71F0007618E /* STM.swift in Sources */,
 				4078863B2C773A9D0071FE5F /* MainController.swift in Sources */,
 				407886372C772C150071FE5F /* MeView.swift in Sources */,
-				407886332C7729930071FE5F /* WebRTCClient.swift in Sources */,
 				4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */,
 				407886282C771DD10071FE5F /* Model.swift in Sources */,
 				407886242C7717F10071FE5F /* Global.swift in Sources */,

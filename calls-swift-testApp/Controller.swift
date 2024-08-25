@@ -30,7 +30,7 @@ class Controller{
 #else
         AudioDeviceManager().setInputDevice(name: name)
 #endif
-        Model.shared.webRtcClientA!.updateAudioInputDevice()
+
     }
     
     func updateAudioOutputDevice(name:String){
@@ -44,6 +44,6 @@ class Controller{
 #else
         AudioDeviceManager().setOutputDevice(name: name)
 #endif
-        Model.shared.webRtcClientA!.updateAudioOutputDevice()
+       
     }
 }

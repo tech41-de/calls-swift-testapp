@@ -48,12 +48,12 @@ struct ContentView: View {
     @State private var isConnected = "❌"
     @State private var hasConfig = "❌"
     @State private var isLoggedOn = "❌"
-    @State var errorMsg = ""
+    @State var hasRemoteTracks = "❌"
     @State var sessionId = ""
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
-    
+
     func videoInChanged(_ tag: String) {
         m.camera = tag
         UserDefaults.standard.set(tag, forKey: "videoIn")
@@ -66,36 +66,21 @@ struct ContentView: View {
     func audioOutChanged(_ tag: String) {
         Controller.shared.updateAudioOutputDevice(name: tag)
     }
-    
-    func setupWebRTC(){
-        Model.shared.mainController = MainController( webRTCClient: Model.shared.webRtcClientA!)
-        
-#if os(macOS)
-        let remoteRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
-        let localRenderer = RTCMTLNSVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
-#else
-        let remoteRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
-        let localRenderer = RTCMTLVideoView(frame: CGRect(x:0,y:0, width:Model.shared.videoWidth, height:Model.shared.videoWidth * 9 / 15))
-#endif
-        Model.shared.youView.addSubview(remoteRenderer)
-        Model.shared.meView.addSubview(localRenderer)
-       // Model.shared.webRtcClientA!.startCaptureLocalVideo(renderer: localRenderer)
-        //Model.shared.webRtcClientA!.renderRemoteVideo(to: remoteRenderer)
-    }
-     
+
     var body: some View {
+        let fontSize:CGFloat = 9
         VStack(alignment: .leading, spacing:5){
-            Text("\(errorMsg)").foregroundStyle(.red)
             HStack{
-                let fontSize:CGFloat = 9
+                Button(isHidden ? "show config" : "hide config"){
+                    isHidden = !isHidden
+                    defaults.set(isHidden, forKey: "isHidden")
+                }.buttonStyle(MyButtonStyle())
                 Text("\(hasSDPLocal)").font(.system(size: fontSize))
                 Text("\(hasSDPRemote)").font(.system(size: fontSize))
                 Text("\(isConnected)").font(.system(size: fontSize))
+                Text("\(hasRemoteTracks)").font(.system(size: fontSize))
             }
-            Button(isHidden ? "show config" : "hide config"){
-                isHidden = !isHidden
-                defaults.set(isHidden, forKey: "isHidden")
-            }.buttonStyle(MyButtonStyle())
+           
             if !isHidden{
                 VStack {
                     Text("Cloudflare Calls Configuration ")
@@ -114,19 +99,18 @@ struct ContentView: View {
             }
             Divider()
             
-            HStack{
-                MeView()
-                GeometryReader{ g in
-                    YouView().onAppear(){
-                        Model.shared.videoWidth = g.size.width
-                        Model.shared.videoHeight = g.size.height
-                        
-                        // we simulate two peers
-                        Model.shared.webRtcClientA = WebRTCClient(iceServers: [Global.STUN_SERVER], id:0) // left
-                        //Model.shared.webRtcClientB = WebRTCClient(iceServers: [Global.STUN_SERVER], id:1) // right
-                        setupWebRTC()
+            if isHidden{
+                HStack{
+                    GeometryReader{ g in
+                        MeView(width:g.size.width / 2)
+                        YouView(width:g.size.width / 2).onAppear(){
+                            Model.shared.videoWidth = g.size.width / 2
+                            Model.shared.videoHeight = g.size.height
+                            print(Model.shared.videoWidth)
+                            print(Model.shared.videoHeight )
+                        }
                     }
-                }
+                }.frame(maxHeight:300)
             }
 
             VStack{
@@ -177,8 +161,6 @@ struct ContentView: View {
                     Text("Track ID Video")
                 }
             }.padding(5).border(.gray, width: 1)
-            
-            TextField("Debug", text: $debugStr,  axis: .vertical).lineLimit(5...10)
             Spacer()
             
             HStack(){
@@ -203,6 +185,8 @@ struct ContentView: View {
             
         }.padding()
         .onAppear(){
+         
+            
             STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
@@ -218,9 +202,9 @@ struct ContentView: View {
             hasSDPRemote = m.hasSDPRemote
             isConnected = m.isConnected ? "✅" : "❌"
             isLoggedOn = m.isLoggedOn ? "✅" : "❌"
-            errorMsg = m.errorMsg
             localVideoTrackId = m.localVideoTrackId
             localAudioTrackId = m.localAudioTrackId
+            hasRemoteTracks = m.hasRemoteTracks
           }
     }
 }
