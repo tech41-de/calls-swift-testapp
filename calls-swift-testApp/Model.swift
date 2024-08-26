@@ -13,13 +13,16 @@ import Calls_Swift
 struct ADevice : Hashable{
     var uid = ""
     var name = ""
+    var id :UInt32 = 0
 }
 
 class Model : ObservableObject{
     
     private init(){
+        #if os(iOS) 
         youView.videoContentMode = .scaleAspectFit
         meView.videoContentMode = .scaleAspectFit
+        #endif
     }
     
     let api = Calls()
@@ -38,6 +41,7 @@ class Model : ObservableObject{
     @Published var camera = ""
     @Published var isConnected = false
     @Published var currentstate = States.COLD
+
     
 #if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
@@ -47,6 +51,8 @@ class Model : ObservableObject{
 #else
     @Published var youView = RTCMTLVideoView()
     @Published var meView = RTCMTLVideoView()
+    @Published var audioInputDefaultDevice :UInt32  = 0
+    @Published var audioOutputDefaultDevice:UInt32  = 0
 #endif
 
     @Published var midLocalVideo =  ""

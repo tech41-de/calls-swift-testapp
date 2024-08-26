@@ -10,7 +10,6 @@ import SwiftUI
 class Controller{
     static let shared = Controller()
     
-    
     func OfferSDP(){
        // WebRtcProxy.shared.mainViewController?.offerSDP()
     }
@@ -25,12 +24,7 @@ class Controller{
         }
         Model.shared.audioInDevice = name
         UserDefaults.standard.set(name, forKey: "audioIn")
-#if os(macOS)
-        AudioDeviceManager().setInputDevice(uid: device.uid)
-#else
-        AudioDeviceManager().setInputDevice(name: name)
-#endif
-
+        AudioDeviceManager().setInputDevice(uid: device.id)
     }
     
     func updateAudioOutputDevice(name:String){
@@ -39,11 +33,6 @@ class Controller{
         }
         Model.shared.audioOutDevice = name
         UserDefaults.standard.set(name, forKey: "audioOut")
-#if os(macOS)
-        AudioDeviceManager().setOutputDevice(uid: device.uid)
-#else
-        AudioDeviceManager().setOutputDevice(name: name)
-#endif
-       
+        AudioDeviceManager().setOutputDevice(uid: device.id)
     }
 }
