@@ -103,7 +103,7 @@ struct ContentView: View {
                 ZStack{
                     GeometryReader{ g in
                         let width = g.size.width / 2 - 2
-                        MeView(width:width).frame(width:width).offset(x:0)
+                        MeView(width:width).scaleEffect(x: -1, y: 1).frame(width:width).offset(x:0)
                         Divider().frame(width:2)
                         YouView(width:width).frame(width:width).offset(x:width)
                             .onAppear(){

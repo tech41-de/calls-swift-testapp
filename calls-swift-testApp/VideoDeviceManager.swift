@@ -7,12 +7,41 @@
 
 import Foundation
 import AVFoundation
+import WebRTC
 
 class VideoDeviceManager{
     
     @MainActor
     func setup(){
         findDevices() 
+    }
+    
+    func chooseFormat(device : AVCaptureDevice, width:CGFloat,fps :Int)-> (AVCaptureDevice.Format?, Int){
+        let formats = (RTCCameraVideoCapturer.supportedFormats(for: device).sorted { (f1, f2) -> Bool in
+            let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
+            let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
+            return width1 < width2
+        })
+        
+        for f in formats{
+            print(f)
+            let w = CMVideoFormatDescriptionGetDimensions(f.formatDescription).width
+            print(w)
+            if w >= Int(width){
+                let franges = f.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }
+                print(franges.count)
+                for fr in franges{
+                    print(fr)
+                    if Int(fr.maxFrameRate) >= fps && Int(fr.minFrameRate) <= fps{
+                        return (f,fps)
+                    }else{
+                        return (f,Int(fr.maxFrameRate))
+                    }
+                }
+                break
+            }
+        }
+        return (nil,0)
     }
     
     func getDevice(name:String) ->AVCaptureDevice?{ // .continuityCamera .external

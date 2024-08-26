@@ -41,6 +41,7 @@ class Model : ObservableObject{
     @Published var camera = ""
     @Published var isConnected = false
     @Published var currentstate = States.COLD
+    @Published var disableVideo = false
 
     
 #if os(macOS)

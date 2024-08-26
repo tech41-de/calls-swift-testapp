@@ -28,7 +28,6 @@ extension WebRTC_Client {
 }
 
 class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
-    
     private var videoCapturer: RTCVideoCapturer?
     private var localVideoTrack: RTCVideoTrack?
     private var localAudioTrack: RTCAudioTrack?
@@ -43,8 +42,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     }
     
     let constraint = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
-   // var haveFirstPeer = false
-    
+
     // RTCPeerConnectionDelegate
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
         print("peerConnectionShouldNegotiate")
@@ -72,7 +70,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
         print("didChange RTCIceGatheringState")
     }
-    
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
         print("didGenerate RTCIceCandidate")
@@ -102,27 +99,21 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
     private var peerConnection: RTCPeerConnection?
     private var videoLocalId = ""
     
-    // Setsup Video Capture = no audio at that point
     func setupStream() async{
         let videoSource = WebRTC_Client.factory.videoSource()
         videoLocalId = "v_" + UUID().uuidString
         localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: videoLocalId)
-        let camera = VideoDeviceManager().getDevice(name: Model.shared.camera)
-        guard let frontCamera = camera,
-            let format = (RTCCameraVideoCapturer.supportedFormats(for: frontCamera).sorted { (f1, f2) -> Bool in
-                let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
-                let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
-                return width1 < width2
-            }).first,
-        
-            // choose highest fps? TODO choose
-            let fps = (format.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }.last) else {
+        let dm = VideoDeviceManager()
+        let camera = dm.getDevice(name: Model.shared.camera)
+        let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
+        if format == nil{
+            print("Could not select camera format")
+            Model.shared.disableVideo = true
             return
         }
-
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
         do{
-            try await capturer.startCapture(with: camera!, format: format, fps: Int(fps.maxFrameRate))
+            try await capturer.startCapture(with: camera!, format: format!, fps: fps)
             videoCapturer = capturer
         }catch{
             print(error)
@@ -200,10 +191,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
   
     func localTracks() async{
         print("Starting LocalTracks")
-        // remove the temp audio rack
-       // let sender = peerConnection?.transceivers.first?.sender
-       // peerConnection!.removeTrack(sender!)
-        
         let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
         localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
