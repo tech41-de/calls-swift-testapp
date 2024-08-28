@@ -27,15 +27,22 @@ extension WebRTC_Client {
     }
 }
 
-class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
+class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
+
     private var videoCapturer: RTCVideoCapturer?
     private var localVideoTrack: RTCVideoTrack?
     private var localAudioTrack: RTCAudioTrack?
+    private var LocalDataChannel: RTCDataChannel?
+    
     private var remoteAudioTrack: RTCAudioTrack?
     private var remoteVideoTrack: RTCVideoTrack?
     
+    private var localDataChannel: RTCDataChannel?
+    private var remoteDataChannel: RTCDataChannel?
+    
     var transceiverAudio : RTCRtpTransceiver?
     var transceiverVideo : RTCRtpTransceiver?
+    var transceiverData : RTCRtpTransceiver?
     
     override init(){
         super.init()
@@ -88,6 +95,21 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         print("didOpen RTCDataChannel")
     }
     // End of RTCPeerConnectionDelegate
+    
+    // RTCPDataChannelDelegate
+    func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
+        print("dataChannelDidChangeState")
+    }
+    
+    func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
+        print("RTCDataChannel didReceiveMessageWith")
+    }
+    // End of RTCPDataChannelDelegate
+    
+    func sendData(_ data: Data) {
+        let buffer = RTCDataBuffer(data: data, isBinary: true)
+        self.remoteDataChannel?.sendData(buffer)
+    }
     
     private static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
@@ -195,15 +217,25 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
         localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
         
+        let dataChannelId = "d_" + UUID().uuidString
+        let dataChannelConfig = RTCDataChannelConfiguration()
+        dataChannelConfig.channelId = 0
+        dataChannelConfig.isOrdered = true
+        dataChannelConfig.isNegotiated = true
+        dataChannelConfig.maxPacketLifeTime = 2
+        dataChannelConfig.maxRetransmits = 5
+        localDataChannel = self.peerConnection!.dataChannel(forLabel: dataChannelId , configuration: dataChannelConfig)
+        localDataChannel?.delegate = self
         // buildl tranceivers
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .sendOnly
         transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
         transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
-        
+
         DispatchQueue.main.async {
             Model.shared.localAudioTrackId = self.localAudioTrack!.trackId
             Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
+            Model.shared.localDataChannelId = dataChannelId
         }
         do{
             let sdp = try await peerConnection!.offer(for: constraint)
@@ -213,8 +245,12 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
             var localTracks = [Calls.LocalTrack]()
             let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
             let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
+            let trData = Calls.LocalTrack(location: "local", mid: "3", trackName:dataChannelId)
+     
+            
             localTracks.append(trAudio)
             localTracks.append(trVideo)
+            localTracks.append(trData)
             let desc = Calls.SessionDescription( type:"offer",  sdp:sdp.sdp)
             let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
             // New Track API Request!
@@ -232,6 +268,24 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
                     print(error)
                 }
             }
+        }catch{
+            print(error)
+        }
+    }
+    
+    func getOfffer(completion:  @escaping (_ sdp:RTCSessionDescription? )->()) async{
+        do{
+            let sdp = try await self.peerConnection?.offer(for: constraint)
+            completion(sdp)
+        }catch{
+            print(error)
+        }
+    }
+    
+    func getAnswer(completion:  @escaping (_ sdp:RTCSessionDescription? )->()) async{
+        do{
+            let sdp = try await self.peerConnection?.answer(for: constraint)
+            completion(sdp)
         }catch{
             print(error)
         }
@@ -256,7 +310,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         
         // API call Renegotiate
         let sdp = peerConnection?.localDescription
-        let n = Calls.NewReq(sdp: sdp!.sdp, type: "answer")
+        let n = Calls.SessionDescription( type: "answer", sdp: sdp!.sdp)
         let newDesc = Calls.NewDesc(sessionDescription: n)
         await Model.shared.api.renegotiate(sessionId: Model.shared.sessionId, sdp:newDesc){ res in
             Model.shared.hasRemoteTracks = "✅"
@@ -275,6 +329,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate{
         
         let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.trackIdVideoRemote)
         tracks.append(trackVideo)
+        
+        let trackData = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.remoteDataChannelId)
+        tracks.append(trackData)
         
         let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
         

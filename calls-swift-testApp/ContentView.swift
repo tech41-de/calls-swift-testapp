@@ -7,6 +7,7 @@
 
 import SwiftUI
 import WebRTC
+import Calls_Swift
 
 struct MyButtonStyle: ButtonStyle {
     func makeBody(configuration: Self.Configuration) -> some View {
@@ -42,14 +43,20 @@ struct ContentView: View {
     @State var appSecret = ""
     @State var isHidden = false
     @State var debugStr = ""
-    @State private var signal = "❌"
-    @State private var hasSDPLocal = "❌"
-    @State private var hasSDPRemote = "❌"
-    @State private var isConnected = "❌"
-    @State private var hasConfig = "❌"
-    @State private var isLoggedOn = "❌"
+    @State var signal = "❌"
+    @State var hasSDPLocal = "❌"
+    @State var hasSDPRemote = "❌"
+    @State var isConnected = "❌"
+    @State var hasConfig = "❌"
+    @State var isLoggedOn = "❌"
     @State var hasRemoteTracks = "❌"
     @State var sessionId = ""
+    @State var remoteDataChannelId = ""
+    @State var localDataChannelId = ""
+    @State var trackMid = ""
+    @State var sessionData = ""
+    @State var sessionIdRemoteData = ""
+    @State var isSignalConnectd = "❌"
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
@@ -70,11 +77,15 @@ struct ContentView: View {
     var body: some View {
         let fontSize:CGFloat = 9
         VStack(alignment: .leading, spacing:5){
+            
+            // Configuration
             HStack{
                 Button(isHidden ? "show config" : "hide config"){
                     isHidden = !isHidden
                     defaults.set(isHidden, forKey: "isHidden")
                 }.buttonStyle(MyButtonStyle())
+                
+                Text("\(isSignalConnectd)").font(.system(size: fontSize))
                 Text("\(hasSDPLocal)").font(.system(size: fontSize))
                 Text("\(hasSDPRemote)").font(.system(size: fontSize))
                 Text("\(isConnected)").font(.system(size: fontSize))
@@ -99,6 +110,7 @@ struct ContentView: View {
             }
             Divider()
             
+            // Video Views
             if isHidden{
                 ZStack{
                     GeometryReader{ g in
@@ -114,6 +126,7 @@ struct ContentView: View {
                 }.frame(maxHeight:300)
             }
 
+            // Tracks
             VStack{
                 Text("Local Tracks")
                 Button("Start new session"){
@@ -134,14 +147,21 @@ struct ContentView: View {
                     Text("Track ID Video")
                 }
                 
+                HStack{
+                    TextField("Track Id Data Local", text: $localDataChannelId).textSelection(.enabled)
+                    Text("Track ID Data")
+                }
+                
             }.padding(5).border(.gray, width: 1)
       
+            // Remote
             VStack{
                 Text("Remote Tracks")
                 Button("Set Remote Tracks"){
                     Model.shared.sessionIdRemote = sessionIdRemote
                     Model.shared.trackIdAudioRemote = trackIdAudioRemote
                     Model.shared.trackIdVideoRemote = trackIdVideoRemote
+                    Model.shared.remoteDataChannelId = remoteDataChannelId
 
                     Task{
                         await m.webRtcClient.remoteTracks()
@@ -159,9 +179,99 @@ struct ContentView: View {
                     TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled)
                     Text("Track ID Video")
                 }
+                HStack{
+                    TextField("Track Id Remote Data", text: $remoteDataChannelId).textSelection(.enabled)
+                    Text("Track ID Data")
+                }
             }.padding(5).border(.gray, width: 1)
+            
+            // Data
+            VStack{
+                Text("Data Track")
+                HStack{
+                    Button("Send Data"){
+                        Task{
+                           m.webRtcClient.sendData("Café".data(using: .utf8)!)
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                }
+            }.padding(5).border(.gray, width: 1)
+            
+            // Session
+            HStack{
+                VStack{
+                    Text("Session")
+                    Button("Get Session"){
+                        if Model.shared.sessionId == ""{
+                            return
+                        }
+                        Task{
+                            await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
+                                if(error.count > 0){
+                                    print(error)
+                                    return
+                                }
+                                print(error)
+                                sessionData = ""
+                                for t in res!.tracks{
+                                    sessionData += "Track Id: " + t.trackName + " mid: " + t.mid + "\r\n"
+                                }
+                            }
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                    HStack{
+                        Text(sessionData)
+                    }
+                }.padding(5).border(.gray, width: 1)
+                Spacer()
+                
+                // Remove Track
+                VStack{
+                    Text("Close Track")
+                    Button("Close"){
+                        Task{
+                            
+                            await Model.shared.webRtcClient.getOfffer(){ sdp in
+                                Task{
+                                    let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
+                                    let local = Calls.ClosedTrack(mid: trackMid)
+                                    let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
+                                    await Model.shared.api.close(sessionId: Model.shared.sessionId, closeTracksRequest: closeTacksRequest){res, error in
+                                        if(error.count > 0){
+                                            print(error)
+                                            return
+                                        }
+                                        print(error)
+                                        for t in res!.tracks{
+                                            print(t)
+                                        }
+                                    }
+                                }
+                            }
+                            
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                    HStack{
+                        TextField("mid", text: $trackMid).textSelection(.enabled)
+                        Text("mid")
+                    }
+                }
+            }
+            
+            // Signal
+            VStack{
+                Text("Signal")
+                Button("Send"){
+                    Task{
+                        SignalClient.shared.send(msg:"hello")
+                    }
+                }.buttonStyle(MyButtonStyle())
+                
+            }.padding(5).border(.gray, width: 1)
+            
             Spacer()
             
+            // Footer
             HStack(){
                 Picker(selection: $m.camera.onChange(videoInChanged), label:Text("Camera")) {
                     ForEach(m.videoDevices, id: \.self) {
@@ -191,6 +301,7 @@ struct ContentView: View {
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!
             isHidden = defaults.bool(forKey: "isHidden")
+            SignalClient.shared.start()
         }
         .onReceive(timer) { input in
             let m = Model.shared
@@ -204,6 +315,8 @@ struct ContentView: View {
             localVideoTrackId = m.localVideoTrackId
             localAudioTrackId = m.localAudioTrackId
             hasRemoteTracks = m.hasRemoteTracks
+            localDataChannelId = m.localDataChannelId
+            isSignalConnectd = m.isSignalConnectd ? "✅" : "❌"
           }
     }
 }
