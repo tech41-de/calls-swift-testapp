@@ -11,6 +11,9 @@ import Starscream
 class SignalClient : WebSocketDelegate{
     
     static let shared = SignalClient()
+    let encoder = JSONEncoder()
+    let decoder = JSONDecoder()
+    
     private init(){
         
     }
@@ -20,6 +23,18 @@ class SignalClient : WebSocketDelegate{
     
     func handleError(_ error:Error?){
         print(error)
+    }
+    
+    func send(req: SignalReq){
+        do{
+            let data = try encoder.encode(req)
+            let str = String(decoding: data, as: UTF8.self)
+            send(msg:str)
+        }
+        catch{
+            print(error)
+        }
+        
     }
     
     func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
@@ -37,6 +52,18 @@ class SignalClient : WebSocketDelegate{
             
             case .text(let string):
                 print("Received text: \(string)")
+           
+            do{
+                let data = string.data(using: .utf8) // non-nil
+                let res = try decoder.decode(SignalRes.self, from: data!)
+                if res.cmd == "room" && res.session.sessionId != Model.shared.sessionId{
+                    Model.shared.sessionIdRemote = res.session.sessionId
+                    Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
+                    Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
+                }
+            }catch{
+                print(error)
+            }
             
             case .binary(let data):
                 print("Received data: \(data.count)")
@@ -67,7 +94,6 @@ class SignalClient : WebSocketDelegate{
     
     func send(msg:String){
         socket!.write(string: msg){
-            
         }
     }
     

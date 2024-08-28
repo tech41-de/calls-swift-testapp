@@ -263,7 +263,9 @@ struct ContentView: View {
                 Text("Signal")
                 Button("Send"){
                     Task{
-                        SignalClient.shared.send(msg:"hello")
+                        let session = Session(sessionId: Model.shared.sessionId, tracks:Model.shared.tracks, room: Model.shared.room)
+                        let req = SignalReq(cmd:"room" ,session:session )
+                        SignalClient.shared.send(req: req)
                     }
                 }.buttonStyle(MyButtonStyle())
                 
@@ -305,18 +307,24 @@ struct ContentView: View {
         }
         .onReceive(timer) { input in
             let m = Model.shared
-            sessionId = m.sessionId
+           
             hasConfig = m.hasConfig ? "✅" : "❌"
             signal = m.signalIndicator
             hasSDPLocal = m.hasSDPLocal
             hasSDPRemote = m.hasSDPRemote
             isConnected = m.isConnected ? "✅" : "❌"
             isLoggedOn = m.isLoggedOn ? "✅" : "❌"
-            localVideoTrackId = m.localVideoTrackId
-            localAudioTrackId = m.localAudioTrackId
             hasRemoteTracks = m.hasRemoteTracks
             localDataChannelId = m.localDataChannelId
             isSignalConnectd = m.isSignalConnectd ? "✅" : "❌"
+            
+            sessionId = m.sessionId
+            localVideoTrackId = m.localVideoTrackId
+            localAudioTrackId = m.localAudioTrackId
+            
+            sessionIdRemote = m.sessionIdRemote
+            trackIdAudioRemote = m.trackIdAudioRemote
+            trackIdVideoRemote = m.trackIdVideoRemote
           }
     }
 }

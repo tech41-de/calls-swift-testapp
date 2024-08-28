@@ -245,6 +245,10 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             var localTracks = [Calls.LocalTrack]()
             let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
             let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
+            
+            Model.shared.tracks.removeAll()
+            Model.shared.tracks.append(Track(trackId: transceiverAudio!.sender.track!.trackId, mid: transceiverAudio!.mid, type: "local"))
+            Model.shared.tracks.append(Track(trackId: transceiverVideo!.sender.track!.trackId, mid: transceiverVideo!.mid, type: "local"))
             let trData = Calls.LocalTrack(location: "local", mid: "3", trackName:dataChannelId)
      
             
