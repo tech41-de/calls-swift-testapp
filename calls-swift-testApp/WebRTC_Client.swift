@@ -43,6 +43,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     var transceiverAudio : RTCRtpTransceiver?
     var transceiverVideo : RTCRtpTransceiver?
     var transceiverData : RTCRtpTransceiver?
+
+    var dataChannelId = ""
     
     override init(){
         super.init()
@@ -217,7 +219,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
         localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
         
-        let dataChannelId = "d_" + UUID().uuidString
+        dataChannelId = "d_" + UUID().uuidString
         let dataChannelConfig = RTCDataChannelConfiguration()
         dataChannelConfig.channelId = 0
         dataChannelConfig.isOrdered = true
@@ -232,11 +234,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
         transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
 
-        DispatchQueue.main.async {
-            Model.shared.localAudioTrackId = self.localAudioTrack!.trackId
-            Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
-            Model.shared.localDataChannelId = dataChannelId
-        }
+        
         do{
             let sdp = try await peerConnection!.offer(for: constraint)
             try await peerConnection!.setLocalDescription(sdp)
@@ -245,13 +243,20 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             var localTracks = [Calls.LocalTrack]()
             let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
             let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
+
+            // update UI
+            DispatchQueue.main.async {
+                Model.shared.localAudioTrackId = self.localAudioTrack!.trackId
+                Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
+                Model.shared.localDataChannelId = self.dataChannelId
+                var tracks = [Track]()
+                tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
+                tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
+                tracks.append(Track(trackId: self.dataChannelId, mid: "3", type: "local"))
+                Model.shared.tracks = tracks
+            }
             
-            Model.shared.tracks.removeAll()
-            Model.shared.tracks.append(Track(trackId: transceiverAudio!.sender.track!.trackId, mid: transceiverAudio!.mid, type: "local"))
-            Model.shared.tracks.append(Track(trackId: transceiverVideo!.sender.track!.trackId, mid: transceiverVideo!.mid, type: "local"))
             let trData = Calls.LocalTrack(location: "local", mid: "3", trackName:dataChannelId)
-     
-            
             localTracks.append(trAudio)
             localTracks.append(trVideo)
             localTracks.append(trData)
@@ -271,6 +276,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 self.peerConnection!.setRemoteDescription(sdp){ error in
                     print(error)
                 }
+                
+                STM.shared.exec(state:.INVITE)
             }
         }catch{
             print(error)

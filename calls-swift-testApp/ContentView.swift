@@ -57,6 +57,7 @@ struct ContentView: View {
     @State var sessionData = ""
     @State var sessionIdRemoteData = ""
     @State var isSignalConnectd = "❌"
+    @State var room = "shack"
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
@@ -90,6 +91,8 @@ struct ContentView: View {
                 Text("\(hasSDPRemote)").font(.system(size: fontSize))
                 Text("\(isConnected)").font(.system(size: fontSize))
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
+                Spacer()
+                TextField("room", text: $room).disableAutocorrection(true)
             }
            
             if !isHidden{
@@ -130,6 +133,8 @@ struct ContentView: View {
             VStack{
                 Text("Local Tracks")
                 Button("Start new session"){
+                    Model.shared.room = room
+                    print(room)
                     STM.shared.exec(state: .START_SESSION)
                 } .buttonStyle(MyButtonStyle())
                 HStack{
@@ -162,10 +167,7 @@ struct ContentView: View {
                     Model.shared.trackIdAudioRemote = trackIdAudioRemote
                     Model.shared.trackIdVideoRemote = trackIdVideoRemote
                     Model.shared.remoteDataChannelId = remoteDataChannelId
-
-                    Task{
-                        await m.webRtcClient.remoteTracks()
-                    }
+                    Controller().setRemoteTracks()
                 }.buttonStyle(MyButtonStyle())
                 HStack{
                     TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
@@ -263,9 +265,7 @@ struct ContentView: View {
                 Text("Signal")
                 Button("Send"){
                     Task{
-                        let session = Session(sessionId: Model.shared.sessionId, tracks:Model.shared.tracks, room: Model.shared.room)
-                        let req = SignalReq(cmd:"room" ,session:session )
-                        SignalClient.shared.send(req: req)
+                        Controller.shared.sendInviteSignal()
                     }
                 }.buttonStyle(MyButtonStyle())
                 
@@ -296,18 +296,17 @@ struct ContentView: View {
             
         }.padding()
         .onAppear(){
-  
-            
             STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!
             isHidden = defaults.bool(forKey: "isHidden")
-            SignalClient.shared.start()
+            
         }
         .onReceive(timer) { input in
             let m = Model.shared
            
+            // flags
             hasConfig = m.hasConfig ? "✅" : "❌"
             signal = m.signalIndicator
             hasSDPLocal = m.hasSDPLocal
@@ -315,16 +314,19 @@ struct ContentView: View {
             isConnected = m.isConnected ? "✅" : "❌"
             isLoggedOn = m.isLoggedOn ? "✅" : "❌"
             hasRemoteTracks = m.hasRemoteTracks
-            localDataChannelId = m.localDataChannelId
             isSignalConnectd = m.isSignalConnectd ? "✅" : "❌"
             
+            // locals
             sessionId = m.sessionId
             localVideoTrackId = m.localVideoTrackId
             localAudioTrackId = m.localAudioTrackId
+            localDataChannelId = m.localDataChannelId
             
+            // remotes
             sessionIdRemote = m.sessionIdRemote
             trackIdAudioRemote = m.trackIdAudioRemote
             trackIdVideoRemote = m.trackIdVideoRemote
+            remoteDataChannelId = m.remoteDataChannelId
           }
     }
 }

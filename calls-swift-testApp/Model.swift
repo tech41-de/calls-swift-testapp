@@ -72,9 +72,10 @@ class Model : ObservableObject{
     @Published var sessionIdRemote = ""
     @Published var trackIdAudioRemote = ""
     @Published var trackIdVideoRemote = ""
+    
     @Published var videoWidth : CGFloat = 0
     @Published var videoHeight :CGFloat = 0
-    @Published var room = "thesroom"
+    @Published var room = ""
     @Published var tracks = [Track]()
     
     var webRtcClient =  WebRTC_Client() // left

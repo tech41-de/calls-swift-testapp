@@ -33,10 +33,13 @@ public struct Session: Codable{
 
 public struct SignalReq: Codable{
     public var cmd : String
+    public var receiver : String
     public var session :Session
     
-    public init(cmd : String, session : Session){
+    
+    public init(cmd : String, receiver:String, session : Session){
         self.cmd = cmd
+        self.receiver = receiver // empty if broadcast
         self.session = session
     }
 }

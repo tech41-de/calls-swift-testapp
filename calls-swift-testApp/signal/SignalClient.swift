@@ -56,10 +56,20 @@ class SignalClient : WebSocketDelegate{
             do{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
-                if res.cmd == "room" && res.session.sessionId != Model.shared.sessionId{
+                if res.cmd == "invite" && res.session.sessionId != Model.shared.sessionId{
                     Model.shared.sessionIdRemote = res.session.sessionId
                     Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
                     Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
+                    Model.shared.remoteDataChannelId = res.session.tracks[2].trackId
+                    Controller.shared.setRemoteTracks()
+                    Controller.shared.sendUpdateSignal(receiver: "")
+                }
+                if res.cmd == "update" && res.session.sessionId != Model.shared.sessionId{
+                    Model.shared.sessionIdRemote = res.session.sessionId
+                    Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
+                    Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
+                    Model.shared.remoteDataChannelId = res.session.tracks[2].trackId
+                    Controller.shared.setRemoteTracks()
                 }
             }catch{
                 print(error)
@@ -97,11 +107,19 @@ class SignalClient : WebSocketDelegate{
         }
     }
     
-    
-    func start(){
-       
-        var request = URLRequest(url: URL(string: "wss://api.pcalls.net/websocket")!)
-        //request.setValue(["wamp"].joined(separator: ","), forHTTPHeaderField: "Sec-WebSocket-Protocol")
+    // wss://api.pcalls.net/websocket
+    func invite(room:String){
+        var roomParsed = room.lowercased()
+        var shortStr : String.SubSequence
+        if roomParsed.count > 32{
+            let index = roomParsed.index(roomParsed.startIndex, offsetBy: 32)
+            shortStr = roomParsed.prefix(upTo: index)
+            roomParsed = (String(shortStr))
+        }
+        roomParsed = roomParsed.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
+        let uri = "wss://api.pcalls.net/v0/invite/" + roomParsed + "/websocket"
+        print(uri)
+        let request = URLRequest(url: URL(string: uri)!)
         socket = WebSocket(request:request)
         socket!.delegate = self
         socket!.connect()

@@ -18,6 +18,24 @@ class Controller{
         //WebRtcProxy.shared.mainViewController?.answerSDP()
     }
     
+    func setRemoteTracks(){
+        Task{
+            await Model.shared.webRtcClient.remoteTracks()
+        }
+    }
+    
+    func sendInviteSignal(){
+        let session = Session(sessionId: Model.shared.sessionId, tracks:Model.shared.tracks, room: Model.shared.room)
+        let req = SignalReq(cmd:"invite" ,receiver:"", session:session )
+        SignalClient.shared.send(req: req)
+    }
+    
+    func sendUpdateSignal(receiver:String){
+        let session = Session(sessionId: Model.shared.sessionId, tracks:Model.shared.tracks, room: Model.shared.room)
+        let req = SignalReq(cmd:"update", receiver:receiver, session:session )
+        SignalClient.shared.send(req: req)
+    }
+    
     func updateAudioInputDevice(name:String){
         guard let device = Model.shared.getAudioInDevice(name: name)else{
             return

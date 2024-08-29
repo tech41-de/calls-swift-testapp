@@ -1,5 +1,5 @@
 {
-  "originHash" : "1e43d8e579573f9eae582a892a0b81cd50e283d565050e829157b5433ad5a1b3",
+  "originHash" : "73851f44961aaac4aeaab6f2969b56828fd2743fcbb82d9ab31120a7e659e1c2",
   "pins" : [
     {
       "identity" : "calls-swift",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/tech41-de/calls-swift",
       "state" : {
         "branch" : "main",
-        "revision" : "83aa5f13348b8723968783d8fe7f694258be1f14"
+        "revision" : "d587e0286de007a81fe9ab442a3e0700f7487948"
       }
     },
     {
@@ -17,6 +17,15 @@
       "state" : {
         "revision" : "67116cbbdc5925a8565f5157de4ade6e9e9737ed",
         "version" : "125.6422.4"
+      }
+    },
+    {
+      "identity" : "starscream",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/daltoniam/Starscream.git",
+      "state" : {
+        "revision" : "c6bfd1af48efcc9a9ad203665db12375ba6b145a",
+        "version" : "4.0.8"
       }
     }
   ],

@@ -17,6 +17,7 @@ enum States{
     case START_SESSION // setup Peer
     case NEW_SESSION // Cloudflare New Session
     case NEW_LOCAL_TRACKS
+    case INVITE
     case NEW_REMOTE_TRACKS
 }
 
@@ -73,8 +74,12 @@ class STM{
             }
             break
 
-        case .START_SESSION:
+        case .START_SESSION: // fired from New Session Buttton
+            if(Model.shared.room.count < 1){
+                return
+            }
             Task{
+                SignalClient.shared.invite(room:Model.shared.room)
                 await m.webRtcClient.setupPeer()
             }
             break
@@ -88,6 +93,12 @@ class STM{
         case .NEW_LOCAL_TRACKS:
             Task{
                await m.webRtcClient.localTracks()
+            }
+            break
+            
+        case .INVITE:
+            Task{
+                Controller.shared.sendInviteSignal()
             }
             break
             
