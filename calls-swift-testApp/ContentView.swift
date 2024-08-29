@@ -58,6 +58,9 @@ struct ContentView: View {
     @State var sessionIdRemoteData = ""
     @State var isSignalConnectd = "❌"
     @State var room = "shack"
+    @State var ChatSend = ""
+    @State var ChatReceived = ""
+
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
@@ -92,7 +95,17 @@ struct ContentView: View {
                 Text("\(isConnected)").font(.system(size: fontSize))
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
+                Button("Enter Room"){
+                    Model.shared.room = room
+                    print(room)
+                    STM.shared.exec(state: .START_SESSION)
+                } .buttonStyle(MyButtonStyle())
+                Text(":")
                 TextField("room", text: $room).disableAutocorrection(true)
+                Spacer()
+                Button(Model.shared.isDebug ? "hide" : "show"){
+                    Model.shared.isDebug =  !Model.shared.isDebug
+                }.buttonStyle(MyButtonStyle())
             }
            
             if !isHidden{
@@ -129,151 +142,170 @@ struct ContentView: View {
                 }.frame(maxHeight:300)
             }
 
-            // Tracks
-            VStack{
-                Text("Local Tracks")
-                Button("Start new session"){
-                    Model.shared.room = room
-                    print(room)
-                    STM.shared.exec(state: .START_SESSION)
-                } .buttonStyle(MyButtonStyle())
-                HStack{
-                    TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
-                    Text("Session Id")
-                }
-                
-                HStack{
-                    TextField("Track Id Audio Local", text: $localAudioTrackId).textSelection(.enabled)
-                    Text("Track ID Audio ")
-                }
-                
-                HStack{
-                    TextField("Track Id Video Local", text: $localVideoTrackId).textSelection(.enabled)
-                    Text("Track ID Video")
-                }
-                
-                HStack{
-                    TextField("Track Id Data Local", text: $localDataChannelId).textSelection(.enabled)
-                    Text("Track ID Data")
-                }
-                
-            }.padding(5).border(.gray, width: 1)
-      
-            // Remote
-            VStack{
-                Text("Remote Tracks")
-                Button("Set Remote Tracks"){
-                    Model.shared.sessionIdRemote = sessionIdRemote
-                    Model.shared.trackIdAudioRemote = trackIdAudioRemote
-                    Model.shared.trackIdVideoRemote = trackIdVideoRemote
-                    Model.shared.remoteDataChannelId = remoteDataChannelId
-                    Controller().setRemoteTracks()
-                }.buttonStyle(MyButtonStyle())
-                HStack{
-                    TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
-                    Text("Session Id")
-                }
-                HStack{
-                    TextField("Track ID Audio", text: $trackIdAudioRemote).textSelection(.enabled)
-                    Text("Track ID Audio ")
-                }
-                HStack{
-                    TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled)
-                    Text("Track ID Video")
-                }
-                HStack{
-                    TextField("Track Id Remote Data", text: $remoteDataChannelId).textSelection(.enabled)
-                    Text("Track ID Data")
-                }
-            }.padding(5).border(.gray, width: 1)
-            
-            // Data
-            VStack{
-                Text("Data Track")
-                HStack{
-                    Button("Send Data"){
-                        Task{
-                           m.webRtcClient.sendData("Café".data(using: .utf8)!)
-                        }
-                    }.buttonStyle(MyButtonStyle())
-                }
-            }.padding(5).border(.gray, width: 1)
-            
-            // Session
-            HStack{
+            // Debug Fields Start
+            if Model.shared.isDebug{
+                // Tracks
                 VStack{
-                    Text("Session")
-                    Button("Get Session"){
-                        if Model.shared.sessionId == ""{
-                            return
-                        }
-                        Task{
-                            await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
-                                if(error.count > 0){
-                                    print(error)
-                                    return
-                                }
-                                print(error)
-                                sessionData = ""
-                                for t in res!.tracks{
-                                    sessionData += "Track Id: " + t.trackName + " mid: " + t.mid + "\r\n"
-                                }
-                            }
-                        }
+                    Text("Local Tracks")
+                   
+                    HStack{
+                        TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
+                        Text("Session Id")
+                    }
+                    
+                    HStack{
+                        TextField("Track Id Audio Local", text: $localAudioTrackId).textSelection(.enabled)
+                        Text("Track ID Audio ")
+                    }
+                    
+                    HStack{
+                        TextField("Track Id Video Local", text: $localVideoTrackId).textSelection(.enabled)
+                        Text("Track ID Video")
+                    }
+                    
+                    HStack{
+                        TextField("Track Id Data Local", text: $localDataChannelId).textSelection(.enabled)
+                        Text("Track ID Data")
+                    }
+                    
+                }.padding(5).border(.gray, width: 1)
+                
+                // Remote
+                VStack{
+                    Text("Remote Tracks")
+                    Button("Set Remote Tracks"){
+                        Model.shared.sessionIdRemote = sessionIdRemote
+                        Model.shared.trackIdAudioRemote = trackIdAudioRemote
+                        Model.shared.trackIdVideoRemote = trackIdVideoRemote
+                        Model.shared.remoteDataChannelId = remoteDataChannelId
+                        Controller().setRemoteTracks()
                     }.buttonStyle(MyButtonStyle())
                     HStack{
-                        Text(sessionData)
+                        TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
+                        Text("Session Id")
+                    }
+                    HStack{
+                        TextField("Track ID Audio", text: $trackIdAudioRemote).textSelection(.enabled)
+                        Text("Track ID Audio ")
+                    }
+                    HStack{
+                        TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled)
+                        Text("Track ID Video")
+                    }
+                    HStack{
+                        TextField("Track Id Remote Data", text: $remoteDataChannelId).textSelection(.enabled)
+                        Text("Track ID Data")
                     }
                 }.padding(5).border(.gray, width: 1)
-                Spacer()
                 
-                // Remove Track
+                // Data
                 VStack{
-                    Text("Close Track")
-                    Button("Close"){
-                        Task{
-                            
-                            await Model.shared.webRtcClient.getOfffer(){ sdp in
-                                Task{
-                                    let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
-                                    let local = Calls.ClosedTrack(mid: trackMid)
-                                    let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
-                                    await Model.shared.api.close(sessionId: Model.shared.sessionId, closeTracksRequest: closeTacksRequest){res, error in
-                                        if(error.count > 0){
-                                            print(error)
-                                            return
-                                        }
+                    Text("Data Track")
+                    HStack{
+                        Button("Send Data"){
+                            Task{
+                                m.webRtcClient.sendData("Café".data(using: .utf8)!)
+                            }
+                        }.buttonStyle(MyButtonStyle())
+                    }
+                }.padding(5).border(.gray, width: 1)
+                
+                // Session
+                HStack{
+                    VStack{
+                        Text("Session")
+                        Button("Get Session"){
+                            if Model.shared.sessionId == ""{
+                                return
+                            }
+                            Task{
+                                await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
+                                    if(error.count > 0){
                                         print(error)
-                                        for t in res!.tracks{
-                                            print(t)
+                                        return
+                                    }
+                                    print(error)
+                                    sessionData = ""
+                                    for t in res!.tracks{
+                                        sessionData += "Track Id: " + t.trackName + " mid: " + t.mid + "\r\n"
+                                    }
+                                }
+                            }
+                        }.buttonStyle(MyButtonStyle())
+                        HStack{
+                            Text(sessionData)
+                        }
+                    }.padding(5).border(.gray, width: 1)
+                    Spacer()
+                    
+                    // Remove Track
+                    VStack{
+                        Text("Close Track")
+                        Button("Close"){
+                            Task{
+                                await Model.shared.webRtcClient.getOfffer(){ sdp in
+                                    Task{
+                                        let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
+                                        let local = Calls.ClosedTrack(mid: trackMid)
+                                        let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
+                                        await Model.shared.api.close(sessionId: Model.shared.sessionId, closeTracksRequest: closeTacksRequest){res, error in
+                                            if(error.count > 0){
+                                                print(error)
+                                                return
+                                            }
+                                            print(error)
+                                            for t in res!.tracks{
+                                                print(t)
+                                            }
                                         }
                                     }
                                 }
                             }
-                            
+                        }.buttonStyle(MyButtonStyle())
+                        HStack{
+                            TextField("mid", text: $trackMid).textSelection(.enabled)
+                            Text("mid")
                         }
-                    }.buttonStyle(MyButtonStyle())
-                    HStack{
-                        TextField("mid", text: $trackMid).textSelection(.enabled)
-                        Text("mid")
                     }
                 }
+                
+                // Signal
+                VStack{
+                    Text("Signal")
+                    Button("Send"){
+                        Task{
+                            Controller.shared.sendInviteSignal()
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                    
+                }.padding(5).border(.gray, width: 1)
             }
             
-            // Signal
             VStack{
-                Text("Signal")
-                Button("Send"){
-                    Task{
-                        Controller.shared.sendInviteSignal()
+                Text("Chat")
+                HStack{
+                    ScrollView(.vertical){
+                        TextField("", text: $ChatReceived, axis: .vertical)
+                            .textSelection(.enabled)
+                            .disableAutocorrection(true)
+                            .lineLimit(10)
+                            .multilineTextAlignment(.leading)
                     }
-                }.buttonStyle(MyButtonStyle())
-                
+                    TextField("chat", text: $ChatSend)
+                        .textSelection(.enabled)
+                        .disableAutocorrection(true)
+                    Button("Send"){
+                        Task{
+                            Controller.shared.chatSend(text:ChatSend)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                ChatReceived += ChatSend + "\r\n"
+                                ChatSend = ""
+                            }
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                }
             }.padding(5).border(.gray, width: 1)
-            
             Spacer()
-            
-            // Footer
             HStack(){
                 Picker(selection: $m.camera.onChange(videoInChanged), label:Text("Camera")) {
                     ForEach(m.videoDevices, id: \.self) {
@@ -301,7 +333,6 @@ struct ContentView: View {
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!
             isHidden = defaults.bool(forKey: "isHidden")
-            
         }
         .onReceive(timer) { input in
             let m = Model.shared

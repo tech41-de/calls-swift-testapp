@@ -77,6 +77,7 @@ class Model : ObservableObject{
     @Published var videoHeight :CGFloat = 0
     @Published var room = ""
     @Published var tracks = [Track]()
+    @Published var isDebug = false
     
     var webRtcClient =  WebRTC_Client() // left
 

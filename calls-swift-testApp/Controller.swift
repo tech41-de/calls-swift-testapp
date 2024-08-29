@@ -24,6 +24,10 @@ class Controller{
         }
     }
     
+    func chatSend(text:String){
+        print(text)
+    }
+    
     func sendInviteSignal(){
         let session = Session(sessionId: Model.shared.sessionId, tracks:Model.shared.tracks, room: Model.shared.room)
         let req = SignalReq(cmd:"invite" ,receiver:"", session:session )
