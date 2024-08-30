@@ -113,6 +113,12 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         self.remoteDataChannel?.sendData(buffer)
     }
     
+    func sendText(text: String) {
+        let data = Data(text.utf8)
+        let buffer = RTCDataBuffer(data: data, isBinary: true)
+        self.remoteDataChannel?.sendData(buffer)
+    }
+    
     private static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
         let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
@@ -183,10 +189,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             let sdp = try await peerConnection!.offer(for: c)
             try await self.peerConnection!.setLocalDescription(sdp);
             await Model.shared.api.newSession(sdp: sdp.sdp){ [self] sessionId, sdp, error in
-                DispatchQueue.main.async {
-                    Model.shared.sessionId = sessionId
-                    Model.shared.hasSDPRemote = "✅"
-                }
+               
                 let desc = RTCSessionDescription(type: .answer , sdp: sdp)
                 Task{
                     do{
@@ -198,7 +201,11 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                                 counter -= 1
                             }
                             if counter > 0{
-                                STM.shared.exec(state: .NEW_LOCAL_TRACKS)
+                                DispatchQueue.main.async {
+                                    Model.shared.sessionId = sessionId
+                                    Model.shared.hasSDPRemote = "✅"
+                                    STM.shared.exec(state: .NEW_LOCAL_TRACKS)
+                                }
                             }else{
                                 print("timeout conneting to STUN, check Internet connection")
                             }
@@ -214,6 +221,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     }
   
     func localTracks() async{
+        print(Model.shared.sessionId)
         print("Starting LocalTracks")
         let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
         let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
@@ -233,7 +241,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         initalize.direction = .sendOnly
         transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
         transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
-
         
         do{
             let sdp = try await peerConnection!.offer(for: constraint)
@@ -256,13 +263,13 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 Model.shared.tracks = tracks
             }
             
-            let trData = Calls.LocalTrack(location: "local", mid: "3", trackName:dataChannelId)
             localTracks.append(trAudio)
             localTracks.append(trVideo)
-            localTracks.append(trData)
             let desc = Calls.SessionDescription( type:"offer",  sdp:sdp.sdp)
             let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
+            
             // New Track API Request!
+            print( Model.shared.sessionId)
             await Model.shared.api.newLocalTracks(sessionId: Model.shared.sessionId, newTracks: req){newTracksResponse, error in
                 if(error.count > 0)
                 {
@@ -276,8 +283,19 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 self.peerConnection!.setRemoteDescription(sdp){ error in
                     print(error)
                 }
-                
-                STM.shared.exec(state:.INVITE)
+                Task{
+                    let dataChannel = Calls.DataChannelLocal(location:"local", dataChannelName:self.dataChannelId)
+                    let dataReq = Calls.DataChannelLocalReq(dataChannels:[dataChannel])
+                    await Model.shared.api.newDataChannel(sessionId: Model.shared.sessionId, dataChannelReq: dataReq){dataChannelRes, error in
+                        if error != nil && error!.count > 0{
+                            print(error)
+                            return
+                        }
+                        print(dataChannelRes?.dataChannels.first?.dataChannelName)
+                        print(dataChannelRes?.dataChannels.first?.location)
+                        STM.shared.exec(state:.INVITE)
+                    }
+                }
             }
         }catch{
             print(error)
@@ -341,11 +359,12 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.trackIdVideoRemote)
         tracks.append(trackVideo)
         
-        let trackData = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.remoteDataChannelId)
-        tracks.append(trackData)
+       // let trackData = Calls.RemoteTrack(location: "remote", sessionId: Model.shared.sessionIdRemote, trackName: Model.shared.remoteDataChannelId)
+       // tracks.append(trackData)
         
         let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
         
+
         // API Call for new Tracks
         await Model.shared.api.newTracks(sessionId: Model.shared.sessionId, newTracksRemote:newTracksRemote){ [self]newTracksResponse, error in
             
@@ -355,18 +374,32 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 return
             }
             let isRenegotiate = res.requiresImmediateRenegotiation
-            DispatchQueue.main.async {
-                Model.shared.sdpRemote = res.sessionDescription.sdp
-            }
-            if isRenegotiate{
-                Task{
-                    if res.sessionDescription.type == "answer"{
-                        print("this is wrong, should be an offer")
+          
+            Task{
+                var dataChannels = Calls.DataChannelRemote(location: "remote", dataChannelName: Model.shared.remoteDataChannelId, sessionId: Model.shared.sessionIdRemote)
+                let dataChannelReq = Calls.DataChannelRemoteReq(dataChannels: [dataChannels])
+                DispatchQueue.main.async {
+                    Model.shared.sdpRemote = res.sessionDescription.sdp
+                }
+                
+                await Model.shared.api.newDataChannelRemote(sessionId: Model.shared.sessionId, dataChannelReq:dataChannelReq){ [self] newDataTrackRes, error in
+                    if error != nil && error!.count > 0 {
+                        print(error)
                         return
                     }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    print(newDataTrackRes?.dataChannels.first)
+                    
+                    if isRenegotiate{
                         Task{
-                           await self.renegotiate()
+                            if res.sessionDescription.type == "answer"{
+                                print("this is wrong, should be an offer")
+                                return
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                Task{
+                                    await self.renegotiate()
+                                }
+                            }
                         }
                     }
                 }

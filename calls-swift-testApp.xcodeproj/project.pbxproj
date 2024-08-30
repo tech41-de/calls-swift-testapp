@@ -25,6 +25,7 @@
 		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
 		4093E9052C79B71F0007618E /* STM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9042C79B71F0007618E /* STM.swift */; };
 		4093E9072C79D2510007618E /* WebRTC_Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9062C79D2510007618E /* WebRTC_Client.swift */; };
+		40EB43C02C80B37000901478 /* TestStuff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EB43BF2C80B37000901478 /* TestStuff.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -60,6 +61,7 @@
 		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4093E9042C79B71F0007618E /* STM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STM.swift; sourceTree = "<group>"; };
 		4093E9062C79D2510007618E /* WebRTC_Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTC_Client.swift; sourceTree = "<group>"; };
+		40EB43BF2C80B37000901478 /* TestStuff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStuff.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +123,7 @@
 				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
 				4093E9042C79B71F0007618E /* STM.swift */,
 				4093E9062C79D2510007618E /* WebRTC_Client.swift */,
+				40EB43BF2C80B37000901478 /* TestStuff.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -215,6 +218,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				40EB43C02C80B37000901478 /* TestStuff.swift in Sources */,
 				4078861F2C7711540071FE5F /* Main.swift in Sources */,
 				4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */,
 				4000FB542C7F4BC700B3928F /* Structs.swift in Sources */,

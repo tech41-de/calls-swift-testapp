@@ -60,6 +60,36 @@ struct ContentView: View {
     @State var room = "shack"
     @State var ChatSend = ""
     @State var ChatReceived = ""
+    
+    func getSession(){
+        Task{
+            await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
+                if(error.count > 0){
+                    print(error)
+                    return
+                }
+                sessionData = ""
+                var tracks = ""
+                for t  in res!.tracks{
+                    if t.location == "local"{
+                        tracks += "trackName:" + t.trackName! + " location:" + t.location! + " mid:" + t.mid! +  "\n"
+                    }else{
+                        tracks += "trackName:" + t.trackName! + " location:" + t.location! + " sessionId:" + t.sessionId! + "\n"
+                    }
+                }
+                var dataChannel = ""
+                for d  in res!.dataChannels{
+                    if d.location == "local"{
+                        dataChannel += "dataChannelName:" + d.dataChannelName! + " id:" + String(d.id)  + " location:" + d.location! + " status:" + d.status! +  "\n"
+                    }else{
+                        dataChannel += "dataChannelName:" + d.dataChannelName! + " id:" + String(d.id)  + " location:" + d.location! + " sessionId:" + d.sessionId! + " status:" + d.status! + "\n"
+                    }
+                }
+                sessionData = tracks + dataChannel
+                print(sessionData)
+            }
+        }
+    }
 
 
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -198,43 +228,18 @@ struct ContentView: View {
                     }
                 }.padding(5).border(.gray, width: 1)
                 
-                // Data
-                VStack{
-                    Text("Data Track")
-                    HStack{
-                        Button("Send Data"){
-                            Task{
-                                m.webRtcClient.sendData("Café".data(using: .utf8)!)
-                            }
-                        }.buttonStyle(MyButtonStyle())
-                    }
-                }.padding(5).border(.gray, width: 1)
-                
                 // Session
-                HStack{
+                VStack{
                     VStack{
                         Text("Session")
                         Button("Get Session"){
                             if Model.shared.sessionId == ""{
                                 return
                             }
-                            Task{
-                                await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
-                                    if(error.count > 0){
-                                        print(error)
-                                        return
-                                    }
-                                    print(error)
-                                    sessionData = ""
-                                    for t in res!.tracks{
-                                        sessionData += "Track Id: " + t.trackName + " mid: " + t.mid + "\r\n"
-                                    }
-                                }
-                            }
+                            getSession()
                         }.buttonStyle(MyButtonStyle())
-                        HStack{
-                            Text(sessionData)
-                        }
+
+                        TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true)
                     }.padding(5).border(.gray, width: 1)
                     Spacer()
                     
@@ -242,6 +247,9 @@ struct ContentView: View {
                     VStack{
                         Text("Close Track")
                         Button("Close"){
+                            if Model.shared.sessionId.count == 0{
+                                return
+                            }
                             Task{
                                 await Model.shared.webRtcClient.getOfffer(){ sdp in
                                     Task{
@@ -328,6 +336,9 @@ struct ContentView: View {
             
         }.padding()
         .onAppear(){
+            //let data: Data? = TestStuff().msgString.data(using: .utf8) // non-nil
+            //let movieObj = try? JSONDecoder().decode(Calls.GetSessionStateResponse.self, from: data!)
+            
             STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
