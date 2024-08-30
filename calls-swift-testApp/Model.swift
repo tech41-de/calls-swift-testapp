@@ -42,9 +42,8 @@ class Model : ObservableObject{
     @Published var isConnected = false
     @Published var currentstate = States.COLD
     @Published var disableVideo = false
-    @Published var localDataChannelId = ""
-    @Published var remoteDataChannelId = ""
     @Published var isSignalConnectd = false
+    
 
     
 #if os(macOS)
@@ -72,6 +71,11 @@ class Model : ObservableObject{
     @Published var sessionIdRemote = ""
     @Published var trackIdAudioRemote = ""
     @Published var trackIdVideoRemote = ""
+    @Published var dataChannelIdRemote = 0
+    @Published var dataChannelIdLocal = 0
+    
+    @Published var dataChannelNameRemote = ""
+    @Published var dataChannelNameLocal = ""
     
     @Published var videoWidth : CGFloat = 0
     @Published var videoHeight :CGFloat = 0

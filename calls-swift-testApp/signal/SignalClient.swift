@@ -57,19 +57,23 @@ class SignalClient : WebSocketDelegate{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
                 if res.cmd == "invite" && res.session.sessionId != Model.shared.sessionId{
-                    Model.shared.sessionIdRemote = res.session.sessionId
-                    Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
-                    Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
-                    Model.shared.remoteDataChannelId = res.session.tracks[2].trackId
-                    Controller.shared.setRemoteTracks()
-                    Controller.shared.sendUpdateSignal(receiver: "")
+                    DispatchQueue.main.async {
+                        Model.shared.sessionIdRemote = res.session.sessionId
+                        Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
+                        Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
+                        Model.shared.dataChannelNameRemote = res.session.tracks[2].trackId
+                        Controller.shared.setRemoteTracks()
+                        Controller.shared.sendUpdateSignal(receiver: "")
+                    }
                 }
                 if res.cmd == "update" && res.session.sessionId != Model.shared.sessionId{
-                    Model.shared.sessionIdRemote = res.session.sessionId
-                    Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
-                    Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
-                    Model.shared.remoteDataChannelId = res.session.tracks[2].trackId
-                    Controller.shared.setRemoteTracks()
+                    DispatchQueue.main.async {
+                        Model.shared.sessionIdRemote = res.session.sessionId
+                        Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
+                        Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
+                        Model.shared.dataChannelNameRemote = res.session.tracks[2].trackId
+                        Controller.shared.setRemoteTracks()
+                    }
                 }
             }catch{
                 print(error)

@@ -51,8 +51,8 @@ struct ContentView: View {
     @State var isLoggedOn = "❌"
     @State var hasRemoteTracks = "❌"
     @State var sessionId = ""
-    @State var remoteDataChannelId = ""
-    @State var localDataChannelId = ""
+    @State var remoteDataChannelName = ""
+    @State var localDataChannelName = ""
     @State var trackMid = ""
     @State var sessionData = ""
     @State var sessionIdRemoteData = ""
@@ -194,7 +194,7 @@ struct ContentView: View {
                     }
                     
                     HStack{
-                        TextField("Track Id Data Local", text: $localDataChannelId).textSelection(.enabled)
+                        TextField("Track Id Data Local", text: $localDataChannelName).textSelection(.enabled)
                         Text("Track ID Data")
                     }
                     
@@ -207,7 +207,7 @@ struct ContentView: View {
                         Model.shared.sessionIdRemote = sessionIdRemote
                         Model.shared.trackIdAudioRemote = trackIdAudioRemote
                         Model.shared.trackIdVideoRemote = trackIdVideoRemote
-                        Model.shared.remoteDataChannelId = remoteDataChannelId
+                        Model.shared.dataChannelNameRemote = remoteDataChannelName
                         Controller().setRemoteTracks()
                     }.buttonStyle(MyButtonStyle())
                     HStack{
@@ -223,7 +223,7 @@ struct ContentView: View {
                         Text("Track ID Video")
                     }
                     HStack{
-                        TextField("Track Id Remote Data", text: $remoteDataChannelId).textSelection(.enabled)
+                        TextField("Track Id Remote Data", text: $remoteDataChannelName).textSelection(.enabled)
                         Text("Track ID Data")
                     }
                 }.padding(5).border(.gray, width: 1)
@@ -239,7 +239,7 @@ struct ContentView: View {
                             getSession()
                         }.buttonStyle(MyButtonStyle())
 
-                        TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true)
+                        TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true).font(.system(size: 11))
                     }.padding(5).border(.gray, width: 1)
                     Spacer()
                     
@@ -296,23 +296,29 @@ struct ContentView: View {
                         TextField("", text: $ChatReceived, axis: .vertical)
                             .textSelection(.enabled)
                             .disableAutocorrection(true)
-                            .lineLimit(10)
+                            .lineLimit(8, reservesSpace: true)
                             .multilineTextAlignment(.leading)
                     }
-                    TextField("chat", text: $ChatSend)
-                        .textSelection(.enabled)
-                        .disableAutocorrection(true)
-                    Button("Send"){
-                        Task{
-                            Controller.shared.chatSend(text:ChatSend)
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                ChatReceived += ChatSend + "\r\n"
-                                ChatSend = ""
-                            }
-                        }
-                    }.buttonStyle(MyButtonStyle())
+                    
                 }
             }.padding(5).border(.gray, width: 1)
+            HStack{
+                TextField("chat", text: $ChatSend)
+                    .textSelection(.enabled)
+                    .disableAutocorrection(true)
+                Button("Send"){
+                    if ChatSend.count == 0{
+                        return // don't send empty lines
+                    }
+                    Task{
+                        Controller.shared.chatSend(text:ChatSend)
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            ChatReceived += ChatSend + "\r\n"
+                            ChatSend = ""
+                        }
+                    }
+                }.buttonStyle(MyButtonStyle())
+            }
             Spacer()
             HStack(){
                 Picker(selection: $m.camera.onChange(videoInChanged), label:Text("Camera")) {
@@ -362,13 +368,13 @@ struct ContentView: View {
             sessionId = m.sessionId
             localVideoTrackId = m.localVideoTrackId
             localAudioTrackId = m.localAudioTrackId
-            localDataChannelId = m.localDataChannelId
+            localDataChannelName = m.dataChannelNameLocal
             
             // remotes
             sessionIdRemote = m.sessionIdRemote
             trackIdAudioRemote = m.trackIdAudioRemote
             trackIdVideoRemote = m.trackIdVideoRemote
-            remoteDataChannelId = m.remoteDataChannelId
+            remoteDataChannelName = m.dataChannelNameRemote
           }
     }
 }
