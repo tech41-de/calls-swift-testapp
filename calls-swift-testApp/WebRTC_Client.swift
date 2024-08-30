@@ -45,6 +45,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
 
     private var videoCapturer: RTCVideoCapturer?
     
+    private var dataRemoteDelegate = ChannelDataReceiver()
+    
     private let constraint = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
     override init(){
         super.init()
@@ -105,7 +107,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     
     // RTCPDataChannelDelegate
     func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
-        print("dataChannelDidChangeState")
+        print("dataChannelDidChangeState" )
+        print(dataChannel)
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
@@ -120,8 +123,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     
     func sendText(text: String) {
         let data = Data(text.utf8)
-        let buffer = RTCDataBuffer(data: data, isBinary: true)
-        self.remoteDataChannel?.sendData(buffer)
+        let buffer = RTCDataBuffer(data: data, isBinary: false)
+        self.localDataChannel?.sendData(buffer)
     }
     
     private var peerConnection: RTCPeerConnection?
@@ -180,9 +183,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         }
     }
     
-    /*
-     New Session
-     */
+    /*========================================================================
+     Session
+     ========================================================================*/
     func newSession() async{
         print("Starting newSession")
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
@@ -221,9 +224,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         }
     }
   
-    /*
+    /*========================================================================
      Local Tracks
-     */
+     ========================================================================*/
     func localTracks() async{
         print(Model.shared.sessionId)
         print("Starting LocalTracks")
@@ -250,6 +253,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             DispatchQueue.main.async {
                 Model.shared.localAudioTrackId = self.localAudioTrack!.trackId
                 Model.shared.localVideoTrackId = self.localVideoTrack!.trackId
+                Model.shared.dataChannelNameLocal = dataChannelName
                 
                 var tracks = [Track]()
                 tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
@@ -297,10 +301,17 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                             dataChannelConfig.channelId = Int32( Model.shared.dataChannelIdLocal)
                             dataChannelConfig.isOrdered = true
                             dataChannelConfig.isNegotiated = true
-                            dataChannelConfig.maxPacketLifeTime = 2
+                            //dataChannelConfig.maxPacketLifeTime = 5000 // msec - TODO settings are failing!
                             dataChannelConfig.maxRetransmits = 5
+                            print(Model.shared.dataChannelIdLocal)
+                            print(dataChannelName)
                             self.localDataChannel = self.peerConnection!.dataChannel(forLabel:dataChannelName , configuration: dataChannelConfig)
+                            if(self.localDataChannel == nil){
+                                print("Data channel not created!!")
+                                return
+                            }
                             self.localDataChannel?.delegate = self
+                            print(self.localDataChannel)
                             
                             
                             STM.shared.exec(state:.INVITE)
@@ -313,9 +324,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         }
     }
     
-    /*
-     Local Tracks
-     */
+    /*========================================================================
+     Remote Tracks
+     ========================================================================*/
     func remoteTracks() async{
         print("Starting RemoteTracks")
         print("Starting \(Model.shared.sessionIdRemote)")
@@ -343,6 +354,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             let isRenegotiate = res.requiresImmediateRenegotiation
           
             Task{
+                print( Model.shared.sessionIdRemote)
+                print( Model.shared.dataChannelNameRemote)
                 let dataChannels = Calls.DataChannelRemote(location: "remote", dataChannelName: Model.shared.dataChannelNameRemote, sessionId: Model.shared.sessionIdRemote)
                 let dataChannelReq = Calls.DataChannelRemoteReq(dataChannels: [dataChannels])
                 DispatchQueue.main.async {
@@ -361,10 +374,16 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                     dataChannelConfig.channelId = Int32( dataRemoteId)
                     dataChannelConfig.isOrdered = true
                     dataChannelConfig.isNegotiated = true
-                    dataChannelConfig.maxPacketLifeTime = 2
+                    //dataChannelConfig.maxPacketLifeTime = 5000 // TODO Settings are failing!
                     dataChannelConfig.maxRetransmits = 5
                     self.remoteDataChannel = self.peerConnection!.dataChannel(forLabel:"DataSubscriber" , configuration: dataChannelConfig)
-                    self.remoteDataChannel?.delegate = ChannelDataReceiver()
+                    if(self.remoteDataChannel == nil){
+                        print("data remoteDataChannel could not be created!")
+                        return
+                    }
+                    self.remoteDataChannel!.delegate = dataRemoteDelegate
+                    let data = "hi".data(using: .utf8)
+                    self.remoteDataChannel!.sendData(RTCDataBuffer(data: data!, isBinary: false))
                     
                     if isRenegotiate{
                         Task{
@@ -384,10 +403,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         }
     }
     
-    /*
+    /*========================================================================
      Renegotiate
-     */
-    
+     ========================================================================*/
     func renegotiate() async{
         print("Starting Renegotiate")
         let desc = RTCSessionDescription(type: .offer, sdp: Model.shared.sdpRemote)
@@ -413,7 +431,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             Model.shared.hasRemoteTracks = "✅"
         }
     }
-    
     
     func getOfffer(completion:  @escaping (_ sdp:RTCSessionDescription? )->()) async{
         do{

@@ -26,6 +26,7 @@ class Controller{
     
     func chatSend(text:String){
         Task{
+
             await Model.shared.webRtcClient.sendText(text: text)
         }
     }
