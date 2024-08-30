@@ -84,7 +84,6 @@
 			isa = PBXGroup;
 			children = (
 				4000FB4C2C7F326200B3928F /* SignalClient.swift */,
-				4000FB532C7F4BC700B3928F /* Structs.swift */,
 			);
 			path = signal;
 			sourceTree = "<group>";
@@ -108,6 +107,7 @@
 		407886012C770F780071FE5F /* calls-swift-testApp */ = {
 			isa = PBXGroup;
 			children = (
+				4000FB532C7F4BC700B3928F /* Structs.swift */,
 				4000FB4B2C7F325500B3928F /* signal */,
 				407886442C778C650071FE5F /* Info.plist */,
 				407886062C770F790071FE5F /* Assets.xcassets */,

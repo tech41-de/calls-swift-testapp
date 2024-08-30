@@ -17,10 +17,7 @@ class ChannelDataReceiver : NSObject, RTCDataChannelDelegate{
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
-        print("didReceiveMessageWith")
-        let str = String(decoding: buffer.data, as: UTF8.self)
-        print(str)
+        let json = String(decoding: buffer.data, as: UTF8.self)
+        Controller.shared.handle(json: json)
     }
-    
-    
 }

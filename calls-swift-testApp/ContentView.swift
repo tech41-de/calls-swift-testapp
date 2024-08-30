@@ -59,7 +59,8 @@ struct ContentView: View {
     @State var isSignalConnectd = "❌"
     @State var room = "shack"
     @State var ChatSend = ""
-    @State var ChatReceived = ""
+    @State var chatReceived = ""
+    @State var pongLatency = ""
     
     func getSession(){
         Task{
@@ -92,7 +93,7 @@ struct ContentView: View {
     }
 
 
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 0.3, on: .main, in: .common).autoconnect()
     let defaults = UserDefaults.standard
 
     func videoInChanged(_ tag: String) {
@@ -293,7 +294,7 @@ struct ContentView: View {
                 Text("Chat")
                 HStack{
                     ScrollView(.vertical){
-                        TextField("", text: $ChatReceived, axis: .vertical)
+                        TextField("", text: $chatReceived, axis: .vertical)
                             .textSelection(.enabled)
                             .disableAutocorrection(true)
                             .lineLimit(8, reservesSpace: true)
@@ -313,11 +314,19 @@ struct ContentView: View {
                     Task{
                         Controller.shared.chatSend(text:ChatSend)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            ChatReceived += ChatSend + "\r\n"
+                            m.chatReceived += ChatSend + "\n"
+                            chatReceived = m.chatReceived
                             ChatSend = ""
                         }
                     }
                 }.buttonStyle(MyButtonStyle())
+            }
+            HStack{
+                Text("Ping")
+                Button("Send"){
+                    Controller.shared.ping()
+                }.buttonStyle(MyButtonStyle())
+            Text(pongLatency)
             }
             Spacer()
             HStack(){
@@ -375,6 +384,8 @@ struct ContentView: View {
             trackIdAudioRemote = m.trackIdAudioRemote
             trackIdVideoRemote = m.trackIdVideoRemote
             remoteDataChannelName = m.dataChannelNameRemote
+            chatReceived = m.chatReceived
+            pongLatency = "\(Double(m.pongLatency) / 1000.0) sec"
           }
     }
 }

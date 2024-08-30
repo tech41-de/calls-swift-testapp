@@ -53,3 +53,34 @@ public struct SignalRes: Codable{
         self.session = session
     }
 }
+
+public enum MsgType :Codable{
+    case chat
+    case ping
+    case pong
+    case file
+}
+
+public struct ChannelMsg: Codable{
+    public var type : MsgType
+    public var sender : String
+    public var reciever : String
+    public var json : String
+    public var sendDate : Int
+}
+
+public struct ChatMsg: Codable{
+    public var text : String
+}
+
+public struct FileMsg: Codable{
+    public var fid : String
+    public var name : String
+    public var mime : String
+    public var blobCount : Int
+    public var startTime : Int
+    public var length : Int
+    public var checkSume : String
+}
+
+

@@ -82,6 +82,8 @@ class Model : ObservableObject{
     @Published var room = ""
     @Published var tracks = [Track]()
     @Published var isDebug = false
+    @Published var chatReceived = ""
+    @Published var pongLatency = 0
     
     var webRtcClient =  WebRTC_Client() // left
 
