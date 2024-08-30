@@ -20,7 +20,19 @@ class Controller{
     
     func chatSend(text:String){
         Task{
-           Model.shared.webRtcClient.sendText(text: text)
+            do{
+                let chatMsg = ChatMsg(text: text)
+                let data = try self.jsonEncoder.encode(chatMsg)
+                let json = String(decoding: data, as: UTF8.self)
+                
+                let msg =  ChannelMsg(type: .chat, sender: Model.shared.sessionId, reciever: "", json: json, sendDate: Int(Date().timeIntervalSince1970 * 1000.0))
+                let datas = try jsonEncoder.encode(msg)
+                let jsons = String(decoding: datas, as: UTF8.self)
+                Model.shared.webRtcClient.sendText(json: jsons)
+            }
+            catch{
+                print(error)
+            }
         }
     }
     
@@ -28,6 +40,7 @@ class Controller{
     
     func handle(json:String){
         do{
+            print(json)
             let data = json.data(using: .utf8)
             let msg : ChannelMsg = try jsonDecoder.decode(ChannelMsg.self, from:data! )
             switch(msg.type){
@@ -71,7 +84,7 @@ class Controller{
             do{
                 let data = try jsonEncoder.encode(msg)
                 let json = String(decoding: data, as: UTF8.self)
-                Model.shared.webRtcClient.sendText(text: json)
+                Model.shared.webRtcClient.sendText(json: json)
             }
             catch{
                 print(error)

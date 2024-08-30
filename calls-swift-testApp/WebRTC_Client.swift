@@ -121,8 +121,8 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         self.remoteDataChannel?.sendData(buffer)
     }
     
-    func sendText(text: String) {
-        let data = Data(text.utf8)
+    func sendText(json: String) {
+        let data = Data(json.utf8)
         let buffer = RTCDataBuffer(data: data, isBinary: false)
         self.localDataChannel?.sendData(buffer)
     }
