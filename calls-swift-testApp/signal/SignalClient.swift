@@ -111,7 +111,6 @@ class SignalClient : WebSocketDelegate{
         }
     }
     
-    // wss://api.pcalls.net/websocket
     func invite(room:String){
         var roomParsed = room.lowercased()
         var shortStr : String.SubSequence

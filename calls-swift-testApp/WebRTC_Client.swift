@@ -17,7 +17,7 @@ extension WebRTC_Client {
         if let videoTrack = receiver.track as? RTCVideoTrack {
             self.remoteVideoTrack = videoTrack as RTCVideoTrack
             self.remoteVideoTrack!.add(Model.shared.youView)
-            print("Added remote video track \( self.remoteVideoTrack?.trackId)")
+            print("Added remote video track \( String(describing: self.remoteVideoTrack?.trackId))")
             return
         }
 
@@ -280,7 +280,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 }
                 let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
                 self.peerConnection!.setRemoteDescription(sdp){ error in
-                    print(error)
+                    print(error ?? "")
                 }
                 Task{
                    
@@ -288,14 +288,13 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                     let dataReq = Calls.DataChannelLocalReq(dataChannels:[dataChannel])
                     await Model.shared.api.newDataChannel(sessionId: Model.shared.sessionId, dataChannelReq: dataReq){dataChannelRes, error in
                         if error != nil && error!.count > 0{
-                            print(error)
+                            print(error ?? "")
                             return
                         }
                         
-                        DispatchQueue.main.async {
-
-                            Model.shared.dataChannelIdLocal = (dataChannelRes?.dataChannels.first!.id)!
-                            Model.shared.dataChannelIdRemote = (dataChannelRes?.dataChannels.first!.id)!
+                        DispatchQueue.main.async { [self] in
+                            Model.shared.dataChannelIdLocal = dataChannelRes!.dataChannels.first!.id
+                            Model.shared.dataChannelIdRemote = dataChannelRes!.dataChannels.first!.id
                            
                             let dataChannelConfig = RTCDataChannelConfiguration()
                             dataChannelConfig.channelId = Int32( Model.shared.dataChannelIdLocal)
@@ -303,18 +302,13 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                             dataChannelConfig.isNegotiated = true
                             //dataChannelConfig.maxPacketLifeTime = 5000 // msec - TODO settings are failing!
                             dataChannelConfig.maxRetransmits = 5
-                            print(Model.shared.dataChannelIdLocal)
-                            print(dataChannelName)
-                            self.localDataChannel = self.peerConnection!.dataChannel(forLabel:dataChannelName , configuration: dataChannelConfig)
-                            if(self.localDataChannel == nil){
+                            localDataChannel = peerConnection!.dataChannel(forLabel:dataChannelName , configuration: dataChannelConfig)
+                            if(localDataChannel == nil){
                                 print("Data channel not created!!")
                                 return
                             }
-                            self.localDataChannel?.delegate = self
-                            print(self.localDataChannel)
-                            
-                            
-                            STM.shared.exec(state:.INVITE)
+                            localDataChannel?.delegate = self
+                            STM.shared.exec(state:.START_SIGNALING)
                         }
                     }
                 }
@@ -364,7 +358,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 
                 await Model.shared.api.newDataChannelRemote(sessionId: Model.shared.sessionId, dataChannelReq:dataChannelReq){ [self] newDataTrackRes, error in
                     if error != nil && error!.count > 0 {
-                        print(error)
+                        print(error ?? "")
                         return
                     }
                     let dataRemoteId = newDataTrackRes!.dataChannels.first!.id
