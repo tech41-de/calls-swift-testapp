@@ -17,7 +17,11 @@ class ChannelDataReceiver : NSObject, RTCDataChannelDelegate{
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
-        let json = String(decoding: buffer.data, as: UTF8.self)
-        Controller.shared.handle(json: json)
+        if buffer.isBinary{
+            Controller.shared.handleBinary(data:  buffer.data)
+        }else{
+            let json = String(decoding: buffer.data, as: UTF8.self)
+            Controller.shared.handle(json: json)
+        }
     }
 }

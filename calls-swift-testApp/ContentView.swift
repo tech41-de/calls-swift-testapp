@@ -60,6 +60,9 @@ struct ContentView: View {
     @State var ChatSend = ""
     @State var chatReceived = ""
     @State var pongLatency = ""
+    @State var chooseFile = false
+    @State var filePath = ""
+    @State var fileUrl :URL?
     
     func getSession(){
         Task{
@@ -137,7 +140,7 @@ struct ContentView: View {
                     Model.shared.isDebug =  !Model.shared.isDebug
                 }.buttonStyle(MyButtonStyle())
             }
-           
+            
             if !isHidden{
                 VStack {
                     Text("Cloudflare Calls Configuration ")
@@ -165,19 +168,19 @@ struct ContentView: View {
                         Divider().frame(width:2)
                         YouView(width:width).frame(width:width).offset(x:width)
                             .onAppear(){
-                            Model.shared.videoWidth = g.size.width / 2
-                            Model.shared.videoHeight = g.size.height
-                        }
+                                Model.shared.videoWidth = g.size.width / 2
+                                Model.shared.videoHeight = g.size.height
+                            }
                     }
                 }.frame(maxHeight:300)
             }
-
+            
             // Debug Fields Start
             if Model.shared.isDebug{
                 // Tracks
                 VStack{
                     Text("Local Tracks")
-                   
+                    
                     HStack{
                         TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
                         Text("Session Id")
@@ -204,13 +207,13 @@ struct ContentView: View {
                 VStack{
                     Text("Remote Tracks")
                     /*
-                    Button("Set Remote Tracks"){
-                        Model.shared.sessionIdRemote = sessionIdRemote
-                        Model.shared.trackIdAudioRemote = trackIdAudioRemote
-                        Model.shared.trackIdVideoRemote = trackIdVideoRemote
-                        Model.shared.dataChannelNameRemote = remoteDataChannelName
-                        Controller().setRemoteTracks()
-                    }.buttonStyle(MyButtonStyle())
+                     Button("Set Remote Tracks"){
+                     Model.shared.sessionIdRemote = sessionIdRemote
+                     Model.shared.trackIdAudioRemote = trackIdAudioRemote
+                     Model.shared.trackIdVideoRemote = trackIdVideoRemote
+                     Model.shared.dataChannelNameRemote = remoteDataChannelName
+                     Controller().setRemoteTracks()
+                     }.buttonStyle(MyButtonStyle())
                      */
                     HStack{
                         TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
@@ -240,7 +243,7 @@ struct ContentView: View {
                             }
                             getSession()
                         }.buttonStyle(MyButtonStyle())
-
+                        
                         TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true).font(.system(size: 11))
                     }.padding(5).border(.gray, width: 1)
                     Spacer()
@@ -280,6 +283,33 @@ struct ContentView: View {
                     }.padding(5).border(.gray, width: 1)
                 }
             }
+            
+            VStack{
+                Text("File Transfer")
+                
+                HStack{
+                    TextField("file path", text: $filePath).textSelection(.enabled)
+                    Button("Choose"){
+                        chooseFile = true
+                    }.buttonStyle(MyButtonStyle())
+                    
+                    Button("Send"){
+                        if fileUrl != nil{
+                            Controller.shared.sendFile(url:fileUrl!)
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                    
+                }
+            }.padding(5).border(.gray, width: 1)
+                .fileImporter(isPresented: $chooseFile, allowedContentTypes: [.item]) { result in
+                    switch result {
+                    case .success(let f):
+                        fileUrl = f
+                        filePath = f.path
+                    case .failure(let error):
+                        print(error)
+                    }
+                }
             
             VStack{
                 Text("Chat")
