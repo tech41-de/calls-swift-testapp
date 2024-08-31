@@ -43,7 +43,6 @@ struct ContentView: View {
     @State var appSecret = ""
     @State var isHidden = false
     @State var debugStr = ""
-    @State var signal = "❌"
     @State var hasSDPLocal = "❌"
     @State var hasSDPRemote = "❌"
     @State var isConnected = "❌"
@@ -204,6 +203,7 @@ struct ContentView: View {
                 // Remote
                 VStack{
                     Text("Remote Tracks")
+                    /*
                     Button("Set Remote Tracks"){
                         Model.shared.sessionIdRemote = sessionIdRemote
                         Model.shared.trackIdAudioRemote = trackIdAudioRemote
@@ -211,6 +211,7 @@ struct ContentView: View {
                         Model.shared.dataChannelNameRemote = remoteDataChannelName
                         Controller().setRemoteTracks()
                     }.buttonStyle(MyButtonStyle())
+                     */
                     HStack{
                         TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
                         Text("Session Id")
@@ -255,7 +256,8 @@ struct ContentView: View {
                                 await Model.shared.webRtcClient.getOfffer(){ sdp in
                                     Task{
                                         let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
-                                        let local = Calls.ClosedTrack(mid: trackMid)
+                                        let local = Calls.CloseTrackObject(mid: trackMid)
+                                        print(trackMid)
                                         let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
                                         await Model.shared.api.close(sessionId: Model.shared.sessionId, closeTracksRequest: closeTacksRequest){res, error in
                                             if(error.count > 0){
@@ -275,19 +277,8 @@ struct ContentView: View {
                             TextField("mid", text: $trackMid).textSelection(.enabled)
                             Text("mid")
                         }
-                    }
+                    }.padding(5).border(.gray, width: 1)
                 }
-                
-                // Signal
-                VStack{
-                    Text("Signal")
-                    Button("Send"){
-                        Task{
-                            Controller.shared.sendInviteSignal()
-                        }
-                    }.buttonStyle(MyButtonStyle())
-                    
-                }.padding(5).border(.gray, width: 1)
             }
             
             VStack{
@@ -365,7 +356,6 @@ struct ContentView: View {
            
             // flags
             hasConfig = m.hasConfig ? "✅" : "❌"
-            signal = m.signalIndicator
             hasSDPLocal = m.hasSDPLocal
             hasSDPRemote = m.hasSDPRemote
             isConnected = m.isConnected ? "✅" : "❌"

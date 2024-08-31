@@ -89,19 +89,10 @@ class VideoDeviceManager{
 #endif
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
         print("Video devices found \(devices.devices.count)")
-        
         Model.shared.videoDevices.removeAll()
         for device in devices.devices {
             Model.shared.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
         }
-        
-        /*
-        if (UserDefaults.standard.string(forKey: "videoIn") != nil){
-            Model.shared.camera = UserDefaults.standard.string(forKey: "videoIn")!
-        }else{
-            Model.shared.camera = Model.shared.videoDevices[Model.shared.videoDevices.count - 1].name
-        }
-         */
         Model.shared.camera = Model.shared.videoDevices[0].name
         print("Using camera \(Model.shared.camera)")
     }

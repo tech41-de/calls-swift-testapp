@@ -29,7 +29,6 @@ class Model : ObservableObject{
     
     static let shared = Model()
     @Published var hasRemoteTracks = "❌"
-    @Published var signalIndicator = "❌"
     @Published var hasSDPLocal = "❌"
     @Published var hasSDPRemote = "❌"
     @Published var sdpRemote = ""
@@ -43,8 +42,6 @@ class Model : ObservableObject{
     @Published var currentstate = States.COLD
     @Published var disableVideo = false
     @Published var isSignalConnectd = false
-    
-
     
 #if os(macOS)
     @Published var youView = RTCMTLNSVideoView()
