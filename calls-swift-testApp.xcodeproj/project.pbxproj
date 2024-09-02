@@ -80,14 +80,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4000FB4B2C7F325500B3928F /* signal */ = {
-			isa = PBXGroup;
-			children = (
-				4000FB4C2C7F326200B3928F /* SignalClient.swift */,
-			);
-			path = signal;
-			sourceTree = "<group>";
-		};
 		407885F62C770F780071FE5F = {
 			isa = PBXGroup;
 			children = (
@@ -108,7 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				4000FB532C7F4BC700B3928F /* Structs.swift */,
-				4000FB4B2C7F325500B3928F /* signal */,
+				4000FB4C2C7F326200B3928F /* SignalClient.swift */,
 				407886442C778C650071FE5F /* Info.plist */,
 				407886062C770F790071FE5F /* Assets.xcassets */,
 				407886082C770F790071FE5F /* calls_swift_testApp.entitlements */,
@@ -397,13 +389,13 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -446,12 +438,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
 				SWIFT_OBJC_INTEROP_MODE = objcxx;
-				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

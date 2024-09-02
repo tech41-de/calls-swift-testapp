@@ -7,6 +7,12 @@
 
 import Foundation
 
+public struct ADevice : Hashable{
+    var uid = ""
+    var name = ""
+    var id :UInt32 = 0
+}
+
 public struct Track : Codable{
     public var trackId : String
     public var mid : String
@@ -36,7 +42,6 @@ public struct SignalReq: Codable{
     public var receiver : String
     public var session :Session
     
-    
     public init(cmd : String, receiver:String, session : Session){
         self.cmd = cmd
         self.receiver = receiver // empty if broadcast
@@ -58,7 +63,6 @@ public enum MsgType :Codable{
     case chat
     case ping
     case pong
-    case file
 }
 
 public protocol PeerMsg :Codable{}
@@ -119,10 +123,6 @@ public struct ChannelMsg: Codable{
         case .pong:
             obj = try container.decode(PongMsg.self, forKey: .obj)
             break
-            
-        case .file:
-            obj = try container.decode(FileMsg.self, forKey: .obj)
-            break
         }
     }
     
@@ -146,22 +146,13 @@ public struct ChannelMsg: Codable{
         case .pong:
             try container.encode(obj as? PongMsg, forKey: .obj)
             break
-            
-        case .file:
-            try container.encode(obj as? FileMsg, forKey: .obj)
-            break
         }
     }
 }
 
+public struct PingMsg: PeerMsg{}
 
-public struct PingMsg: PeerMsg{
-   
-}
-
-public struct PongMsg: PeerMsg{
-  
-}
+public struct PongMsg: PeerMsg{}
 
 public struct ChatMsg: PeerMsg{
     public var text : String

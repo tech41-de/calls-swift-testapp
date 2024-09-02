@@ -10,24 +10,27 @@ import AVFoundation
 import WebRTC
 import Calls_Swift
 
-struct ADevice : Hashable{
-    var uid = ""
-    var name = ""
-    var id :UInt32 = 0
-}
-
-class Model : ObservableObject{
+class Model : ObservableObject, @unchecked Sendable{
     
-    private init(){
-        #if os(iOS) 
+    public init(){
+        #if os(iOS)
         youView.videoContentMode = .scaleAspectFit
         meView.videoContentMode = .scaleAspectFit
+        #else
+        youView = RTCMTLNSVideoView()
+        meView = RTCMTLNSVideoView()
         #endif
+        Model.model = self
     }
     
+    // Calls API to Cloudflare
     let api = Calls()
+    static var model: Model?
     
-    static let shared = Model()
+    static func getInstance() ->Model{
+        return Model.model!
+    }
+
     @Published var hasRemoteTracks = "❌"
     @Published var hasSDPLocal = "❌"
     @Published var hasSDPRemote = "❌"
@@ -50,7 +53,7 @@ class Model : ObservableObject{
     @Published var audioOutputDefaultDevice : AudioDeviceID?
 #else
     @Published var youView = RTCMTLVideoView()
-    @Published var meView = RTCMTLVideoView()
+    @Published var meView  = RTCMTLVideoView()
     @Published var audioInputDefaultDevice :UInt32  = 0
     @Published var audioOutputDefaultDevice:UInt32  = 0
 #endif
@@ -81,8 +84,7 @@ class Model : ObservableObject{
     @Published var isDebug = false
     @Published var chatReceived = ""
     @Published var pongLatency = 0
-    
-    var webRtcClient =  WebRTC_Client() // left
+
 
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{

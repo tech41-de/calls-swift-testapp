@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import WebRTC
+@preconcurrency import WebRTC
 import Calls_Swift
 
 struct MyButtonStyle: ButtonStyle {
@@ -31,7 +31,9 @@ extension Binding {
 }
 
 struct ContentView: View {
-    @ObservedObject var m = Model.shared
+    @EnvironmentObject var m : Model
+    @EnvironmentObject var controller : Controller
+    @EnvironmentObject var stm : STM
 
     @State var localVideoTrackId = ""
     @State var localAudioTrackId = ""
@@ -63,10 +65,10 @@ struct ContentView: View {
     @State var chooseFile = false
     @State var filePath = ""
     @State var fileUrl :URL?
-    
+
     func getSession(){
         Task{
-            await Model.shared.api.getSession(sessionId: Model.shared.sessionId){res, error in
+            await m.api.getSession(sessionId: m.sessionId){res, error in
                 if(error.count > 0){
                     print(error)
                     return
@@ -104,11 +106,11 @@ struct ContentView: View {
     }
     
     func audioInChanged(_ tag: String) {
-        Controller.shared.updateAudioInputDevice(name: tag)
+        controller.updateAudioInputDevice(name: tag)
     }
     
     func audioOutChanged(_ tag: String) {
-        Controller.shared.updateAudioOutputDevice(name: tag)
+        controller.updateAudioOutputDevice(name: tag)
     }
 
     var body: some View {
@@ -129,15 +131,15 @@ struct ContentView: View {
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
                 Button("Enter Room"){
-                    Model.shared.room = room
+                    m.room = room
                     print(room)
-                    STM.shared.exec(state: .START_SESSION)
+                    stm.exec(state: .START_SESSION)
                 } .buttonStyle(MyButtonStyle())
                 Text(":")
                 TextField("room", text: $room).disableAutocorrection(true)
                 Spacer()
-                Button(Model.shared.isDebug ? "hide" : "show"){
-                    Model.shared.isDebug =  !Model.shared.isDebug
+                Button(m.isDebug ? "hide" : "show"){
+                    m.isDebug =  !m.isDebug
                 }.buttonStyle(MyButtonStyle())
             }
             
@@ -153,7 +155,7 @@ struct ContentView: View {
                         defaults.set(appId, forKey: "appId")
                         defaults.set(appSecret, forKey: "appSecret")
                         defaults.set(isHidden, forKey: "isHidden")
-                        STM.shared.exec(state: .CONFIGURE)
+                        stm.exec(state: .CONFIGURE)
                     }.buttonStyle(MyButtonStyle())
                 }
             }
@@ -164,19 +166,19 @@ struct ContentView: View {
                 ZStack{
                     GeometryReader{ g in
                         let width = g.size.width / 2 - 2
-                        MeView(width:width).scaleEffect(x: -1, y: 1).frame(width:width).offset(x:0)
+                        MeView(model:m, width:width).scaleEffect(x: -1, y: 1).frame(width:width).offset(x:0)
                         Divider().frame(width:2)
-                        YouView(width:width).frame(width:width).offset(x:width)
+                        YouView(model:m, width:width).frame(width:width).offset(x:width)
                             .onAppear(){
-                                Model.shared.videoWidth = g.size.width / 2
-                                Model.shared.videoHeight = g.size.height
+                                m.videoWidth = g.size.width / 2
+                                m.videoHeight = g.size.height
                             }
                     }
                 }.frame(maxHeight:300)
             }
             
             // Debug Fields Start
-            if Model.shared.isDebug{
+            if m.isDebug{
                 // Tracks
                 VStack{
                     Text("Local Tracks")
@@ -238,10 +240,10 @@ struct ContentView: View {
                     VStack{
                         Text("Session")
                         Button("Get Session"){
-                            if Model.shared.sessionId == ""{
-                                return
+                            if m.sessionId != ""{
+                                getSession()
                             }
-                            getSession()
+                            
                         }.buttonStyle(MyButtonStyle())
                         
                         TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true).font(.system(size: 11))
@@ -252,24 +254,23 @@ struct ContentView: View {
                     VStack{
                         Text("Close Track")
                         Button("Close"){
-                            if Model.shared.sessionId.count == 0{
-                                return
-                            }
-                            Task{
-                                await Model.shared.webRtcClient.getOfffer(){ sdp in
-                                    Task{
-                                        let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
-                                        let local = Calls.CloseTrackObject(mid: trackMid)
-                                        print(trackMid)
-                                        let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
-                                        await Model.shared.api.close(sessionId: Model.shared.sessionId, closeTracksRequest: closeTacksRequest){res, error in
-                                            if(error.count > 0){
+                            if m.sessionId != ""{
+                                Task{
+                                    await controller.webRtcClient!.getOfffer(){ sdp in
+                                        Task{
+                                            let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
+                                            let local = Calls.CloseTrackObject(mid: trackMid)
+                                            print(trackMid)
+                                            let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
+                                            await self.m.api.close(sessionId: self.m.sessionId, closeTracksRequest: closeTacksRequest){res, error in
+                                                if(error.count > 0){
+                                                    print(error)
+                                                    return
+                                                }
                                                 print(error)
-                                                return
-                                            }
-                                            print(error)
-                                            for t in res!.tracks{
-                                                print(t)
+                                                for t in res!.tracks{
+                                                    print(t)
+                                                }
                                             }
                                         }
                                     }
@@ -283,34 +284,7 @@ struct ContentView: View {
                     }.padding(5).border(.gray, width: 1)
                 }
             }
-            
-            VStack{
-                Text("File Transfer")
-                
-                HStack{
-                    TextField("file path", text: $filePath).textSelection(.enabled)
-                    Button("Choose"){
-                        chooseFile = true
-                    }.buttonStyle(MyButtonStyle())
-                    
-                    Button("Send"){
-                        if fileUrl != nil{
-                            Controller.shared.sendFile(url:fileUrl!)
-                        }
-                    }.buttonStyle(MyButtonStyle())
-                    
-                }
-            }.padding(5).border(.gray, width: 1)
-                .fileImporter(isPresented: $chooseFile, allowedContentTypes: [.item]) { result in
-                    switch result {
-                    case .success(let f):
-                        fileUrl = f
-                        filePath = f.path
-                    case .failure(let error):
-                        print(error)
-                    }
-                }
-            
+
             VStack{
                 Text("Chat")
                 HStack{
@@ -333,7 +307,7 @@ struct ContentView: View {
                         return // don't send empty lines
                     }
                     Task{
-                        Controller.shared.chatSend(text:ChatSend)
+                        controller.chatSend(text:ChatSend)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             m.chatReceived += ChatSend + "\n"
                             chatReceived = m.chatReceived
@@ -345,7 +319,7 @@ struct ContentView: View {
             HStack{
                 Text("Ping")
                 Button("Send"){
-                    Controller.shared.ping()
+                    controller.ping()
                 }.buttonStyle(MyButtonStyle())
             Text(pongLatency)
             }
@@ -372,17 +346,14 @@ struct ContentView: View {
             
         }.padding()
         .onAppear(){
-            //let data: Data? = TestStuff().msgString.data(using: .utf8) // non-nil
-            //let movieObj = try? JSONDecoder().decode(Calls.GetSessionStateResponse.self, from: data!)
-            
-            STM.shared.exec(state: .BOOT)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!
             isHidden = defaults.bool(forKey: "isHidden")
+            
+            stm.exec(state: .BOOT)
         }
         .onReceive(timer) { input in
-            let m = Model.shared
            
             // flags
             hasConfig = m.hasConfig ? "✅" : "❌"

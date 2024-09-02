@@ -29,13 +29,15 @@ struct MeView : NSViewRepresentable{
 struct MeView : UIViewRepresentable{
     
     var width:CGFloat = 0
+    let model:Model
     
-    init(width:CGFloat){
+    init(model:Model, width:CGFloat){
+        self.model = model
         self.width = width
     }
     
     func makeUIView(context: Context) ->RTCMTLVideoView{
-        return Model.shared.meView
+        return model.meView
     }
     
     func updateUIView(_ nsView: RTCMTLVideoView, context: Context) {

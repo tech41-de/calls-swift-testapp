@@ -22,19 +22,25 @@ enum States{
     case NEW_REMOTE_TRACKS
 }
 
-class STM{
-    static let shared = STM()
-   
-    private init(){}
+class STM : ObservableObject{
+
+    let controller : Controller
+    let signalClient : SignalClient
+    let model : Model
     
+    init(model:Model, controller:Controller, signalClient:SignalClient){
+        self.controller = controller
+        self.signalClient = signalClient
+        self.model = model
+    }
+   
     let defaults = UserDefaults.standard
-    let m = Model.shared
     
     func exec(state:States){
-        if (state == m.currentstate ){
+        if (state == model.currentstate ){
             return
         }
-        m.currentstate = state
+        model.currentstate = state
         switch(state){
             
         case .COLD:
@@ -52,18 +58,18 @@ class STM{
             break
             
         case .CONFIGURE:
-            Model.shared.api.configure(serverUrl: defaults.string(forKey: "serverURL")!, appId: defaults.string(forKey: "appId")!, secret: defaults.string(forKey: "appSecret")!)
+            model.api.configure(serverUrl: defaults.string(forKey: "serverURL")!, appId: defaults.string(forKey: "appId")!, secret: defaults.string(forKey: "appSecret")!)
             exec(state: .AUDIO_SETUP)
             break
             
         case .AUDIO_SETUP:
-            AudioDeviceManager().setup()
+            AudioDeviceManager(model:model).setup()
             exec(state: .VIDEOO_SETUP)
             break
             
         case .VIDEOO_SETUP:
             DispatchQueue.main.async { [self] in
-                VideoDeviceManager().setup()
+                VideoDeviceManager(model:model).setup()
                 exec(state: .START_STREAM)
             }
            
@@ -71,51 +77,51 @@ class STM{
             
         case .START_STREAM:
             Task{
-                await m.webRtcClient.setupStream()
+                await controller.webRtcClient!.setupStream()
             }
             break
 
         case .START_SESSION: // fired from New Session Buttton
-            if(Model.shared.room.count < 1){
+            if(model.room.count < 1){
                 return
             }
             Task{
-                await m.webRtcClient.setupPeer()
+                await controller.webRtcClient!.setupPeer()
             }
             break
         
         case .NEW_SESSION:
             Task{
-                await m.webRtcClient.newSession()
+                await controller.webRtcClient!.newSession()
             }
             break
             
         case .NEW_LOCAL_TRACKS:
             Task{
-               await m.webRtcClient.localTracks()
+               await controller.webRtcClient!.localTracks()
             }
             break
             
         case .START_SIGNALING:
-            SignalClient.shared.invite(room:Model.shared.room)
+            signalClient.invite(room:model.room)
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if ( Model.shared.isSignalConnectd ){
-                    STM.shared.exec(state:.INVITE)
+                if ( self.model.isSignalConnectd ){
+                    self.exec(state:.INVITE)
                 }else{
-                    STM.shared.exec(state:.START_SIGNALING)
+                    self.exec(state:.START_SIGNALING)
                 }
             }
             break
             
         case .INVITE:
             Task{
-                Controller.shared.sendInviteSignal()
+                controller.sendInviteSignal()
             }
             break
             
         case  .NEW_REMOTE_TRACKS:
             Task{
-                await m.webRtcClient.remoteTracks()
+                await controller.webRtcClient!.remoteTracks()
             }
             break
         }

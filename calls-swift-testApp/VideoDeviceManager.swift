@@ -11,6 +11,11 @@ import WebRTC
 
 class VideoDeviceManager{
     
+    let model:Model
+    init(model:Model){
+        self.model = model
+    }
+    
     @MainActor
     func setup(){
         findDevices() 
@@ -89,11 +94,11 @@ class VideoDeviceManager{
 #endif
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
         print("Video devices found \(devices.devices.count)")
-        Model.shared.videoDevices.removeAll()
+        model.videoDevices.removeAll()
         for device in devices.devices {
-            Model.shared.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
+            model.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
         }
-        Model.shared.camera = Model.shared.videoDevices[0].name
-        print("Using camera \(Model.shared.camera)")
+        model.camera = model.videoDevices[0].name
+        print("Using camera \(model.camera)")
     }
 }

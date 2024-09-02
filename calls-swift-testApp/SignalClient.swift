@@ -10,19 +10,22 @@ import Starscream
 
 class SignalClient : WebSocketDelegate{
     
-    static let shared = SignalClient()
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
     
-    private init(){
-        
+    let model : Model
+    let controller : Controller
+    
+    init(model:Model, controller:Controller){
+        self.model = model
+        self.controller = controller
     }
     
     var isConnected = false
     var socket : WebSocket?
     
     func handleError(_ error:Error?){
-        print(error)
+        print(error ?? "")
     }
     
     func send(req: SignalReq){
@@ -42,12 +45,12 @@ class SignalClient : WebSocketDelegate{
         switch event {
             case .connected(let headers):
                 isConnected = true
-                Model.shared.isSignalConnectd = true
+                model.isSignalConnectd = true
                 print("websocket is connected: \(headers)")
             
             case .disconnected(let reason, let code):
                 isConnected = false
-                Model.shared.isSignalConnectd = false
+            model.isSignalConnectd = false
                 print("websocket is disconnected: \(reason) with code: \(code)")
             
             case .text(let string):
@@ -56,23 +59,23 @@ class SignalClient : WebSocketDelegate{
             do{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
-                if res.cmd == "invite" && res.session.sessionId != Model.shared.sessionId{
+                if res.cmd == "invite" && res.session.sessionId != model.sessionId{
                     DispatchQueue.main.async {
-                        Model.shared.sessionIdRemote = res.session.sessionId
-                        Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
-                        Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
-                        Model.shared.dataChannelNameRemote = res.session.tracks[2].trackId
-                        Controller.shared.setRemoteTracks()
-                        Controller.shared.sendUpdateSignal(receiver: "")
+                        self.model.sessionIdRemote = res.session.sessionId
+                        self.model.trackIdAudioRemote = res.session.tracks[0].trackId
+                        self.model.trackIdVideoRemote = res.session.tracks[1].trackId
+                        self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        self.controller.setRemoteTracks()
+                        self.controller.sendUpdateSignal(receiver: "")
                     }
                 }
-                if res.cmd == "update" && res.session.sessionId != Model.shared.sessionId{
+                if res.cmd == "update" && res.session.sessionId != model.sessionId{
                     DispatchQueue.main.async {
-                        Model.shared.sessionIdRemote = res.session.sessionId
-                        Model.shared.trackIdAudioRemote = res.session.tracks[0].trackId
-                        Model.shared.trackIdVideoRemote = res.session.tracks[1].trackId
-                        Model.shared.dataChannelNameRemote = res.session.tracks[2].trackId
-                        Controller.shared.setRemoteTracks()
+                        self.model.sessionIdRemote = res.session.sessionId
+                        self.model.trackIdAudioRemote = res.session.tracks[0].trackId
+                        self.model.trackIdVideoRemote = res.session.tracks[1].trackId
+                        self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        self.controller.setRemoteTracks()
                     }
                 }
             }catch{
@@ -96,7 +99,7 @@ class SignalClient : WebSocketDelegate{
             
             case .cancelled:
                 isConnected = false
-                Model.shared.isSignalConnectd = false
+                 model.isSignalConnectd = false
             
             case .error(let error):
                 isConnected = false

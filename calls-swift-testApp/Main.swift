@@ -14,9 +14,28 @@ import SwiftUI
 
 @main
 struct Main: App {
+    
+    @State var model : Model
+    @State var controller : Controller
+    @State var stm : STM
+    @State var signalClient : SignalClient
+    
+    // Buiding services upfront and inject
+    init(){
+        let model = Model()
+        let controller = Controller()
+        let signalClient = SignalClient(model: model, controller: controller)
+        let stm = STM(model: model, controller: controller, signalClient: signalClient)
+        controller.setup(model: model, stm:stm, signalClient:signalClient)
+        self.model = model
+        self.controller = controller
+        self.signalClient = signalClient
+        self.stm = stm
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView().environmentObject(model).environmentObject(controller).environmentObject(stm)
         }
     }
 }
