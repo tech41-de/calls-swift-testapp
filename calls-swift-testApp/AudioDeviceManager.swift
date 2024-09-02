@@ -130,10 +130,14 @@ class AudioDeviceManager{
                 self.model.audioOutputDefaultDevice = self.getDefaultOutDevice(forScope: kAudioObjectPropertyScopeInput)
                 
                 let deviceIn = self.model.getAudioInDevice(name: self.model.audioInDevice)
-                self.setInputDevice(device:deviceIn!)
-                
+                if(deviceIn != nil){
+                    self.setInputDevice(device:deviceIn!)
+                }
+               
                 let deviceOut = self.model.getAudioOutDevice(name: self.model.audioOutDevice)
-                self.setOutputDevice(device:deviceOut!)
+                if deviceOut != nil{
+                    self.setOutputDevice(device:deviceOut!)
+                }
             }
         }
     }
@@ -382,7 +386,7 @@ class AudioDevices{
                 mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
                 mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
 
-            var name:CFString? = nil
+            var name:CFString?
             var propsize:UInt32 = UInt32(MemoryLayout<CFString?>.size)
             let result:OSStatus = AudioObjectGetPropertyData(self.audioDeviceID, &address, 0, nil, &propsize, &name)
             if (result != 0) {
@@ -399,7 +403,7 @@ class AudioDevices{
                 mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
                 mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
 
-            var name:CFString? = nil
+            var name:CFString?
             var propsize:UInt32 = UInt32(MemoryLayout<CFString?>.size)
             let result:OSStatus = AudioObjectGetPropertyData(self.audioDeviceID, &address, 0, nil, &propsize, &name)
             if (result != 0) {
@@ -420,71 +424,73 @@ class AudioDeviceFinder {
     }
     
     static func findDevices(model:Model) {
-        var propsize:UInt32 = 0
-
-        var address:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
-            mSelector:AudioObjectPropertySelector(kAudioHardwarePropertyDevices),
-            mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
-            mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
-
-        var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
-
-        if (result != 0) {
-            print("Error \(result) from AudioObjectGetPropertyDataSize")
-            return
-        }
-
-        let numDevices = Int(propsize / UInt32(MemoryLayout<AudioDeviceID>.size))
-
-        var devids = [AudioDeviceID]()
-        for _ in 0..<numDevices {
-            devids.append(AudioDeviceID())
-        }
-
-        result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
-        if (result != 0) {
-            print("Error \(result) from AudioObjectGetPropertyData")
-            return
-        }
-
-        model.audioInDevices.removeAll()
-        model.audioOutDevices.removeAll()
-        for i in 0..<numDevices {
-            let audioDevice = AudioDevices(deviceID:devids[i])
-            if (audioDevice.hasInput) {
-                guard let name = audioDevice.name else{
-                    continue
-                }
-                model.audioInDevices.append(ADevice(uid:audioDevice.uid!, name:name, id:audioDevice.audioDeviceID))
-                print("Audio in \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
+        DispatchQueue.main.async {
+            var propsize:UInt32 = 0
+            
+            var address:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
+                mSelector:AudioObjectPropertySelector(kAudioHardwarePropertyDevices),
+                mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
+                mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
+            
+            var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
+            
+            if (result != 0) {
+                print("Error \(result) from AudioObjectGetPropertyDataSize")
+                return
             }
-            if (audioDevice.hasOutput) {
-                guard let name = audioDevice.name else{
-                    continue
-                }
-                model.audioOutDevices.append(ADevice(uid:audioDevice.uid! , name:name, id:audioDevice.audioDeviceID))
-                print("Audio out \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
-           }
-        }
-        // set defaullts if we have any
-        if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
-            model.audioInDevice = UserDefaults.standard.string(forKey: "audioIn")!
-           
-        }else{
-            if model.audioInDevices.count > 0{
-                model.audioInDevice = model.audioInDevices[model.audioInDevices.count - 1].name
-            }else{
-                print("There are no Audio In devices")
+            
+            let numDevices = Int(propsize / UInt32(MemoryLayout<AudioDeviceID>.size))
+            
+            var devids = [AudioDeviceID]()
+            for _ in 0..<numDevices {
+                devids.append(AudioDeviceID())
             }
-        }
-        
-        if  (UserDefaults.standard.string(forKey: "audioOut") != nil){
-            model.audioOutDevice = UserDefaults.standard.string(forKey: "audioOut")!
-        }else{
-            if model.audioOutDevices.count > 0{
-                model.audioOutDevice = model.audioOutDevices[model.audioOutDevices.count - 1].name
+            
+            result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
+            if (result != 0) {
+                print("Error \(result) from AudioObjectGetPropertyData")
+                return
+            }
+            
+            model.audioInDevices.removeAll()
+            model.audioOutDevices.removeAll()
+            for i in 0..<numDevices {
+                let audioDevice = AudioDevices(deviceID:devids[i])
+                if (audioDevice.hasInput) {
+                    guard let name = audioDevice.name else{
+                        continue
+                    }
+                    model.audioInDevices.append(ADevice(uid:audioDevice.uid!, name:name, id:audioDevice.audioDeviceID))
+                    print("Audio in \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
+                }
+                if (audioDevice.hasOutput) {
+                    guard let name = audioDevice.name else{
+                        continue
+                    }
+                    model.audioOutDevices.append(ADevice(uid:audioDevice.uid! , name:name, id:audioDevice.audioDeviceID))
+                    print("Audio out \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
+                }
+            }
+            // set defaullts if we have any
+            if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
+                model.audioInDevice = UserDefaults.standard.string(forKey: "audioIn")!
+                
             }else{
-                print("There are no Audio Out devices")
+                if model.audioInDevices.count > 0{
+                    model.audioInDevice = model.audioInDevices[model.audioInDevices.count - 1].name
+                }else{
+                    print("There are no Audio In devices")
+                }
+            }
+            
+            if  (UserDefaults.standard.string(forKey: "audioOut") != nil){
+                model.audioOutDevice = UserDefaults.standard.string(forKey: "audioOut")!
+            }else{
+                if model.audioOutDevices.count > 0{
+                    model.audioOutDevice = model.audioOutDevices[model.audioOutDevices.count - 1].name
+                }else{
+                    print("There are no Audio Out devices")
+                }
             }
         }
     }

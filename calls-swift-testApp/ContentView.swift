@@ -65,6 +65,7 @@ struct ContentView: View {
     @State var chooseFile = false
     @State var filePath = ""
     @State var fileUrl :URL?
+    @State var closeTrackForceFlag  = false
     
 
     func getSession(){
@@ -257,33 +258,38 @@ struct ContentView: View {
                     // Remove Track
                     VStack{
                         Text("Close Track")
-                        Button("Close"){
-                            if m.sessionId != ""{
-                                Task{
-                                    await controller.webRtcClient!.getOfffer(){ sdp in
-                                        Task{
-                                            let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
-                                            let local = Calls.CloseTrackObject(mid: trackMid)
-                                            print(trackMid)
-                                            let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : false)
-                                            await self.m.api.close(sessionId: self.m.sessionId, closeTracksRequest: closeTacksRequest){res, error in
-                                                if(error.count > 0){
-                                                    print(error)
-                                                    return
-                                                }
-                                                print(error)
-                                                for t in res!.tracks{
-                                                    print(t)
+                        HStack{
+                            Text("mid")
+                            TextField("mid", text: $trackMid).textSelection(.enabled)
+                            Spacer()
+                            Toggle("force", isOn: $closeTrackForceFlag).frame(width:100)
+                            Button("Close"){
+                                if m.sessionId != ""{
+                                    Task{
+                                        await controller.webRtcClient!.removeTrack(mid: trackMid)
+                                        await controller.webRtcClient!.getOfffer(){ sdp in
+                                            Task{
+                                                let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
+                                                let local = Calls.CloseTrackObject(mid: trackMid)
+                                                print(trackMid)
+                                                let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : closeTrackForceFlag)
+                                                await self.m.api.close(sessionId: self.m.sessionId, closeTracksRequest: closeTacksRequest){res, error in
+                                                    if(error.count > 0){
+                                                        print(error)
+                                                        return
+                                                    }
+                                                    
+                                                    if res!.requiresImmediateRenegotiation{
+                                                        Task{
+                                                            await controller.webRtcClient!.renegotiate()
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
-                        }.buttonStyle(MyButtonStyle())
-                        HStack{
-                            TextField("mid", text: $trackMid).textSelection(.enabled)
-                            Text("mid")
+                            }.buttonStyle(MyButtonStyle())
                         }
                     }.padding(5).border(.gray, width: 1)
                 }
