@@ -65,6 +65,7 @@ struct ContentView: View {
     @State var chooseFile = false
     @State var filePath = ""
     @State var fileUrl :URL?
+    
 
     func getSession(){
         Task{
@@ -103,6 +104,7 @@ struct ContentView: View {
     func videoInChanged(_ tag: String) {
         m.camera = tag
         UserDefaults.standard.set(tag, forKey: "videoIn")
+        controller.updateCameraInputDevice(name: tag)
     }
     
     func audioInChanged(_ tag: String) {
@@ -121,7 +123,7 @@ struct ContentView: View {
             
             // Configuration
             HStack{
-                Button(isHidden ? "show config" : "show video"){
+                Button(isHidden ? "conf" : "video"){
                     isHidden = !isHidden
                     defaults.set(isHidden, forKey: "isHidden")
                 }.buttonStyle(MyButtonStyle())
@@ -132,7 +134,7 @@ struct ContentView: View {
                 Text("\(isConnected)").font(.system(size: fontSize))
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
-                Button("Enter Room"){
+                Button("Enter"){
                     m.room = room
                     print(room)
                     stm.exec(state: .START_SESSION)

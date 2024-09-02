@@ -11,20 +11,18 @@ import WebRTC
 import Calls_Swift
 
 class Model : ObservableObject, @unchecked Sendable{
-    
+
     public init(){
+        Model.model = self
         #if os(iOS)
         youView.videoContentMode = .scaleAspectFit
         meView.videoContentMode = .scaleAspectFit
-        #else
-        youView = RTCMTLNSVideoView()
-        meView = RTCMTLNSVideoView()
         #endif
-        Model.model = self
     }
     
     // Calls API to Cloudflare
     let api = Calls()
+    
     static var model: Model?
     
     static func getInstance() ->Model{

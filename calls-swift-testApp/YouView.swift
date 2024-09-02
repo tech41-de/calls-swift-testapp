@@ -27,6 +27,7 @@ struct YouView : NSViewRepresentable{
     }
 }
 #else
+
 struct YouView : UIViewRepresentable{
     
     var width:CGFloat = 0
@@ -39,6 +40,8 @@ struct YouView : UIViewRepresentable{
     
     func makeUIView(context: Context) ->RTCMTLVideoView{
         return model.youView
+        
+        
     }
     
     func updateUIView(_ nsView: RTCMTLVideoView, context: Context) {

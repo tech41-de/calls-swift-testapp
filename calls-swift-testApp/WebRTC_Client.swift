@@ -140,6 +140,10 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     private var peerConnection: RTCPeerConnection?
     private var videoLocalId = ""
     
+    func switchVideo(){
+        
+    }
+    
     func setupStream() async{
         let videoSource = WebRTC_Client.factory.videoSource()
         videoLocalId = "v_" + UUID().uuidString

@@ -35,14 +35,56 @@ class AudioDeviceManager{
                 print(error)
             }
         }
+        
+        guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
+           print("No inputs available ")
+           return
+       }
+        
+        DispatchQueue.main.async {
+            self.model.audioInDevices.removeAll()
+            for input in availableInputs{
+                var device = ADevice()
+                device.id = 0
+                device.name = input.portName
+                device.uid = input.uid
+                self.model.audioInDevices.append(device)
+            }
+        }
+        
+        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
+        DispatchQueue.main.async {
+            self.model.audioOutDevices.removeAll()
+            for out in outputs{
+                var device = ADevice()
+                device.id = 0
+                device.name = out.portName
+                device.uid = out.uid
+                self.model.audioOutDevices.append(device)
+            }
+        }
     }
     
-    func setInputDevice(uid: UInt32){
-        
+    func setInputDevice(name: String){
+        print("input device \(name)")
+        do {
+            guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
+               print("No inputs available ")
+               return
+           }
+            for d in availableInputs{
+                if d.portName == name{
+                    try AVAudioSession.sharedInstance().setPreferredInput(d)
+                }
+            }
+           
+            } catch {
+                print("Unable to set the built-in mic as the preferred input.")
+        }
     }
     
     func setOutputDevice(uid: UInt32){
-        
+        print("output device \(uid)")
     }
 }
 

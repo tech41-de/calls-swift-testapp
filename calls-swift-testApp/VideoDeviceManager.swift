@@ -98,7 +98,14 @@ class VideoDeviceManager{
         for device in devices.devices {
             model.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
         }
-        model.camera = model.videoDevices[0].name
+        
+        // this is for iPhone
+        if model.videoDevices.count > 1 && model.videoDevices[1].name == "Front Camera"{
+            model.camera = model.videoDevices[1].name
+        }else{
+            model.camera = model.videoDevices[0].name
+        }
+       
         print("Using camera \(model.camera)")
     }
 }

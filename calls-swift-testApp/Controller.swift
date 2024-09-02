@@ -17,6 +17,7 @@ class Controller : ObservableObject{
     var model : Model?
     var signalClient : SignalClient?
     var webRtcClient : WebRTC_Client?
+    var stm : STM?
     var jobId :Int32 = 0
     var pingSendAt = 0
     
@@ -27,6 +28,7 @@ class Controller : ObservableObject{
     func setup(model:Model, stm:STM, signalClient: SignalClient){
         self.model = model
         self.signalClient = signalClient
+        self.stm = stm
         webRtcClient =  WebRTC_Client()
         webRtcClient!.setup(model: model, stm: stm, controller : self)
     }
@@ -65,7 +67,7 @@ class Controller : ObservableObject{
             case .chat:
                 let chatMsg = msg.obj as? ChatMsg
                 DispatchQueue.main.async {
-                    print(self.model)
+                    print(self.model ?? "")
                     self.model!.chatReceived += chatMsg!.text + "\n"
                 }
                 break
@@ -121,13 +123,18 @@ class Controller : ObservableObject{
         signalClient!.send(req: req)
     }
     
+    func updateCameraInputDevice(name:String){
+     print("Setting Camera \(name)")
+        stm!.exec(state: .START_STREAM)
+    }
+    
     func updateAudioInputDevice(name:String){
         guard let device = model!.getAudioInDevice(name: name)else{
             return
         }
         model!.audioInDevice = name
         UserDefaults.standard.set(name, forKey: "audioIn")
-        AudioDeviceManager(model:model!).setInputDevice(uid: device.id)
+        AudioDeviceManager(model:model!).setInputDevice(name:name)
     }
     
     func updateAudioOutputDevice(name:String){
