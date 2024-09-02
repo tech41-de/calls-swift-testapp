@@ -115,11 +115,13 @@ struct ContentView: View {
 
     var body: some View {
         let fontSize:CGFloat = 9
+        
+        ScrollView(.vertical){
         VStack(alignment: .leading, spacing:5){
             
             // Configuration
             HStack{
-                Button(isHidden ? "show config" : "hide config"){
+                Button(isHidden ? "show config" : "show video"){
                     isHidden = !isHidden
                     defaults.set(isHidden, forKey: "isHidden")
                 }.buttonStyle(MyButtonStyle())
@@ -174,7 +176,7 @@ struct ContentView: View {
                                 m.videoHeight = g.size.height
                             }
                     }
-                }.frame(maxHeight:300)
+                }.frame(minHeight:200, maxHeight:300)
             }
             
             // Debug Fields Start
@@ -184,23 +186,23 @@ struct ContentView: View {
                     Text("Local Tracks")
                     
                     HStack{
-                        TextField("Session Id Local", text: $sessionId).textSelection(.enabled)
-                        Text("Session Id")
+                        TextField("Session Id Local", text: $sessionId).textSelection(.enabled).font(.system(size: 11))
+                        Text("Session Id").font(.system(size: 11))
                     }
                     
                     HStack{
-                        TextField("Track Id Audio Local", text: $localAudioTrackId).textSelection(.enabled)
-                        Text("Track ID Audio ")
+                        TextField("Track Id Audio Local", text: $localAudioTrackId).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Audio ").font(.system(size: 11))
                     }
                     
                     HStack{
-                        TextField("Track Id Video Local", text: $localVideoTrackId).textSelection(.enabled)
-                        Text("Track ID Video")
+                        TextField("Track Id Video Local", text: $localVideoTrackId).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Video").font(.system(size: 11))
                     }
                     
                     HStack{
-                        TextField("Track Id Data Local", text: $localDataChannelName).textSelection(.enabled)
-                        Text("Track ID Data")
+                        TextField("Track Id Data Local", text: $localDataChannelName).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Data").font(.system(size: 11))
                     }
                     
                 }.padding(5).border(.gray, width: 1)
@@ -218,20 +220,20 @@ struct ContentView: View {
                      }.buttonStyle(MyButtonStyle())
                      */
                     HStack{
-                        TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled)
-                        Text("Session Id")
+                        TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled).font(.system(size: 11))
+                        Text("Session Id").font(.system(size: 11))
                     }
                     HStack{
-                        TextField("Track ID Audio", text: $trackIdAudioRemote).textSelection(.enabled)
-                        Text("Track ID Audio ")
+                        TextField("Track ID Audio", text: $trackIdAudioRemote).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Audio ").font(.system(size: 11))
                     }
                     HStack{
-                        TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled)
-                        Text("Track ID Video")
+                        TextField("Track ID Video", text: $trackIdVideoRemote).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Video").font(.system(size: 11))
                     }
                     HStack{
-                        TextField("Track Id Remote Data", text: $remoteDataChannelName).textSelection(.enabled)
-                        Text("Track ID Data")
+                        TextField("Track Id Remote Data", text: $remoteDataChannelName).textSelection(.enabled).font(.system(size: 11))
+                        Text("Track ID Data").font(.system(size: 11))
                     }
                 }.padding(5).border(.gray, width: 1)
                 
@@ -284,7 +286,7 @@ struct ContentView: View {
                     }.padding(5).border(.gray, width: 1)
                 }
             }
-
+            
             VStack{
                 Text("Chat")
                 HStack{
@@ -321,7 +323,7 @@ struct ContentView: View {
                 Button("Send"){
                     controller.ping()
                 }.buttonStyle(MyButtonStyle())
-            Text(pongLatency)
+                Text(pongLatency)
             }
             Spacer()
             HStack(){
@@ -345,7 +347,14 @@ struct ContentView: View {
             }
             
         }.padding()
+    }
         .onAppear(){
+            if defaults.string(forKey: "serverURL") == nil{
+                defaults.setValue("https://rtc.live.cloudflare.com/v1/apps/", forKey: "serverURL")
+                defaults.setValue("", forKey: "appId")
+                defaults.setValue("", forKey: "appSecret")
+                defaults.setValue(false, forKey: "isHidden")
+            }
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!

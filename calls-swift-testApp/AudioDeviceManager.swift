@@ -10,8 +10,16 @@ import AVFoundation
 import AudioToolbox
 import CoreAudio
 
+
 #if os(iOS) && !targetEnvironment(macCatalyst)
 class AudioDeviceManager{
+    
+    let model:Model
+    
+    init(model:Model){
+        self.model = model
+    }
+    
     func setup(){
         let session = AVAudioSession.sharedInstance()
         session.requestRecordPermission(){ ok in
@@ -37,9 +45,11 @@ class AudioDeviceManager{
         
     }
 }
+
 #endif
 
-#if os(macOS) || targetEnvironment(macCatalyst)
+
+#if  os(macOS) || targetEnvironment(macCatalyst)
 class AudioDeviceManager{
     
     let model:Model
