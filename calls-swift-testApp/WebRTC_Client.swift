@@ -141,7 +141,17 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     private var videoLocalId = ""
     
     func switchVideo(){
-        
+        Task{
+            if peerConnection != nil{
+                await removeTrack(mid:model!.localVideoMid)
+            }
+            await setupStream()
+            if peerConnection != nil{
+                await localVideoTrack()
+            }
+            
+            controller!.sendUpdateVideoSignal(receiver: "")
+        }
     }
     
     func setupStream() async{
@@ -242,9 +252,12 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     Track remove
      ========================================================================*/
     func removeTrack(mid:String) async{
-        for tranciever in peerConnection!.transceivers{
-            if tranciever.mid == mid{
-                peerConnection?.removeTrack(tranciever.sender)
+        if peerConnection == nil{
+            return
+        }
+        for transceiver in peerConnection!.transceivers{
+            if transceiver.mid == mid{
+                peerConnection?.removeTrack(transceiver.sender)
             }
         }
     }
@@ -273,6 +286,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 self.model!.localAudioTrackId = self.localAudioTrack!.trackId
                 self.model!.localVideoTrackId = self.localVideoTrack!.trackId
                 self.model!.dataChannelNameLocal = dataChannelName
+                self.model!.localVideoMid = self.transceiverVideo!.mid
                 
                 var tracks = [Track]()
                 tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
@@ -332,6 +346,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 self.model!.localAudioTrackId = self.localAudioTrack!.trackId
                 self.model!.localVideoTrackId = self.localVideoTrack!.trackId
                 self.model!.dataChannelNameLocal = dataChannelName
+                self.model!.localVideoMid = self.transceiverVideo!.mid
                 
                 var tracks = [Track]()
                 tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
@@ -393,6 +408,44 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             }
         }catch{
             print(error)
+        }
+    }
+    
+    /*========================================================================
+     Remote Video Track - needed for camera change
+     ========================================================================*/
+    func UpdateVideoTrack() async{
+        print("Adding Video Track \(model!.trackIdVideoRemote)")
+       
+        var tracks = [Calls.RemoteTrack]()
+        let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: model!.sessionIdRemote, trackName:model!.trackIdVideoRemote)
+        tracks.append(trackVideo)
+        let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
+        
+        // API Call for new Tracks
+        await model!.api.newTracks(sessionId: model!.sessionId, newTracksRemote:newTracksRemote){ [self]newTracksResponse, error in
+            
+            // Renegotiate
+            guard let res = newTracksResponse else {
+                print(error ?? "")
+                return
+            }
+            let isRenegotiate = res.requiresImmediateRenegotiation
+            if isRenegotiate{
+                Task{
+                    if res.sessionDescription.type == "answer"{
+                        print("this is wrong, should be an offer")
+                        return
+                    }
+                    
+                    // renegotiate
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        Task{
+                            await self.renegotiate()
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -500,7 +553,27 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let sessionDescription = Calls.SessionDescription(type: "answer", sdp: sdp!.sdp)
         await model!.api.renegotiate(sessionId: model!.sessionId, sessionDescription:sessionDescription){ res in
             print("Renegotiate response \(res)");
-            self.model!.hasRemoteTracks = "✅"
+            DispatchQueue.main.async {
+                self.model!.hasRemoteTracks = "✅"
+            }
+
+            DispatchQueue.main.async { [self] in
+                print("Searching for the track")
+                for tranceiver in peerConnection!.transceivers{
+                    print(model!.trackIdVideoRemote)
+                    if tranceiver.receiver.track?.trackId == model!.trackIdVideoRemote{
+                        print("Found Video Track to replace")
+                        if let videoTrack = tranceiver.receiver.track as? RTCVideoTrack {
+                            print("adding Video Track to replace")
+                            self.remoteVideoTrack = videoTrack as RTCVideoTrack
+                            self.remoteVideoTrack!.add(Model.getInstance().youView)
+                            return
+                        }
+                    }
+                }
+                print("did not find track to replace")
+            }
+
         }
     }
     

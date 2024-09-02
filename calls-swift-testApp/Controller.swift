@@ -39,6 +39,12 @@ class Controller : ObservableObject{
         }
     }
     
+    func updateVideoTrack(){
+        Task{
+            await webRtcClient!.UpdateVideoTrack()
+        }
+    }
+    
     func chatSend(text:String){
         Task{
             do{
@@ -117,6 +123,16 @@ class Controller : ObservableObject{
         signalClient!.send(req: req)
     }
     
+    func sendUpdateVideoSignal(receiver:String){
+        for t in model!.tracks{
+            print(t)
+        }
+        
+        let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
+        let req = SignalReq(cmd:"updateVideo", receiver:receiver, session:session )
+        signalClient!.send(req: req)
+    }
+    
     func sendUpdateSignal(receiver:String){
         let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
         let req = SignalReq(cmd:"update", receiver:receiver, session:session )
@@ -125,7 +141,7 @@ class Controller : ObservableObject{
     
     func updateCameraInputDevice(name:String){
      print("Setting Camera \(name)")
-        stm!.exec(state: .START_STREAM)
+        webRtcClient!.switchVideo()
     }
     
     func updateAudioInputDevice(name:String){

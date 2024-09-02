@@ -82,6 +82,8 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var isDebug = false
     @Published var chatReceived = ""
     @Published var pongLatency = 0
+    
+    @Published var localVideoMid = ""
 
 
     func getAudioInDevice(name:String)->ADevice?{

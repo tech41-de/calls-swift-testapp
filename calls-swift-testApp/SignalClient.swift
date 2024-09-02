@@ -78,6 +78,13 @@ class SignalClient : WebSocketDelegate{
                         self.controller.setRemoteTracks()
                     }
                 }
+                if res.cmd == "updateVideo" && res.session.sessionId != model.sessionId{
+                    DispatchQueue.main.async {
+                        self.model.sessionIdRemote = res.session.sessionId
+                        self.model.trackIdVideoRemote = res.session.tracks[0].trackId
+                        self.controller.updateVideoTrack()
+                    }
+                }
             }catch{
                 print(error)
             }
