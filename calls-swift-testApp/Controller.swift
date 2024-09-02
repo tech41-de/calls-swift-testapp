@@ -134,7 +134,7 @@ class Controller : ObservableObject{
         }
         model!.audioInDevice = name
         UserDefaults.standard.set(name, forKey: "audioIn")
-        AudioDeviceManager(model:model!).setInputDevice(name:name)
+        AudioDeviceManager(model:model!).setInputDevice(device:device)
     }
     
     func updateAudioOutputDevice(name:String){
@@ -143,6 +143,6 @@ class Controller : ObservableObject{
         }
         model!.audioOutDevice = name
         UserDefaults.standard.set(name, forKey: "audioOut")
-        AudioDeviceManager(model:model!).setOutputDevice(uid: device.id)
+        AudioDeviceManager(model:model!).setOutputDevice(device: device)
     }
 }

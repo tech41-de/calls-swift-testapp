@@ -65,15 +65,15 @@ class AudioDeviceManager{
         }
     }
     
-    func setInputDevice(name: String){
-        print("input device \(name)")
+    func setInputDevice(device: ADevice){
+        print("input device \(device.name)")
         do {
             guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
                print("No inputs available ")
                return
            }
             for d in availableInputs{
-                if d.portName == name{
+                if d.portName == device.name{
                     try AVAudioSession.sharedInstance().setPreferredInput(d)
                 }
             }
@@ -83,8 +83,8 @@ class AudioDeviceManager{
         }
     }
     
-    func setOutputDevice(uid: UInt32){
-        print("output device \(uid)")
+    func setOutputDevice(device: ADevice){
+        print("output device \(device.name)")
     }
 }
 
@@ -129,17 +129,18 @@ class AudioDeviceManager{
                 self.model.audioInputDefaultDevice = self.getDefaultInDevice(forScope: kAudioObjectPropertyScopeOutput)
                 self.model.audioOutputDefaultDevice = self.getDefaultOutDevice(forScope: kAudioObjectPropertyScopeInput)
                 
-                let input = self.model.getAudioInDevice(name: self.model.audioInDevice)
-                self.setInputDevice(uid:input!.id)
+                let deviceIn = self.model.getAudioInDevice(name: self.model.audioInDevice)
+                self.setInputDevice(device:deviceIn!)
                 
-                let output = self.model.getAudioOutDevice(name: self.model.audioOutDevice)
-                self.setOutputDevice(uid:output!.id)
+                let deviceOut = self.model.getAudioOutDevice(name: self.model.audioOutDevice)
+                self.setOutputDevice(device:deviceOut!)
             }
         }
     }
     
-    func setDefaultDeviceOutput(_ deviceID: AudioDeviceID, forScope scope: AudioObjectPropertyScope) {
-        var deviceID = deviceID
+    func setDefaultDeviceOutput(device:ADevice, forScope scope: AudioObjectPropertyScope) {
+        var deviceID = device.id
+        
         let propertySize = UInt32(MemoryLayout<AudioDeviceID>.size)
         
         var address = AudioObjectPropertyAddress(
@@ -160,8 +161,9 @@ class AudioDeviceManager{
         }
     }
     
-    func setDefaultDeviceInput(_ deviceID: AudioDeviceID, forScope scope: AudioObjectPropertyScope) {
-        var deviceID = deviceID
+    func setDefaultDeviceInput(device:ADevice, forScope scope: AudioObjectPropertyScope) {
+        var deviceID = device.id
+        
         let propertySize = UInt32(MemoryLayout<AudioDeviceID>.size)
         
         var address = AudioObjectPropertyAddress(
@@ -182,12 +184,12 @@ class AudioDeviceManager{
         }
     }
     
-    func setInputDevice(uid:AudioDeviceID){
-        setDefaultDeviceInput(uid, forScope: kAudioObjectPropertyScopeInput)
+    func setInputDevice(device:ADevice){
+        setDefaultDeviceInput(device:device, forScope: kAudioObjectPropertyScopeInput)
     }
     
-    func setOutputDevice(uid:AudioDeviceID){
-        setDefaultDeviceOutput(uid, forScope: kAudioObjectPropertyScopeOutput)
+    func setOutputDevice(device:ADevice){
+        setDefaultDeviceOutput(device:device, forScope: kAudioObjectPropertyScopeOutput)
     }
     
     func getDefaultInDevice(forScope scope: AudioObjectPropertyScope) -> AudioDeviceID {
