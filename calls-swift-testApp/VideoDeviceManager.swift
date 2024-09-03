@@ -29,14 +29,10 @@ class VideoDeviceManager{
         })
         
         for f in formats{
-            print(f)
             let w = CMVideoFormatDescriptionGetDimensions(f.formatDescription).width
-            print(w)
             if w >= Int(width){
                 let franges = f.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }
-                print(franges.count)
                 for fr in franges{
-                    print(fr)
                     if Int(fr.maxFrameRate) >= fps && Int(fr.minFrameRate) <= fps{
                         return (f,fps)
                     }else{
@@ -93,7 +89,6 @@ class VideoDeviceManager{
         
 #endif
         let devices = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
-        print("Video devices found \(devices.devices.count)")
         model.videoDevices.removeAll()
         for device in devices.devices {
             model.videoDevices.append(ADevice(uid:device.uniqueID, name:device.localizedName))
@@ -105,7 +100,5 @@ class VideoDeviceManager{
         }else{
             model.camera = model.videoDevices[0].name
         }
-       
-        print("Using camera \(model.camera)")
     }
 }

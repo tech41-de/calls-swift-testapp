@@ -23,7 +23,6 @@ class AudioDeviceManager{
     func setup(){
         let session = AVAudioSession.sharedInstance()
         session.requestRecordPermission(){ ok in
-            print("Audio Permission given \(ok)")
             if !ok{
                 return
             }
@@ -105,7 +104,6 @@ class AudioDeviceManager{
         #if targetEnvironment(macCatalyst)
         let session = AVAudioSession.sharedInstance()
         session.requestRecordPermission(){ ok in
-            print("Audio Permission given \(ok)")
             if !ok{
                 return
             }
@@ -283,11 +281,9 @@ class AudioDeviceManager{
     func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
         switch AVCaptureDevice.authorizationStatus(for: .audio) {
         case .authorized:
-            print("authorized")
             completion(true)
             
         case .notDetermined:
-            print("notDetermined")
             AVCaptureDevice.requestAccess(for: .audio) { granted in
                 if granted {
                     completion(granted)
@@ -297,12 +293,10 @@ class AudioDeviceManager{
             }
             
         case .denied, .restricted:
-            print("denied")
             SystemSettingsHandler.openSystemSetting(for: "microphone")
             completion(false)
             
         @unknown default:
-            print("unknown")
             completion(false)
         }
     }
@@ -435,7 +429,6 @@ class AudioDeviceFinder {
             var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
             
             if (result != 0) {
-                print("Error \(result) from AudioObjectGetPropertyDataSize")
                 return
             }
             
@@ -448,7 +441,6 @@ class AudioDeviceFinder {
             
             result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
             if (result != 0) {
-                print("Error \(result) from AudioObjectGetPropertyData")
                 return
             }
             
@@ -461,14 +453,12 @@ class AudioDeviceFinder {
                         continue
                     }
                     model.audioInDevices.append(ADevice(uid:audioDevice.uid!, name:name, id:audioDevice.audioDeviceID))
-                    print("Audio in \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
                 }
                 if (audioDevice.hasOutput) {
                     guard let name = audioDevice.name else{
                         continue
                     }
                     model.audioOutDevices.append(ADevice(uid:audioDevice.uid! , name:name, id:audioDevice.audioDeviceID))
-                    print("Audio out \(String(describing: audioDevice.name)) \(String(describing: audioDevice.uid))")
                 }
             }
             // set defaullts if we have any

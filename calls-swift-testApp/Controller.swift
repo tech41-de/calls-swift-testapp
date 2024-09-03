@@ -39,12 +39,6 @@ class Controller : ObservableObject{
         }
     }
     
-    func updateVideoTrack(mid:String){
-        Task{
-            await webRtcClient!.UpdateVideoTrack(mid:mid)
-        }
-    }
-    
     func chatSend(text:String){
         Task{
             do{
@@ -73,7 +67,6 @@ class Controller : ObservableObject{
             case .chat:
                 let chatMsg = msg.obj as? ChatMsg
                 DispatchQueue.main.async {
-                    print(self.model ?? "")
                     self.model!.chatReceived += chatMsg!.text + "\n"
                 }
                 break
@@ -130,7 +123,6 @@ class Controller : ObservableObject{
     }
     
     func updateCameraInputDevice(name:String){
-     print("Setting Camera \(name)")
         webRtcClient!.switchVideo()
     }
     

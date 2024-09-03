@@ -21,6 +21,44 @@ class RTCMTLRenderer{
     
     let cubeVertexData : [Float] = [-1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 1.0, 0.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
 
+    static func getCubeVertexData(cropX : Int, cropY :Int, cropWidth : Int, cropHeight : Int, frameWidth :Int, frameHeight : Int, rotation : RTCVideoRotation) ->[Float]{
+
+        let cropLeft = Float(cropX / frameWidth)
+        let cropRight = Float((cropX + cropWidth) / frameWidth)
+        let cropTop = Float(cropY / frameHeight)
+        let cropBottom = Float((cropY + cropHeight) / frameHeight)
+
+      // These arrays map the view coordinates to texture coordinates, taking cropping and rotation
+      // into account. The first two columns are view coordinates, the last two are texture coordinates.
+      switch (rotation) {
+      case ._0:
+          return [-1.0, -1.0, cropLeft, cropBottom,
+                               1.0, -1.0, cropRight, cropBottom,
+                              -1.0,  1.0, cropLeft, cropTop,
+                               1.0,  1.0, cropRight, cropTop];
+    case ._90:
+          return [-1.0, -1.0, cropRight, cropBottom,
+                               1.0, -1.0, cropRight, cropTop,
+                              -1.0,  1.0, cropLeft, cropBottom,
+                               1.0,  1.0, cropLeft, cropTop]
+      case ._180:
+          return [-1.0, -1.0, cropRight, cropTop,
+                               1.0, -1.0, cropLeft, cropTop,
+                              -1.0,  1.0, cropRight, cropBottom,
+                               1.0,  1.0, cropLeft, cropBottom]
+      case ._270:
+          return [-1.0, -1.0, cropLeft, cropTop,
+                               1.0, -1.0, cropLeft, cropBottom,
+                              -1.0, 1.0, cropRight, cropTop,
+                               1.0, 1.0, cropRight, cropBottom]
+      @unknown default:
+          return [-1.0, -1.0, cropLeft, cropBottom,
+                               1.0, -1.0, cropRight, cropBottom,
+                              -1.0,  1.0, cropLeft, cropTop,
+                               1.0,  1.0, cropRight, cropTop]
+      }
+    }
+    
     func offsetForRotation(rotation : RTCVideoRotation ) ->Int{
       switch (rotation) {
           
@@ -40,12 +78,9 @@ class RTCMTLRenderer{
           return 0
       }
     }
-    
-    let kMaxInflightBuffers = 1
-    
+
     var _view : MTKView?
-    var _inflight_semaphore : dispatch_semaphore_t?
-    
+
     // Renderer.
     var _device : MTLDevice?
     var _commandQueue : MTLCommandQueue?
@@ -60,7 +95,6 @@ class RTCMTLRenderer{
     
     init(){
         _offset = 0;
-        _inflight_semaphore = DispatchSemaphore(value: kMaxInflightBuffers);
     }
     
     func addRenderingDestination(_ view : MTKView) ->Bool{
@@ -71,15 +105,14 @@ class RTCMTLRenderer{
       var success = false
         if setupMetal() {
             setupView(view:view)
-            loadAssets()
             setupBuffers()
             success = true
       }
       return success
     }
     
-   func currentMetalDevice() ->MTLDevice{
-       return _device!
+   func currentMetalDevice() ->MTLDevice?{
+       return _device
     }
     
     func shaderSource() ->String{
@@ -94,14 +127,12 @@ class RTCMTLRenderer{
         _offset = offsetForRotation(rotation: frame.rotation);
       return true
     }
-     
     
     func setupMetal()->Bool {
-      // Set the view to use the default device.
-      _device = MTLCreateSystemDefaultDevice()
+        _device = MTLCreateSystemDefaultDevice()
         if (_device == nil) {
-        return false
-      }
+            return false
+        }
         _commandQueue = _device!.makeCommandQueue()
         do{
             let sourceLibrary = try _device!.makeLibrary(source: shaderSource(), options:nil)
@@ -111,14 +142,16 @@ class RTCMTLRenderer{
             print(error)
             return false
         }
-      return true
+        return true
     }
 
     func setupView(view: MTKView){
-      view.device = _device;
-      view.preferredFramesPerSecond = 30;
-      view.autoResizeDrawable = false;
-      _view = view;
+        _view = view
+       view.device = _device
+       view.preferredFramesPerSecond = 30
+       view.autoResizeDrawable = false
+        loadAssets()
+        _vertexBuffer = _device!.makeBuffer(bytes: cubeVertexData, length:4 * 32, options:.cpuCacheModeWriteCombined) // cpuCacheModeWriteCombined
     }
     
     func loadAssets() {
@@ -138,16 +171,28 @@ class RTCMTLRenderer{
     }
     
     func setupBuffers(){
-        _vertexBuffer = _device!.makeBuffer(bytes: cubeVertexData, length:MemoryLayout<Float>.size * 64, options:.cpuCacheModeWriteCombined)
+       
+    }
+    
+    let semaphore = DispatchSemaphore(value: 1)
+   
+    func drawFrame(frame:RTCVideoFrame?){
+        if frame == nil{
+            return
+        }
+       semaphore.wait()
+        if setupTexturesForFrame(frame:frame!){
+            render()
+        }else{
+            semaphore.signal()
+        }
     }
     
     func render (){
-        let _ = _inflight_semaphore!.wait(timeout:.distantFuture )
         let commandBuffer = _commandQueue!.makeCommandBuffer()
         commandBuffer!.label = RTCMTLRenderer.commandBufferLabel
-        let dispatch_semaphore_t  = _inflight_semaphore
-        commandBuffer?.addCompletedHandler(){res in
-            dispatch_semaphore_t!.signal();
+        commandBuffer!.addCompletedHandler(){res in
+           self.semaphore.signal()
         }
 
         let renderPassDescriptor = _view?.currentRenderPassDescriptor
@@ -157,7 +202,7 @@ class RTCMTLRenderer{
 
             renderEncoder!.pushDebugGroup(RTCMTLRenderer.renderEncoderDebugGroup)
             renderEncoder!.setRenderPipelineState(_pipelineState!)
-            renderEncoder!.setVertexBuffer(_vertexBuffer, offset:_offset * MemoryLayout<Float>.size, index:0)
+            renderEncoder!.setVertexBuffer(_vertexBuffer, offset: 0, index:0) //offset * MemoryLayout<Float>.size
 
             uploadTexturesToRenderEncoder(renderEncoder: renderEncoder!)
             renderEncoder!.drawPrimitives(type: .triangleStrip, vertexStart:0, vertexCount:4, instanceCount:1)

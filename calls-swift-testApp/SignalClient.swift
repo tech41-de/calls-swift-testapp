@@ -46,16 +46,13 @@ class SignalClient : WebSocketDelegate{
             case .connected(let headers):
                 isConnected = true
                 model.isSignalConnectd = true
-                print("websocket is connected: \(headers)")
-            
+    
             case .disconnected(let reason, let code):
                 isConnected = false
             model.isSignalConnectd = false
-                print("websocket is disconnected: \(reason) with code: \(code)")
-            
+          
             case .text(let string):
-                print("Received text: \(string)")
-           
+                
             do{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
@@ -83,8 +80,7 @@ class SignalClient : WebSocketDelegate{
             }
             
             case .binary(let data):
-                print("Received data: \(data.count)")
-            
+                break
             case .ping(_):
                 break
             
@@ -124,7 +120,6 @@ class SignalClient : WebSocketDelegate{
         }
         roomParsed = roomParsed.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
         let uri = "wss://api.pcalls.net/v0/invite/" + roomParsed + "/websocket"
-        print(uri)
         let request = URLRequest(url: URL(string: uri)!)
         socket = WebSocket(request:request)
         socket!.delegate = self

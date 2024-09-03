@@ -93,7 +93,6 @@ struct ContentView: View {
                     }
                 }
                 sessionData = tracks + dataChannel
-                print(sessionData)
             }
         }
     }
@@ -129,15 +128,14 @@ struct ContentView: View {
                     defaults.set(isHidden, forKey: "isHidden")
                 }.buttonStyle(MyButtonStyle())
                 
-                Text("\(isSignalConnectd)").font(.system(size: fontSize))
                 Text("\(hasSDPLocal)").font(.system(size: fontSize))
                 Text("\(hasSDPRemote)").font(.system(size: fontSize))
                 Text("\(isConnected)").font(.system(size: fontSize))
+                Text("\(isSignalConnectd)").font(.system(size: fontSize))
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
                 Button("Enter"){
                     m.room = room
-                    print(room)
                     stm.exec(state: .START_SESSION)
                 } .buttonStyle(MyButtonStyle())
                 Text(":")
@@ -271,7 +269,7 @@ struct ContentView: View {
                                             Task{
                                                 let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
                                                 let local = Calls.CloseTrackObject(mid: trackMid)
-                                                print(trackMid)
+                                        
                                                 let closeTacksRequest = Calls.CloseTracksRequest(tracks: [local], sessionDescription:desc, force : closeTrackForceFlag)
                                                 await self.m.api.close(sessionId: self.m.sessionId, closeTracksRequest: closeTacksRequest){res, error in
                                                     if(error.count > 0){

@@ -73,34 +73,33 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     
     // RTCPeerConnectionDelegate
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
-        print("peerConnectionShouldNegotiate")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange stateChanged: RTCSignalingState) {
-        print("didChange RTCSignalingState")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
         if peerConnection.iceConnectionState == .connected{
             model!.isConnected = true
         }
-        print("didChange RTCIceConnectionState")
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove stream: RTCMediaStream) {
-        print("didRemove RTCMediaStream")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd stream: RTCMediaStream) {
-        print("didAdd RTCMediaStream")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceGatheringState) {
-        print("didChange RTCIceGatheringState")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didGenerate candidate: RTCIceCandidate) {
-        print("didGenerate RTCIceCandidate")
+
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
@@ -162,7 +161,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let camera = dm.getDevice(name: model!.camera)
         let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
         if format == nil{
-            print("Could not select camera format")
             model!.disableVideo = true
             return
         }
@@ -235,7 +233,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                                 DispatchQueue.main.async {
                                     self.model!.sessionId = sessionId
                                     self.model!.hasSDPRemote = "✅"
-                                    stm!.exec(state: .NEW_LOCAL_TRACKS)
+                                    self.stm!.exec(state: .NEW_LOCAL_TRACKS)
                                 }
                             }else{
                                 print("timeout conneting to STUN, check Internet connection")
@@ -357,46 +355,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             }
         }catch{
             print(error)
-        }
-    }
-    
-    /*========================================================================
-     Remote Video Track - needed for camera change
-     ========================================================================*/
-    func UpdateVideoTrack(mid:String) async{
-        print("Adding Video Track  ID \(model!.trackIdVideoRemote)")
-        print("Adding Video Track mid \(mid)")
-        
-       
-        var tracks = [Calls.RemoteTrack]()
-        let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: model!.sessionIdRemote, trackName:model!.trackIdVideoRemote)
-        tracks.append(trackVideo)
-        let newTracksRemote = Calls.NewTracksRemote(tracks: tracks)
-        
-        // API Call for new Tracks
-        await model!.api.newTracks(sessionId: model!.sessionId, newTracksRemote:newTracksRemote){ [self]newTracksResponse, error in
-            
-            // Renegotiate
-            guard let res = newTracksResponse else {
-                print(error ?? "")
-                return
-            }
-            let isRenegotiate = res.requiresImmediateRenegotiation
-            if isRenegotiate{
-                Task{
-                    if res.sessionDescription.type == "answer"{
-                        print("this is wrong, should be an offer")
-                        return
-                    }
-                    
-                    // renegotiate
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        Task{
-                            await self.renegotiate()
-                        }
-                    }
-                }
-            }
         }
     }
     
