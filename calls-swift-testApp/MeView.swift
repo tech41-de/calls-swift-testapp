@@ -12,13 +12,15 @@ import WebRTC
 struct MeView : NSViewRepresentable{
     
     var width:CGFloat = 0
+    let model:Model
     
-    init(width:CGFloat){
+    init(model:Model, width:CGFloat){
+        self.model = model
         self.width = width
     }
     
     func makeNSView(context: Context) ->RTCMTLNSVideoView{
-        return Model.shared.meView
+        return model.meView
     }
     
     func updateNSView(_ nsView: RTCMTLNSVideoView, context: Context) {

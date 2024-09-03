@@ -82,7 +82,7 @@ class SignalClient : WebSocketDelegate{
                     DispatchQueue.main.async {
                         self.model.sessionIdRemote = res.session.sessionId
                         self.model.trackIdVideoRemote = res.session.tracks[0].trackId
-                        self.controller.updateVideoTrack()
+                        self.controller.updateVideoTrack(mid:res.session.tracks[0].mid)
                     }
                 }
             }catch{

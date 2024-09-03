@@ -39,9 +39,9 @@ class Controller : ObservableObject{
         }
     }
     
-    func updateVideoTrack(){
+    func updateVideoTrack(mid:String){
         Task{
-            await webRtcClient!.UpdateVideoTrack()
+            await webRtcClient!.UpdateVideoTrack(mid:mid)
         }
     }
     

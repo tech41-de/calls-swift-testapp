@@ -21,6 +21,9 @@
 		407886352C772BFF0071FE5F /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886342C772BFF0071FE5F /* YouView.swift */; };
 		407886372C772C150071FE5F /* MeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886362C772C150071FE5F /* MeView.swift */; };
 		407886392C7733550071FE5F /* Controller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407886382C7733550071FE5F /* Controller.swift */; };
+		407C2EE32C86D2D1007AA6DA /* VideoViewMacOS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407C2EE22C86D2D1007AA6DA /* VideoViewMacOS.swift */; };
+		407C2EE52C86E546007AA6DA /* RTCMTLI420Renderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407C2EE42C86E546007AA6DA /* RTCMTLI420Renderer.swift */; };
+		407C2EE72C86F798007AA6DA /* RTCMTLRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407C2EE62C86F798007AA6DA /* RTCMTLRenderer.swift */; };
 		408488B02C784ED0003197F1 /* WebRTC in Frameworks */ = {isa = PBXBuildFile; productRef = 408488AF2C784ED0003197F1 /* WebRTC */; };
 		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
 		40869E8E2C81AC65001DAF06 /* ChannelDataReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */; };
@@ -60,6 +63,9 @@
 		407886362C772C150071FE5F /* MeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeView.swift; sourceTree = "<group>"; };
 		407886382C7733550071FE5F /* Controller.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Controller.swift; sourceTree = "<group>"; };
 		407886442C778C650071FE5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		407C2EE22C86D2D1007AA6DA /* VideoViewMacOS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoViewMacOS.swift; sourceTree = "<group>"; };
+		407C2EE42C86E546007AA6DA /* RTCMTLI420Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCMTLI420Renderer.swift; sourceTree = "<group>"; };
+		407C2EE62C86F798007AA6DA /* RTCMTLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCMTLRenderer.swift; sourceTree = "<group>"; };
 		40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDataReceiver.swift; sourceTree = "<group>"; };
 		4093E9042C79B71F0007618E /* STM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STM.swift; sourceTree = "<group>"; };
 		4093E9062C79D2510007618E /* WebRTC_Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTC_Client.swift; sourceTree = "<group>"; };
@@ -99,6 +105,7 @@
 		407886012C770F780071FE5F /* calls-swift-testApp */ = {
 			isa = PBXGroup;
 			children = (
+				407C2EDF2C86D21F007AA6DA /* objc */,
 				4000FB532C7F4BC700B3928F /* Structs.swift */,
 				4000FB4C2C7F326200B3928F /* SignalClient.swift */,
 				407886442C778C650071FE5F /* Info.plist */,
@@ -119,6 +126,9 @@
 				4093E9062C79D2510007618E /* WebRTC_Client.swift */,
 				40EB43BF2C80B37000901478 /* TestStuff.swift */,
 				40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */,
+				407C2EE22C86D2D1007AA6DA /* VideoViewMacOS.swift */,
+				407C2EE42C86E546007AA6DA /* RTCMTLI420Renderer.swift */,
+				407C2EE62C86F798007AA6DA /* RTCMTLRenderer.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -129,6 +139,13 @@
 				4078860A2C770F790071FE5F /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		407C2EDF2C86D21F007AA6DA /* objc */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = objc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -215,10 +232,12 @@
 			files = (
 				40EB43C02C80B37000901478 /* TestStuff.swift in Sources */,
 				4078861F2C7711540071FE5F /* Main.swift in Sources */,
+				407C2EE72C86F798007AA6DA /* RTCMTLRenderer.swift in Sources */,
 				4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */,
 				4000FB542C7F4BC700B3928F /* Structs.swift in Sources */,
 				407886392C7733550071FE5F /* Controller.swift in Sources */,
 				4093E9072C79D2510007618E /* WebRTC_Client.swift in Sources */,
+				407C2EE32C86D2D1007AA6DA /* VideoViewMacOS.swift in Sources */,
 				40869E8E2C81AC65001DAF06 /* ChannelDataReceiver.swift in Sources */,
 				407886352C772BFF0071FE5F /* YouView.swift in Sources */,
 				4093E9052C79B71F0007618E /* STM.swift in Sources */,
@@ -228,6 +247,7 @@
 				407886242C7717F10071FE5F /* Global.swift in Sources */,
 				4000FB4D2C7F326200B3928F /* SignalClient.swift in Sources */,
 				407886192C7710E60071FE5F /* ContentView.swift in Sources */,
+				407C2EE52C86E546007AA6DA /* RTCMTLI420Renderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -389,7 +409,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";
@@ -438,7 +458,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "de.tech41.calls.testApp.calls-swift-testApp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "calls-swift-testApp/calls-swift-testApp-Bridging-Header.h";

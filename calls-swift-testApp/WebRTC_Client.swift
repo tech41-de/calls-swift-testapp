@@ -141,16 +141,34 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     private var videoLocalId = ""
     
     func switchVideo(){
+      
         Task{
             if peerConnection != nil{
                 await removeTrack(mid:model!.localVideoMid)
             }
-            await setupStream()
-            if peerConnection != nil{
-                await localVideoTrack()
+            Task{
+                await getOfffer(){res in
+                    let desc = Calls.SessionDescription(type: "offer", sdp: res!.sdp)
+                    let track = Calls.CloseTrackObject(mid: self.model!.localVideoMid)
+                    let req = Calls.CloseTracksRequest(tracks:[track], sessionDescription: desc, force: true)
+                    Task{
+                        await self.model!.api.close(sessionId: self.model!.sessionId, closeTracksRequest: req){ [self]res, err in
+                            Task{
+                                await setupStream()
+                                if peerConnection != nil{
+                                    await localVideoTrack()
+                                }
+                                
+                                if res!.requiresImmediateRenegotiation{
+                                    
+                                }
+                                
+                                self.controller!.sendUpdateVideoSignal(receiver: "")
+                            }
+                        }
+                    }
+                }
             }
-            
-            controller!.sendUpdateVideoSignal(receiver: "")
         }
     }
     
@@ -414,8 +432,10 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     /*========================================================================
      Remote Video Track - needed for camera change
      ========================================================================*/
-    func UpdateVideoTrack() async{
-        print("Adding Video Track \(model!.trackIdVideoRemote)")
+    func UpdateVideoTrack(mid:String) async{
+        print("Adding Video Track  ID \(model!.trackIdVideoRemote)")
+        print("Adding Video Track mid \(mid)")
+        
        
         var tracks = [Calls.RemoteTrack]()
         let trackVideo = Calls.RemoteTrack(location: "remote", sessionId: model!.sessionIdRemote, trackName:model!.trackIdVideoRemote)
