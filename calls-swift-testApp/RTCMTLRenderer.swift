@@ -11,7 +11,6 @@ import MetalKit
 import WebRTC
 // https://github.com/pristineio/webrtc-mirror/blob/master/webrtc/sdk/objc/Framework/Classes/Metal/RTCMTLRenderer.mm
 
-
 class RTCMTLRenderer{
     static let vertexFunctionName = "vertexPassthrough"
     static let fragmentFunctionName = "fragmentColorConversion"
@@ -103,12 +102,8 @@ class RTCMTLRenderer{
         return false
       }
         _commandQueue = _device!.makeCommandQueue()
-        var libraryError = NSError();
         do{
-            var sourceLibrary = try _device!.makeLibrary(source: shaderSource(), options:nil)
-            if (sourceLibrary == nil) {
-                return false
-            }
+            let sourceLibrary = try _device!.makeLibrary(source: shaderSource(), options:nil)
             _defaultLibrary = sourceLibrary
         }
         catch{
@@ -127,9 +122,9 @@ class RTCMTLRenderer{
     
     func loadAssets() {
         do{
-            var vertexFunction = _defaultLibrary!.makeFunction(name: RTCMTLRenderer.vertexFunctionName)
-            var fragmentFunction = _defaultLibrary!.makeFunction(name: RTCMTLRenderer.fragmentFunctionName)
-            var pipelineDescriptor = MTLRenderPipelineDescriptor()
+            let vertexFunction = _defaultLibrary!.makeFunction(name: RTCMTLRenderer.vertexFunctionName)
+            let fragmentFunction = _defaultLibrary!.makeFunction(name: RTCMTLRenderer.fragmentFunctionName)
+            let pipelineDescriptor = MTLRenderPipelineDescriptor()
             pipelineDescriptor.label = RTCMTLRenderer.pipelineDescriptorLabel
             pipelineDescriptor.vertexFunction = vertexFunction
             pipelineDescriptor.fragmentFunction = fragmentFunction
@@ -146,38 +141,33 @@ class RTCMTLRenderer{
     }
     
     func render (){
-      // Wait until the inflight (curently sent to GPU) command buffer
-      // has completed the GPU work.
-        _inflight_semaphore!.wait(timeout:.distantFuture )
-
-        var commandBuffer = _commandQueue!.makeCommandBuffer()
+        let _ = _inflight_semaphore!.wait(timeout:.distantFuture )
+        let commandBuffer = _commandQueue!.makeCommandBuffer()
         commandBuffer!.label = RTCMTLRenderer.commandBufferLabel
-
-       var dispatch_semaphore_t  = _inflight_semaphore
-        
+        let dispatch_semaphore_t  = _inflight_semaphore
         commandBuffer?.addCompletedHandler(){res in
             // GPU work completed.
-           // dispatch_semaphore_signal();
-      }
+            dispatch_semaphore_t!.signal();
+        }
 
-        var renderPassDescriptor = _view?.currentRenderPassDescriptor
-      if renderPassDescriptor != nil {  // Valid drawable.
+        let renderPassDescriptor = _view?.currentRenderPassDescriptor
+        if renderPassDescriptor != nil {  // Valid drawable.
           
-          var renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)
-          renderEncoder!.label = RTCMTLRenderer.renderEncoderLabel
+            let renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)
+            renderEncoder!.label = RTCMTLRenderer.renderEncoderLabel
 
-        // Set context state.
-          renderEncoder!.pushDebugGroup(RTCMTLRenderer.renderEncoderDebugGroup)
-          renderEncoder!.setRenderPipelineState(_pipelineState!)
-          renderEncoder!.setVertexBuffer(_vertexBuffer, offset:_offset * MemoryLayout<Float>.size, index:0)
-          
-          uploadTexturesToRenderEncoder(renderEncoder: renderEncoder!)
-          renderEncoder!.drawPrimitives(type: .triangleStrip, vertexStart:0, vertexCount:4, instanceCount:1)
-          renderEncoder!.popDebugGroup()
-          renderEncoder!.endEncoding()
+            // Set context state.
+            renderEncoder!.pushDebugGroup(RTCMTLRenderer.renderEncoderDebugGroup)
+            renderEncoder!.setRenderPipelineState(_pipelineState!)
+            renderEncoder!.setVertexBuffer(_vertexBuffer, offset:_offset * MemoryLayout<Float>.size, index:0)
 
-          commandBuffer!.present((_view?.currentDrawable!)!)
-      }
+            uploadTexturesToRenderEncoder(renderEncoder: renderEncoder!)
+            renderEncoder!.drawPrimitives(type: .triangleStrip, vertexStart:0, vertexCount:4, instanceCount:1)
+            renderEncoder!.popDebugGroup()
+            renderEncoder!.endEncoding()
+
+            commandBuffer!.present((_view?.currentDrawable!)!)
+        }
 
       // CPU work is completed, GPU work can be started.
         commandBuffer!.commit()

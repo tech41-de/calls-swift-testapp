@@ -12,7 +12,7 @@ import MetalKit
 class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-
+       
     }
     
     func draw(in view: MTKView) {
@@ -29,6 +29,7 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
         }
         renderer = RTCMTLI420Renderer(device:metalDevice)
         super.init(frame:frame,device:metalDevice)
+        renderer!.addRenderingDestination(self)
         configure()
     }
     

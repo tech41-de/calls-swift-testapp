@@ -11,10 +11,11 @@ import MetalKit
 import WebRTC
 // https://webrtc.googlesource.com/src/+/48fcf943fd2a4d52f6e77d7f99eccd1aac577c43/sdk/objc/components/renderer/metal/RTCMTLI420Renderer.mm
 
-class RTCMTLI420Renderer{
+class RTCMTLI420Renderer : RTCMTLRenderer{
     
     init(device:MTLDevice){
         self.device = device
+        super.init()
     }
     
     static let shaderSource = """
@@ -57,7 +58,7 @@ class RTCMTLI420Renderer{
           b = y + 1.770 * u;
           float4 out = float4(r, g, b, 1.0);
           return half4(out);
-        });
+        }
 """
     var device : MTLDevice
     var _yTexture : MTLTexture?
@@ -79,11 +80,7 @@ class RTCMTLI420Renderer{
         if frame == nil{
             return
         }
-        setupTexturesForFrame(frame:frame!)
-    }
-    
-    func shaderSource() ->String{
-        return RTCMTLI420Renderer.shaderSource
+        super.render()
     }
     
     func getWidth(frame:RTCVideoFrame) {
@@ -93,7 +90,12 @@ class RTCMTLI420Renderer{
       _cropHeight = Int(frame.height)
     }
     
-    func setupTexturesForFrame(frame: RTCVideoFrame) ->Bool {
+    // Overrides
+    override func shaderSource() ->String{
+        return RTCMTLI420Renderer.shaderSource
+    }
+    
+    override func setupTexturesForFrame(frame: RTCVideoFrame) ->Bool {
         if ((_descriptor == nil) || _width != frame.width || _height != frame.height) {
            
             _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:_width, height:_height, mipmapped:false)
@@ -116,7 +118,7 @@ class RTCMTLI420Renderer{
         return  (_uTexture != nil) && (_yTexture != nil) && (_vTexture != nil);
     }
     
-    func uploadTexturesToRenderEncoder(renderEncoder : MTLRenderCommandEncoder){
+    override func uploadTexturesToRenderEncoder(renderEncoder : MTLRenderCommandEncoder){
         renderEncoder.setFragmentTexture(_yTexture, index:0)
         renderEncoder.setFragmentTexture(_uTexture, index:1)
         renderEncoder.setFragmentTexture(_vTexture, index:2)
