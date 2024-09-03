@@ -30,11 +30,15 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
         }
         renderer = RTCMTLI420Renderer(device:metalDevice)
         super.init(frame:frame,device:metalDevice)
-        renderer!.addRenderingDestination(self)
-        configure()
+        let ok = renderer!.addRenderingDestination(self)
+        if ok{
+            configure()
+        }else{
+            print("could not add Render Destination")
+        }
     }
     
-   required init(coder: NSCoder) {
+    required init(coder: NSCoder) {
        super.init(coder: coder)
     }
     
@@ -51,11 +55,11 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
     }
  
     func drawableSizeWillChange(view: MTKView, size:CGSize){
-        
+        renderer?.setSize(size: size)
     }
     
     func setSize(_ size :CGSize){
-        
+        renderer?.setSize(size: size)
     }
     
     func renderFrame(_ frame : RTCVideoFrame?){

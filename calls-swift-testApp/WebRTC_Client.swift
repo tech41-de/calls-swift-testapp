@@ -56,9 +56,11 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     var transceiverVideo : RTCRtpTransceiver?
     var transceiverData : RTCRtpTransceiver?
 
-    private var videoCapturer: RTCVideoCapturer?
+    private var videoCapturer: RTCCameraVideoCapturer? //RTCVideoCapturer?
     
     private var dataRemoteDelegate : ChannelDataReceiver?
+    private var peerConnection: RTCPeerConnection?
+    private var videoLocalId = ""
     
     private let constraint = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
 
@@ -137,52 +139,19 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         self.localDataChannel?.sendData(buffer)
     }
     
-    private var peerConnection: RTCPeerConnection?
-    private var videoLocalId = ""
-    
     func switchVideo(){
         Task{
          await setupStream()
-            var senders = peerConnection!.senders
-            var videoSender :  RTCRtpSender
+            if peerConnection == nil{
+                return
+            }
+            let senders = peerConnection!.senders
             for s in senders{
-            
                 if s.track?.kind == "video"{
                     s.track = localVideoTrack
                 }
             }
         }
-      /*
-        Task{
-            if peerConnection != nil{
-                await removeTrack(mid:model!.localVideoMid)
-            }
-        
-            Task{
-                await getOfffer(){res in
-                   // let desc = Calls.SessionDescription(type: "offer", sdp: res!.sdp)
-                   // let track = Calls.CloseTrackObject(mid: self.model!.localVideoMid)
-                    let req = Calls.CloseTracksRequest(tracks:[track], sessionDescription: desc, force: true)
-                    Task{
-                        await self.model!.api.close(sessionId: self.model!.sessionId, closeTracksRequest: req){ [self]res, err in
-                            Task{
-                                await setupStream()
-                                if peerConnection != nil{
-                                    await localVideoTrack()
-                                }
-                                
-                                if res!.requiresImmediateRenegotiation{
-                                    
-                                }
-                                
-                                self.controller!.sendUpdateVideoSignal(receiver: "")
-                            }
-                        }
-                    }
-                }
-            }
-        }
-             */
     }
     
     func setupStream() async{
@@ -200,6 +169,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
         do{
             try await capturer.startCapture(with: camera!, format: format!, fps: fps)
+            if videoCapturer != nil{
+                await videoCapturer?.stopCapture()
+            }
             videoCapturer = capturer
         }catch{
             print(error)

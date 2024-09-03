@@ -67,27 +67,24 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     
     var _descriptor :MTLTextureDescriptor?
     var _chromaDescriptor : MTLTextureDescriptor?
-    var _width : Int = 300
-    var _height : Int = 200
-    var _chromaWidth : Int = 300
-    var _chromaHeight : Int = 200
-    var _cropWidth : Int = 300
-    var _cropHeight : Int = 200
+    var _width : Int = 640
+    var _height : Int = 480
+    var _chromaWidth : Int = 640
+    var _chromaHeight : Int = 480
+    
+    func setSize(size:CGSize){
+        _width = Int(size.width)
+        _chromaWidth = Int(size.width)
+        _height = Int(size.height)
+        _chromaHeight = Int(size.height)
+    }
     
     func drawFrame(frame:RTCVideoFrame?){
         if frame == nil{
             return
         }
         setupTexturesForFrame(frame:frame!)
-
         super.render()
-    }
-    
-    func getWidth(frame:RTCVideoFrame) {
-      _width = Int(frame.width)
-      _height = Int(frame.height)
-      _cropWidth = Int(frame.width)
-      _cropHeight = Int(frame.height)
     }
     
     // Overrides
@@ -101,8 +98,11 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
         }
         
         let buffer = frame.buffer.toI420()
+        if buffer.width == 0{
+            return false
+        }
         
-        if ((_descriptor == nil) || _width != frame.width || _height != frame.height) {
+        if ((_descriptor == nil) || _width != frame.width || _height != frame.height) { // r8Unorm - MTLPixelFormatR8Unorm
             _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:_width, height:_height, mipmapped:false)
             _descriptor!.usage = .shaderRead;
             _yTexture = device.makeTexture(descriptor: _descriptor!)
@@ -113,7 +113,7 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
         if ((_chromaDescriptor == nil) || _chromaWidth != frame.width / 2 || _chromaHeight != frame.height / 2) {
             _chromaWidth = Int(frame.width / 2)
             _chromaHeight = Int(frame.height / 2)
-            _chromaDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat:MTLPixelFormat.a8Unorm, width:_chromaWidth, height:_chromaHeight, mipmapped:false)
+            _chromaDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat:MTLPixelFormat.r8Unorm, width:_chromaWidth, height:_chromaHeight, mipmapped:false)
             _chromaDescriptor!.usage =  .shaderRead;
             _uTexture = device.makeTexture(descriptor: _chromaDescriptor!)
             _vTexture = device.makeTexture(descriptor: _chromaDescriptor!)

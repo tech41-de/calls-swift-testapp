@@ -19,9 +19,9 @@ class RTCMTLRenderer{
     static let renderEncoderLabel = "RTCEncoder"
     static let renderEncoderDebugGroup = "RTCDrawFrame"
     
-    static let cubeVertexData = [-1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 1.0, 0.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
+    let cubeVertexData : [Float] = [-1.0, -1.0, 0.0, 1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, -1.0, -1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, -1.0, -1.0, 1.0, 0.0, 1.0, -1.0, 0.0, 0.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 1.0, -1.0, 0.0, 1.0, -1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0]
 
-    static func offsetForRotation(rotation : RTCVideoRotation ) ->Int{
+    func offsetForRotation(rotation : RTCVideoRotation ) ->Int{
       switch (rotation) {
           
       case ._0:
@@ -91,7 +91,7 @@ class RTCMTLRenderer{
     }
 
     func setupTexturesForFrame(frame:RTCVideoFrame)->Bool {
-        _offset = RTCMTLRenderer.offsetForRotation(rotation: frame.rotation);
+        _offset = offsetForRotation(rotation: frame.rotation);
       return true
     }
      
@@ -138,7 +138,7 @@ class RTCMTLRenderer{
     }
     
     func setupBuffers(){
-        _vertexBuffer = _device!.makeBuffer(bytes: RTCMTLRenderer.cubeVertexData, length:MemoryLayout<Double>.size * 64, options:.cpuCacheModeWriteCombined)
+        _vertexBuffer = _device!.makeBuffer(bytes: cubeVertexData, length:MemoryLayout<Float>.size * 64, options:.cpuCacheModeWriteCombined)
     }
     
     func render (){
@@ -147,17 +147,14 @@ class RTCMTLRenderer{
         commandBuffer!.label = RTCMTLRenderer.commandBufferLabel
         let dispatch_semaphore_t  = _inflight_semaphore
         commandBuffer?.addCompletedHandler(){res in
-            // GPU work completed.
             dispatch_semaphore_t!.signal();
         }
 
         let renderPassDescriptor = _view?.currentRenderPassDescriptor
-        if renderPassDescriptor != nil {  // Valid drawable.
-          
+        if renderPassDescriptor != nil {
             let renderEncoder = commandBuffer!.makeRenderCommandEncoder(descriptor: renderPassDescriptor!)
             renderEncoder!.label = RTCMTLRenderer.renderEncoderLabel
 
-            // Set context state.
             renderEncoder!.pushDebugGroup(RTCMTLRenderer.renderEncoderDebugGroup)
             renderEncoder!.setRenderPipelineState(_pipelineState!)
             renderEncoder!.setVertexBuffer(_vertexBuffer, offset:_offset * MemoryLayout<Float>.size, index:0)
@@ -169,8 +166,6 @@ class RTCMTLRenderer{
 
             commandBuffer!.present((_view?.currentDrawable!)!)
         }
-
-      // CPU work is completed, GPU work can be started.
         commandBuffer!.commit()
     }
 }
