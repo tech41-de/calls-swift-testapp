@@ -9,6 +9,7 @@ import SwiftUI
 import WebRTC
 import MetalKit
 
+#if os(macOS)
 class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
@@ -64,5 +65,6 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
         videoFrame = frame!.newI420()
     }
 }
+#endif
 
 

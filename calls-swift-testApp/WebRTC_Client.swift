@@ -141,15 +141,27 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     private var videoLocalId = ""
     
     func switchVideo(){
-      
+        Task{
+         await setupStream()
+            var senders = peerConnection!.senders
+            var videoSender :  RTCRtpSender
+            for s in senders{
+            
+                if s.track?.kind == "video"{
+                    s.track = localVideoTrack
+                }
+            }
+        }
+      /*
         Task{
             if peerConnection != nil{
                 await removeTrack(mid:model!.localVideoMid)
             }
+        
             Task{
                 await getOfffer(){res in
-                    let desc = Calls.SessionDescription(type: "offer", sdp: res!.sdp)
-                    let track = Calls.CloseTrackObject(mid: self.model!.localVideoMid)
+                   // let desc = Calls.SessionDescription(type: "offer", sdp: res!.sdp)
+                   // let track = Calls.CloseTrackObject(mid: self.model!.localVideoMid)
                     let req = Calls.CloseTracksRequest(tracks:[track], sessionDescription: desc, force: true)
                     Task{
                         await self.model!.api.close(sessionId: self.model!.sessionId, closeTracksRequest: req){ [self]res, err in
@@ -170,6 +182,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                 }
             }
         }
+             */
     }
     
     func setupStream() async{
@@ -280,60 +293,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         }
     }
     
-    /*========================================================================
-     Local Video Tracks // needed if Camera gets changed
-     ========================================================================*/
-    func localVideoTrack() async{
-        print("Starting Local Video Tracks")
-
-        // buildl tranceivers
-        let initalize = RTCRtpTransceiverInit()
-        initalize.direction = .sendOnly
-        transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
-        
-        do{
-            let sdp = try await peerConnection!.offer(for: constraint)
-            try await peerConnection!.setLocalDescription(sdp)
-            
-            // call API Local Tracks
-            var localTracks = [Calls.LocalTrack]()
-            let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
-            let dataChannelName = "d_" + UUID().uuidString
-            // update UI
-            DispatchQueue.main.async {
-                self.model!.localAudioTrackId = self.localAudioTrack!.trackId
-                self.model!.localVideoTrackId = self.localVideoTrack!.trackId
-                self.model!.dataChannelNameLocal = dataChannelName
-                self.model!.localVideoMid = self.transceiverVideo!.mid
-                
-                var tracks = [Track]()
-                tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
-                self.model!.tracks = tracks
-            }
-            localTracks.append(trVideo)
-            let desc = Calls.SessionDescription( type:"offer",  sdp:sdp.sdp)
-            let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
-            
-            // New Track API Request!
-            await model!.api.newLocalTracks(sessionId: model!.sessionId, newTracks: req){newTracksResponse, error in
-                if(error.count > 0)
-                {
-                    print(error)
-                    return
-                }
-                guard let sdpStr = newTracksResponse?.sessionDescription.sdp else{
-                    return
-                }
-                let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
-                self.peerConnection!.setRemoteDescription(sdp){ error in
-                    print(error ?? "")
-                }
-            }
-        }catch{
-            print(error)
-        }
-    }
-  
     /*========================================================================
      Local Tracks
      ========================================================================*/

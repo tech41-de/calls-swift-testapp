@@ -94,6 +94,7 @@ class RTCMTLRenderer{
         _offset = RTCMTLRenderer.offsetForRotation(rotation: frame.rotation);
       return true
     }
+     
     
     func setupMetal()->Bool {
       // Set the view to use the default device.

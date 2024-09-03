@@ -45,15 +45,13 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var isSignalConnectd = false
     
 #if os(macOS)
-    @Published var youView = RTCMTLNSVideoView(frame:CGRect(x:0,y:0, width:300, height:300))
-    @Published var meView = RTCMTLNSVideoView(frame:CGRect(x:0,y:0, width:300, height:300))
+    @Published var youView = RTCMTLNSVideoView(frame:CGRect(x:0,y:0, width:300, height:200))
+    @Published var meView = RTCMTLNSVideoView(frame:CGRect(x:0,y:0, width:300, height:200))
     @Published var audioInputDefaultDevice : AudioDeviceID? // the devices pre app Start
     @Published var audioOutputDefaultDevice : AudioDeviceID?
 #else
-    @Published var youView =  VideoViewMacOS()
-    @Published var meView  = VideoViewMacOS()
-   // @Published var youView = RTCMTLVideoView()
-    //@Published var meView  = RTCMTLVideoView()
+    @Published var youView = RTCMTLVideoView()
+    @Published var meView  = RTCMTLVideoView()
     @Published var audioInputDefaultDevice :UInt32  = 0
     @Published var audioOutputDefaultDevice:UInt32  = 0
 #endif

@@ -74,12 +74,12 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     var _cropWidth : Int = 300
     var _cropHeight : Int = 200
     
-    // var commandEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor];
-    
     func drawFrame(frame:RTCVideoFrame?){
         if frame == nil{
             return
         }
+        setupTexturesForFrame(frame:frame!)
+
         super.render()
     }
     
@@ -96,25 +96,31 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     }
     
     override func setupTexturesForFrame(frame: RTCVideoFrame) ->Bool {
+        if !super.setupTexturesForFrame(frame:frame) {
+            return false
+        }
+        
+        let buffer = frame.buffer.toI420()
+        
         if ((_descriptor == nil) || _width != frame.width || _height != frame.height) {
-           
             _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:_width, height:_height, mipmapped:false)
             _descriptor!.usage = .shaderRead;
             _yTexture = device.makeTexture(descriptor: _descriptor!)
         }
-        let buffer = frame.buffer.toI420()
+       
         _yTexture!.replace(region: MTLRegionMake2D(0, 0, _width, _height), mipmapLevel:0, withBytes: buffer.dataY, bytesPerRow: Int(buffer.strideY))
-        
+
         if ((_chromaDescriptor == nil) || _chromaWidth != frame.width / 2 || _chromaHeight != frame.height / 2) {
             _chromaWidth = Int(frame.width / 2)
             _chromaHeight = Int(frame.height / 2)
-            _chromaDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat:MTLPixelFormat.bgra8Unorm, width:_chromaWidth, height:_chromaHeight, mipmapped:false)
+            _chromaDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat:MTLPixelFormat.a8Unorm, width:_chromaWidth, height:_chromaHeight, mipmapped:false)
             _chromaDescriptor!.usage =  .shaderRead;
             _uTexture = device.makeTexture(descriptor: _chromaDescriptor!)
             _vTexture = device.makeTexture(descriptor: _chromaDescriptor!)
         }
-       // _uTexture!.replace(region: MTLRegionMake2D(0, 0, _chromaWidth, _chromaHeight), mipmapLevel:0, withBytes:buffer.dataU, bytesPerRow:Int(buffer.strideU))
-       // _vTexture!.replace(region: MTLRegionMake2D(0, 0, _chromaWidth, _chromaHeight), mipmapLevel:0, withBytes:buffer.dataV, bytesPerRow:Int(buffer.strideV))
+
+        _uTexture!.replace(region: MTLRegionMake2D(0, 0, _chromaWidth, _chromaHeight), mipmapLevel:0, withBytes:buffer.dataU, bytesPerRow:Int(buffer.strideU))
+        _vTexture!.replace(region: MTLRegionMake2D(0, 0, _chromaWidth, _chromaHeight), mipmapLevel:0, withBytes:buffer.dataV, bytesPerRow:Int(buffer.strideV))
         return  (_uTexture != nil) && (_yTexture != nil) && (_vTexture != nil);
     }
     

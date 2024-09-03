@@ -123,16 +123,6 @@ class Controller : ObservableObject{
         signalClient!.send(req: req)
     }
     
-    func sendUpdateVideoSignal(receiver:String){
-        for t in model!.tracks{
-            print(t)
-        }
-        
-        let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
-        let req = SignalReq(cmd:"updateVideo", receiver:receiver, session:session )
-        signalClient!.send(req: req)
-    }
-    
     func sendUpdateSignal(receiver:String){
         let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
         let req = SignalReq(cmd:"update", receiver:receiver, session:session )
