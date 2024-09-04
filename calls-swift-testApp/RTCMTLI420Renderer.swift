@@ -73,7 +73,21 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     var _chromaHeight : Int = 480 / 2
     
     func setSize(size:CGSize){
-        print(size)
+        /*
+        if size.width < size.height{
+            // Portrait
+            _width = 480
+            _height = 640
+            _chromaWidth = 480 / 2
+            _chromaHeight = 640 / 2
+        }else{
+            // Landscape
+            _width = 640
+            _height = 480
+            _chromaWidth = 640 / 2
+            _chromaHeight = 480 / 2
+        }
+         */
        // _width = Int(size.width)
        //  _height = Int(size.height)
         //_chromaWidth = Int(size.width / 2)
@@ -98,17 +112,19 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
             return false
         }
 
-        // Luma (y) texture.
-        if ((_descriptor == nil) || _width != frame.width || _height != frame.height) { 
+        // Luminance (y) texture - Format is 420 https://en.wikipedia.org/wiki/Y%E2%80%B2UV
+        // For savety pinning to the frame size
+        if ((_descriptor == nil) || _width != frame.width || _height != frame.height) {
             _width = Int(frame.width)
             _height = Int(frame.height)
             _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:_width, height:_height, mipmapped:false)
             _descriptor!.usage = .shaderRead
             _yTexture = device!.makeTexture(descriptor: _descriptor!)
         }
-       
         _yTexture!.replace(region: MTLRegionMake2D(0, 0, _width, _height), mipmapLevel:0, withBytes: buffer.dataY, bytesPerRow: Int(buffer.strideY))
 
+        // Chroma textures
+        // For savety pinning to the frame size
         if ((_chromaDescriptor == nil) || _chromaWidth != frame.width / 2 || _chromaHeight != frame.height / 2) {
             _chromaWidth = Int(frame.width / 2)
             _chromaHeight = Int(frame.height / 2)

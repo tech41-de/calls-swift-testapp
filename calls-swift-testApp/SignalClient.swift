@@ -41,18 +41,20 @@ class SignalClient : WebSocketDelegate{
     }
     
     func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
-        print(event)
         switch event {
             case .connected(let headers):
-                isConnected = true
-                model.isSignalConnectd = true
+            isConnected = true
+            DispatchQueue.main.async {
+                self.model.isSignalConnectd = true
+            }
     
             case .disconnected(let reason, let code):
-                isConnected = false
-            model.isSignalConnectd = false
+            isConnected = false
+            DispatchQueue.main.async {
+                self.model.isSignalConnectd = false
+            }
           
             case .text(let string):
-                
             do{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
@@ -94,11 +96,16 @@ class SignalClient : WebSocketDelegate{
                 break
             
             case .cancelled:
-                isConnected = false
-                 model.isSignalConnectd = false
+            isConnected = false
+            DispatchQueue.main.async {
+                self.model.isSignalConnectd = false
+            }
             
             case .error(let error):
                 isConnected = false
+                DispatchQueue.main.async {
+                    self.model.isSignalConnectd = false
+                }
                 handleError(error)
                 case .peerClosed:
                        break

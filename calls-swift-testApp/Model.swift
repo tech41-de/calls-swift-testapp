@@ -24,7 +24,6 @@ class Model : ObservableObject, @unchecked Sendable{
     let api = Calls()
     
     static var model: Model?
-    
     static func getInstance() ->Model{
         return Model.model!
     }
@@ -82,9 +81,7 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var isDebug = false
     @Published var chatReceived = ""
     @Published var pongLatency = 0
-    
     @Published var localVideoMid = ""
-
 
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{

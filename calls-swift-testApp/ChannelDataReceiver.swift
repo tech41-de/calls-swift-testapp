@@ -20,7 +20,7 @@ class ChannelDataReceiver : NSObject, RTCDataChannelDelegate{
     }
     
     func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
-        print("dataChannelDidChangeState")
+
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {

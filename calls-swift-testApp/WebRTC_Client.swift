@@ -82,7 +82,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didChange newState: RTCIceConnectionState) {
         if peerConnection.iceConnectionState == .connected{
-            model!.isConnected = true
+            DispatchQueue.main.async {
+                self.model!.isConnected = true
+            }
         }
     }
     
@@ -103,26 +105,26 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     }
     
     func peerConnection(_ peerConnection: RTCPeerConnection, didRemove candidates: [RTCIceCandidate]) {
-        print("didRemove RTCIceCandidate")
+
     }
     
     // Halluzination WebRTC?
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd receiver: RTCRtpReceiver){
-        print("didAdd RTCRtpReceiver")
+
     }
 
     func peerConnection(_ peerConnection: RTCPeerConnection, didOpen dataChannel: RTCDataChannel) {
-        print("didOpen RTCDataChannel")
+
     }
     // End of RTCPeerConnectionDelegate
     
     // RTCPDataChannelDelegate
     func dataChannelDidChangeState(_ dataChannel: RTCDataChannel) {
-        print("dataChannelDidChangeState" )
+
     }
     
     func dataChannel(_ dataChannel: RTCDataChannel, didReceiveMessageWith buffer: RTCDataBuffer) {
-        print("RTCDataChannel didReceiveMessageWith")
+
     }
     // End of RTCPDataChannelDelegate
     
@@ -160,7 +162,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let camera = dm.getDevice(name: model!.camera)
         let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
         if format == nil{
-            model!.disableVideo = true
+            DispatchQueue.main.async {
+                self.model!.disableVideo = true
+            }
             return
         }
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
@@ -215,13 +219,9 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
         do{
             let sdpMe = try await peerConnection!.offer(for: c)
-            print(sdpMe)
             try await self.peerConnection!.setLocalDescription(sdpMe);
           
             await model!.api.newSession(sdp: sdpMe.sdp){ [self] sessionId, sdp, error in
-                print(sessionId)
-               print(sdp)
-                print(error)
                 if error.count > 0{
                     print("Error \(error) creating new Session, are the Cloudflare Calls Credentials correct?")
                     print("Does the server URl have a slash (/) at the end?")
@@ -231,8 +231,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
           
                 Task{
                     do{
-                        print("type \(desc.type)")
-                        print(desc.sdp)
                         try await peerConnection!.setRemoteDescription(desc);
                         Task{
                             var counter = 15
@@ -415,9 +413,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                         return
                     }
                     self.remoteDataChannel!.delegate = dataRemoteDelegate
-                    let data = "hi".data(using: .utf8)
-                    self.remoteDataChannel!.sendData(RTCDataBuffer(data: data!, isBinary: false))
-                    
+
                     if isRenegotiate{
                         Task{
                             if res.sessionDescription.type == "answer"{

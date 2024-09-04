@@ -338,6 +338,7 @@ struct ContentView: View {
                         Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
+
                 
                 Picker(selection: $m.audioInDevice.onChange(audioInChanged), label:Text("Audio In")) {
                     ForEach(m.audioInDevices, id: \.self) {
@@ -347,6 +348,7 @@ struct ContentView: View {
                 
                 Picker(selection: $m.audioOutDevice.onChange(audioOutChanged), label:Text("Audio Out")) {
                     ForEach(m.audioOutDevices, id: \.self) {
+
                         Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)

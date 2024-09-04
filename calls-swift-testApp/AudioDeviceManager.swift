@@ -62,6 +62,8 @@ class AudioDeviceManager{
                 self.model.audioOutDevices.append(device)
             }
         }
+        self.model.audioInDevice = AVAudioSession.sharedInstance().availableInputs?[0].portName ?? ""
+        self.model.audioOutDevice = AVAudioSession.sharedInstance().currentRoute.outputs[0].portName
     }
     
     func setInputDevice(device: ADevice){

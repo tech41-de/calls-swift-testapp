@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO we might use this when XCode 16 and Swift 6 is available
 public struct ServiceRegistry {
     public enum Error: Swift.Error {
         case notRegistered(Any.Type)
