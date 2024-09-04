@@ -15,30 +15,16 @@ class Controller : ObservableObject{
     let jsonEncoder = JSONEncoder()
     
     var model : Model?
-    var signalClient : SignalClient?
     var webRtcClient : WebRTC_Client?
-    var stm : STM?
     var jobId :Int32 = 0
     var pingSendAt = 0
     
-    init(){
-        
-    }
-    
-    func setup(model:Model, stm:STM, signalClient: SignalClient){
+    init(model:Model){
         self.model = model
-        self.signalClient = signalClient
-        self.stm = stm
-        webRtcClient =  WebRTC_Client()
-        webRtcClient!.setup(model: model, stm: stm, controller : self)
+        webRtcClient = WebRTC_Client()
+        webRtcClient!.setup(model: model, controller : self)
     }
 
-    func setRemoteTracks(){
-        Task{
-            await webRtcClient!.remoteTracks()
-        }
-    }
-    
     func chatSend(text:String){
         Task{
             do{
@@ -108,18 +94,6 @@ class Controller : ObservableObject{
                 print(error)
             }
         }
-    }
-    
-    func sendInviteSignal(){
-        let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
-        let req = SignalReq(cmd:"invite" ,receiver:"", session:session )
-        signalClient!.send(req: req)
-    }
-    
-    func sendUpdateSignal(receiver:String){
-        let session = Session(sessionId: model!.sessionId, tracks:model!.tracks, room: model!.room)
-        let req = SignalReq(cmd:"update", receiver:receiver, session:session )
-        signalClient!.send(req: req)
     }
     
     func updateCameraInputDevice(name:String){

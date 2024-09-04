@@ -10,6 +10,10 @@ import AVFoundation
 import WebRTC
 import Calls_Swift
 
+protocol StateExecutor{
+    func exec(state:States)
+}
+
 class Model : ObservableObject, @unchecked Sendable{
 
     public init(){
@@ -18,6 +22,12 @@ class Model : ObservableObject, @unchecked Sendable{
         youView.videoContentMode = .scaleAspectFit
         meView.videoContentMode = .scaleAspectFit
         #endif
+    }
+    
+    var stateExec : StateExecutor?
+    
+    func exec(state:States){
+        stateExec!.exec(state: state)
     }
     
     // Calls API to Cloudflare

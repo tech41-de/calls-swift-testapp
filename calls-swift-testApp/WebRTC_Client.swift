@@ -30,12 +30,11 @@ extension WebRTC_Client {
 class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     
     var model : Model?
-    var stm : STM?
+
     var controller : Controller?
     
-    func setup(model:Model, stm : STM, controller:Controller){
+    func setup(model:Model,  controller:Controller){
         self.model = model
-        self.stm = stm
         self.controller = controller
         self.dataRemoteDelegate = ChannelDataReceiver(controller: controller)
     }
@@ -203,7 +202,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             try await peerConnection.setLocalDescription(sdp)
             DispatchQueue.main.async {
                 self.model!.hasSDPLocal = "✅"
-                self.stm!.exec(state: .NEW_SESSION)
+                self.model!.exec(state: .NEW_SESSION)
             }
         }
         catch{
@@ -242,7 +241,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                                 DispatchQueue.main.async {
                                     self.model!.sessionId = sessionId
                                     self.model!.hasSDPRemote = "✅"
-                                    self.stm!.exec(state: .NEW_LOCAL_TRACKS)
+                                    self.model!.exec(state: .NEW_LOCAL_TRACKS)
                                 }
                             }else{
                                 print("timeout conneting to STUN, check Internet connection")
@@ -354,7 +353,7 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
                                 return
                             }
                             localDataChannel?.delegate = self
-                            stm!.exec(state:.START_SIGNALING)
+                            self.model!.exec(state:.START_SIGNALING)
                         }
                     }
                 }

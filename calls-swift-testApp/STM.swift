@@ -7,22 +7,7 @@
 
 import Foundation
 
-enum States{
-    case COLD
-    case BOOT
-    case CONFIGURE
-    case AUDIO_SETUP
-    case VIDEOO_SETUP
-    case START_STREAM
-    case START_SESSION // setup Peer
-    case NEW_SESSION // Cloudflare New Session
-    case NEW_LOCAL_TRACKS
-    case START_SIGNALING
-    case INVITE
-    case NEW_REMOTE_TRACKS
-}
-
-class STM : ObservableObject{
+class STM : ObservableObject, StateExecutor{
 
     let controller : Controller
     let signalClient : SignalClient
@@ -115,7 +100,9 @@ class STM : ObservableObject{
             
         case .INVITE:
             Task{
-                controller.sendInviteSignal()
+                let session = Session(sessionId: model.sessionId, tracks:model.tracks, room: model.room)
+                let req = SignalReq(cmd:"invite" ,receiver:"", session:session )
+                signalClient.send(req: req)
             }
             break
             

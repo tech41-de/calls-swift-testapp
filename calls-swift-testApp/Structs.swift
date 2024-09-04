@@ -7,6 +7,21 @@
 
 import Foundation
 
+enum States{
+    case COLD
+    case BOOT
+    case CONFIGURE
+    case AUDIO_SETUP
+    case VIDEOO_SETUP
+    case START_STREAM
+    case START_SESSION // setup Peer
+    case NEW_SESSION // Cloudflare New Session
+    case NEW_LOCAL_TRACKS
+    case START_SIGNALING
+    case INVITE
+    case NEW_REMOTE_TRACKS
+}
+
 public struct ADevice : Hashable{
     var uid = ""
     var name = ""

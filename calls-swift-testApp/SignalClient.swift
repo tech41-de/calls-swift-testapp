@@ -40,6 +40,12 @@ class SignalClient : WebSocketDelegate{
         
     }
     
+    func sendUpdateSignal(receiver:String){
+        let session = Session(sessionId: model.sessionId, tracks:model.tracks, room: model.room)
+        let req = SignalReq(cmd:"update", receiver:receiver, session:session )
+        send(req: req)
+    }
+    
     func didReceive(event: Starscream.WebSocketEvent, client: any Starscream.WebSocketClient) {
         switch event {
             case .connected(let headers):
@@ -64,8 +70,10 @@ class SignalClient : WebSocketDelegate{
                         self.model.trackIdAudioRemote = res.session.tracks[0].trackId
                         self.model.trackIdVideoRemote = res.session.tracks[1].trackId
                         self.model.dataChannelNameRemote = res.session.tracks[2].trackId
-                        self.controller.setRemoteTracks()
-                        self.controller.sendUpdateSignal(receiver: "")
+                        Task{
+                            await self.controller.webRtcClient!.remoteTracks()
+                        }
+                        self.sendUpdateSignal(receiver: "")
                     }
                 }
                 if res.cmd == "update" && res.session.sessionId != model.sessionId{
@@ -74,7 +82,9 @@ class SignalClient : WebSocketDelegate{
                         self.model.trackIdAudioRemote = res.session.tracks[0].trackId
                         self.model.trackIdVideoRemote = res.session.tracks[1].trackId
                         self.model.dataChannelNameRemote = res.session.tracks[2].trackId
-                        self.controller.setRemoteTracks()
+                        Task{
+                            await self.controller.webRtcClient!.remoteTracks()
+                        }
                     }
                 }
             }catch{
