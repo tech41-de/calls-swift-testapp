@@ -29,17 +29,19 @@ class VideoDeviceManager{
         })
         
         for f in formats{
-            let w = CMVideoFormatDescriptionGetDimensions(f.formatDescription).width
-            if w >= Int(width){
-                let franges = f.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }
-                for fr in franges{
-                    if Int(fr.maxFrameRate) >= fps && Int(fr.minFrameRate) <= fps{
-                        return (f,fps)
-                    }else{
-                        return (f,Int(fr.maxFrameRate))
+            if(String(f.formatDescription.mediaSubType.description) == "'420v'"){
+                let w = CMVideoFormatDescriptionGetDimensions(f.formatDescription).width
+                if w >= Int(width){
+                    let franges = f.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }
+                    for fr in franges{
+                        if Int(fr.maxFrameRate) >= fps{
+                            return (f,fps)
+                        }else{
+                            return (f,Int(fr.maxFrameRate))
+                        }
                     }
+                    break
                 }
-                break
             }
         }
         return (nil,0)

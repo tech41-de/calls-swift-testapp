@@ -69,16 +69,15 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     var _chromaDescriptor : MTLTextureDescriptor?
     var _width : Int = 640
     var _height : Int = 480
-    var _chromaWidth : Int = 640
-    var _chromaHeight : Int = 480
+    var _chromaWidth : Int = 640 / 2
+    var _chromaHeight : Int = 480 / 2
     
     func setSize(size:CGSize){
-        /*
-        _width = Int(size.width)
-        _chromaWidth = Int(size.width)
-        _height = Int(size.height)
-        _chromaHeight = Int(size.height)
-         */
+        print(size)
+       // _width = Int(size.width)
+       //  _height = Int(size.height)
+        //_chromaWidth = Int(size.width / 2)
+        //_chromaHeight = Int(size.height / 2)
     }
     
     // Overrides
@@ -110,7 +109,7 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
        
         _yTexture!.replace(region: MTLRegionMake2D(0, 0, _width, _height), mipmapLevel:0, withBytes: buffer.dataY, bytesPerRow: Int(buffer.strideY))
 
-        if ((_chromaDescriptor == nil) || _chromaWidth != frame.width  || _chromaHeight != frame.height / 2) {
+        if ((_chromaDescriptor == nil) || _chromaWidth != frame.width / 2 || _chromaHeight != frame.height / 2) {
             _chromaWidth = Int(frame.width / 2)
             _chromaHeight = Int(frame.height / 2)
             _chromaDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat:MTLPixelFormat.r8Unorm, width:_chromaWidth, height:_chromaHeight, mipmapped:false)

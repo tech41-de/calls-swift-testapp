@@ -65,7 +65,6 @@ class AudioDeviceManager{
     }
     
     func setInputDevice(device: ADevice){
-        print("input device \(device.name)")
         do {
             guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
                print("No inputs available ")
