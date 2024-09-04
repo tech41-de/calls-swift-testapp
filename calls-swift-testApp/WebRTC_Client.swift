@@ -214,16 +214,28 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         print("Starting newSession")
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
         do{
-            let sdp = try await peerConnection!.offer(for: c)
-            try await self.peerConnection!.setLocalDescription(sdp);
-            await model!.api.newSession(sdp: sdp.sdp){ [self] sessionId, sdp, error in
-               
+            let sdpMe = try await peerConnection!.offer(for: c)
+            print(sdpMe)
+            try await self.peerConnection!.setLocalDescription(sdpMe);
+          
+            await model!.api.newSession(sdp: sdpMe.sdp){ [self] sessionId, sdp, error in
+                print(sessionId)
+               print(sdp)
+                print(error)
+                if error.count > 0{
+                    print("Error \(error) creating new Session, are the Cloudflare Calls Credentials correct?")
+                    print("Does the server URl have a slash (/) at the end?")
+                    return
+                }
                 let desc = RTCSessionDescription(type: .answer , sdp: sdp)
+          
                 Task{
                     do{
+                        print("type \(desc.type)")
+                        print(desc.sdp)
                         try await peerConnection!.setRemoteDescription(desc);
                         Task{
-                            var counter = 5
+                            var counter = 15
                             while(model!.isConnected && counter > 0 ){
                                 try await Task.sleep(nanoseconds: UInt64(1 * Double(NSEC_PER_SEC)))
                                 counter -= 1
