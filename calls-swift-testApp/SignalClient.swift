@@ -13,13 +13,8 @@ class SignalClient : WebSocketDelegate{
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
     
-    let model : Model
-    let controller : Controller
-    
-    init(model:Model, controller:Controller){
-        self.model = model
-        self.controller = controller
-    }
+    @Service var model: Model
+    @Service var controller: Controller
     
     var isConnected = false
     var socket : WebSocket?

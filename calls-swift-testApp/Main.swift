@@ -23,9 +23,16 @@ struct Main: App {
     // Buiding services upfront and inject
     init(){
         let model = Model()
-        let controller = Controller(model:model)
-        let signalClient = SignalClient(model: model, controller:controller)
-        let stm = STM(model: model, controller: controller, signalClient: signalClient)
+        ServiceContainer.register(type: Model.self, model)
+        
+        let controller = Controller()
+        ServiceContainer.register(type: Controller.self, controller)
+        
+        let signalClient = SignalClient()
+        ServiceContainer.register(type: SignalClient.self, signalClient)
+        
+        let stm = STM()
+        
         model.stateExec = stm
         self.model = model
         self.controller = controller

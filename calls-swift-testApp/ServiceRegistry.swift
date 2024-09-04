@@ -1,101 +1,75 @@
 //
-//  ServiceRegistry.swift
-//  calls-swift-testApp
+//  ServiceFactory2.swift
+//  test
 //
 //  Created by mat on 9/4/24.
 //
 
 import Foundation
 
-// TODO we might use this when XCode 16 and Swift 6 is available
-public struct ServiceRegistry {
-    public enum Error: Swift.Error {
-        case notRegistered(Any.Type)
-    }
-
-    private struct ServiceFactory<Service> {
-        let block: (() -> Service)
-
-        init(block: @escaping (() -> Service)) {
-            self.block = block
-        }
-
-        func make() -> Service {
-            return block()
-        }
-    }
-
-    private var factories: [Any] = []
-
-    public init() {
-
-    }
-
-    public init(registry: ServiceRegistry) {
-        self.factories = registry.factories
-    }
-
-    public mutating func register<Service>(_ service: Service) {
-        register(service, as: type(of: service))
-    }
-
-    public mutating func register<Service>(_ service: Service, as serviceType: Service.Type) {
-        let factory = ServiceFactory { () -> Service in
-            return service
-        }
-
-        factories.append(factory)
-    }
-
-    public mutating func register<Service>(_ block: @escaping (() -> Service)) {
-        let factory = ServiceFactory(block: block)
-        factories.append(factory)
-    }
-
-    internal func make<Service>(_ serviceType: Service.Type) throws -> Service {
-        if let factory = factories.first(where: {($0 is ServiceFactory<Service>)}) {
-            let service = (factory as! ServiceFactory<Service>).make()
-            return service
-        }
-
-        throw Error.notRegistered(Service.self)
-    }
+enum ServiceType {
+    case singleton
+    case newSingleton
+    case new
+    case automatic
 }
 
-public struct ServiceLocator {
-    public static var shared: ServiceLocator = ServiceLocator()
-
-    public let registry: ServiceRegistry
-
-    public init() {
-        let registry = ServiceRegistry()
-        self.init(registry: registry)
-    }
-
-    public init(registry: ServiceRegistry) {
-        self.registry = registry
-    }
-
-    public func make<Service>(_ serviceType: Service.Type) throws -> Service {
-        let service = try registry.make(Service.self)
-        return service
-    }
-}
 
 @propertyWrapper
-public struct Service<ServiceType> {
-    public let locator: ServiceLocator
+struct Service<Service> {
 
-    public var wrappedValue: ServiceType {
-        return try! locator.make(ServiceType.self)
+    var service: Service
+
+    init(_ type: ServiceType = .singleton) {
+        guard let service = ServiceContainer.resolve(type, Service.self) else {
+            let serviceName = String(describing: Service.self)
+            fatalError("No service of type \(serviceName) registered!")
+        }
+
+        self.service = service
     }
 
-    public init(locator: ServiceLocator) {
-        self.locator = locator
-    }
-
-    public init() {
-        self.locator = ServiceLocator.shared
+    var wrappedValue: Service {
+        get { self.service }
+        mutating set { service = newValue }
     }
 }
 
+class ServiceContainer{
+    private static var factories: [String: () -> Any] = [:]
+    private static var cache: [String: Any] = [:]
+    
+    static func resolve<Service>(_ resolveType: ServiceType = .singleton, _ type: Service.Type) -> Service? {
+        print(resolveType)
+        let serviceName = String(describing: type.self)
+
+        switch resolveType {
+        case .singleton:
+            if let service = cache[serviceName] as? Service {
+                return service
+            } else {
+                let service = factories[serviceName]?() as? Service
+                if let service = service {
+                    cache[serviceName] = service
+                }
+                return service
+            }
+        case .newSingleton:
+            let service = factories[serviceName]?() as? Service
+
+            if let service = service {
+                cache[serviceName] = service
+            }
+
+            return service
+        case .automatic:
+            fallthrough
+        case .new:
+            return factories[serviceName]?() as? Service
+        }
+    }
+    
+    static func register<Service>(type: Service.Type, _ factory: @autoclosure @escaping () -> Service) {
+        factories[String(describing: type.self)] = factory
+    }
+}

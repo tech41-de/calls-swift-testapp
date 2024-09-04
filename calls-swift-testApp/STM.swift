@@ -9,16 +9,10 @@ import Foundation
 
 class STM : ObservableObject, StateExecutor{
 
-    let controller : Controller
-    let signalClient : SignalClient
-    let model : Model
-    
-    init(model:Model, controller:Controller, signalClient:SignalClient){
-        self.controller = controller
-        self.signalClient = signalClient
-        self.model = model
-    }
-   
+    @Service var model: Model
+    @Service var controller: Controller
+    @Service var signalClient: SignalClient
+
     let defaults = UserDefaults.standard
     
     func exec(state:States){
