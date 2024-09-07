@@ -10,7 +10,7 @@ import AVFoundation
 import WebRTC
 import Calls_Swift
 
-extension WebRTC_Client {
+extension RTC {
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd receiver: RTCRtpReceiver, streams: [RTCMediaStream]) {
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .recvOnly
@@ -27,22 +27,11 @@ extension WebRTC_Client {
     }
 }
 
-class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
+class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     
     var model : Model?
-
     var controller : Controller?
     
-    func setup(model:Model,  controller:Controller){
-        self.model = model
-        self.controller = controller
-        self.dataRemoteDelegate = ChannelDataReceiver(controller: controller)
-    }
-    
-    override init(){
-        super.init()
-    }
-
     private var localAudioTrack: RTCAudioTrack?
     private var localVideoTrack: RTCVideoTrack?
     private var localDataChannel: RTCDataChannel?
@@ -63,14 +52,52 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
     
     private let constraint = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
 
+    private static var preProcessor =  AudioPreProcessor()
+    private static var postProcessor = AudioPostProcessor()
+    private static var audioProcessingModule : RTCDefaultAudioProcessingModule = .init()
+    
+    static let factory: RTCPeerConnectionFactory = {
+        RTCInitializeSSL()
+        let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
+        let videoDecoderFactory = RTCDefaultVideoDecoderFactory()
+        return RTCPeerConnectionFactory(bypassVoiceProcessing:true,
+                                        encoderFactory: videoEncoderFactory,
+                                        decoderFactory: videoDecoderFactory,
+                                        audioProcessingModule: audioProcessingModule)
+    }()
+    
+    /*
     private static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
         let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
         let videoDecoderFactory = RTCDefaultVideoDecoderFactory()
-        return RTCPeerConnectionFactory(encoderFactory: videoEncoderFactory, decoderFactory: videoDecoderFactory)
-    }()
+        let audioProcessingModule =  RTCDefaultAudioProcessingModule()
     
-    // RTCPeerConnectionDelegate
+        audioProcessingModule.renderPreProcessingDelegate = preProcessor
+        audioProcessingModule.capturePostProcessingDelegate = postProcessor
+        
+        
+        let factory = RTCPeerConnectionFactory(
+            encoderFactory: RTCDefaultVideoEncoderFactory(),
+            decoderFactory: RTCDefaultVideoDecoderFactory(),
+            audioDevice: RTCAudioDevice())
+        return factory
+    }()
+     */
+    
+    override init(){
+        super.init()
+    }
+    
+    func setup(model:Model,  controller:Controller){
+        self.model = model
+        self.controller = controller
+        self.dataRemoteDelegate = ChannelDataReceiver(controller: controller)
+    }
+    
+    /*
+     RTCPeerConnectionDelegate ================================================
+     */
     func peerConnectionShouldNegotiate(_ peerConnection: RTCPeerConnection) {
 
     }
@@ -107,7 +134,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
 
     }
     
-    // Halluzination WebRTC?
     func peerConnection(_ peerConnection: RTCPeerConnection, didAdd receiver: RTCRtpReceiver){
 
     }
@@ -138,6 +164,32 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         self.localDataChannel?.sendData(buffer)
     }
     
+    @MainActor
+    func switchAudio(name:String){
+        if peerConnection == nil{
+            return
+        }
+
+        guard let device = model!.getAudioInDevice(name: name)else{
+            return
+        }
+        model!.audioInName = name
+        model!.audioInDevice = device
+        UserDefaults.standard.set(name, forKey: "audioIn")
+        
+        let senders = peerConnection!.senders
+        for s in senders{
+            if s.track?.kind == "audio"{
+                s.track!.isEnabled = false
+                AudioDeviceManager().setInputDevice(device:device)
+                setupAudio()
+                s.track = localAudioTrack
+                s.track!.isEnabled = true
+                print("localAudioTrack reset")
+            }
+        }
+    }
+    
     func switchVideo(){
         Task{
          await setupStream()
@@ -147,16 +199,76 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             let senders = peerConnection!.senders
             for s in senders{
                 if s.track?.kind == "video"{
+                    s.track?.isEnabled = false
                     s.track = localVideoTrack
+                    s.track?.isEnabled = true
                 }
             }
         }
     }
     
+    func getDefaultConstraints() ->RTCMediaConstraints{
+        let constrain  = RTCMediaConstraints(mandatoryConstraints: [:],
+         optionalConstraints: [
+            "DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue
+         ])
+       return constrain
+    }
+   
+    
+    func getRTCMediaAudioInConstraints() ->RTCMediaConstraints{
+        print("setting deviceID \(model!.audioInDevice!.uid)")
+        let constrain  = RTCMediaConstraints(mandatoryConstraints: [
+            "deviceId":model!.audioInDevice!.uid,
+            "offerToReceiveAudio": "true",
+            "echoCancellation": "false",
+            "autoGainControl": "false",
+            "googEchoCancellation": "false",
+            "noiseSuppression":"false",
+            "channelCount":"2",
+            "sampleRate":"48000",
+            "sampleSize":"16",
+            "latency":"0",
+            "volume":"1.0"
+        ],
+         optionalConstraints: [
+            "DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue
+         ])
+       return constrain
+    }
+    
+    func getRTCMediaAudioOutConstraints() ->RTCMediaConstraints{
+        let constrain  = RTCMediaConstraints(mandatoryConstraints: [
+            "deviceId":model!.audioOutDevice,
+            "offerToReceiveAudio": "true",
+            "echoCancellation": "false",
+            "autoGainControl": "false",
+            "googEchoCancellation": "false",
+            "noiseSuppression":"false",
+            "channelCount":"2",
+            "sampleRate":"48000",
+            "sampleSize":"16",
+            "latency":"0",
+            "volume":"1.0"
+        ],
+         optionalConstraints: [
+            "DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue
+         ])
+       return constrain
+    }
+    
+    @MainActor
+    func setupAudio(){
+        // opus/48000/2
+        // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
+        let audioSource = RTC.factory.audioSource(with: getRTCMediaAudioInConstraints())
+        localAudioTrack = RTC.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
+    }
+    
     func setupStream() async{
-        let videoSource = WebRTC_Client.factory.videoSource()
+        let videoSource = RTC.factory.videoSource()
         videoLocalId = "v_" + UUID().uuidString
-        localVideoTrack = WebRTC_Client.factory.videoTrack(with: videoSource, trackId: videoLocalId)
+        localVideoTrack = RTC.factory.videoTrack(with: videoSource, trackId: videoLocalId)
         let dm = VideoDeviceManager(model:model!)
         let camera = dm.getDevice(name: model!.camera)
         let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
@@ -185,13 +297,18 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         config.sdpSemantics = .unifiedPlan
         config.continualGatheringPolicy = .gatherContinually
         config.bundlePolicy = .maxBundle
-        let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
-        guard let peerConnection = WebRTC_Client.factory.peerConnection(with: config, constraints: constraints, delegate: nil) else {
+       // let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
+  
+       // AudioDeviceModule.shared.setup()
+        
+        
+        guard let peerConnection = RTC.factory.peerConnection(with: config, constraints: getDefaultConstraints(), delegate: nil) else {
             fatalError("Could not create new RTCPeerConnection")
         }
         self.peerConnection = peerConnection
         peerConnection.delegate = self
         
+
         // Start an inactive audio session as required by Cloudflare Calls
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .inactive
@@ -214,7 +331,6 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
      Session
      ========================================================================*/
     func newSession() async{
-        print("Starting newSession")
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
         do{
             let sdpMe = try await peerConnection!.offer(for: c)
@@ -270,96 +386,99 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
             }
         }
     }
-    
+
     /*========================================================================
      Local Tracks
      ========================================================================*/
     func localTracks() async{
-        let audioConstrains = RTCMediaConstraints(mandatoryConstraints:nil, optionalConstraints: nil)
-        let audioSource = WebRTC_Client.factory.audioSource(with: audioConstrains)
-        localAudioTrack = WebRTC_Client.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
-        
-        // buildl tranceivers
-        let initalize = RTCRtpTransceiverInit()
-        initalize.direction = .sendOnly
-        transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
-        transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
-        
-        do{
-            let sdp = try await peerConnection!.offer(for: constraint)
-            try await peerConnection!.setLocalDescription(sdp)
+        Task { @MainActor in
+             setupAudio()
             
-            // call API Local Tracks
-            var localTracks = [Calls.LocalTrack]()
-            let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
-            let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
-            let dataChannelName = "d_" + UUID().uuidString
-            // update UI
-            DispatchQueue.main.async {
-                self.model!.localAudioTrackId = self.localAudioTrack!.trackId
-                self.model!.localVideoTrackId = self.localVideoTrack!.trackId
-                self.model!.dataChannelNameLocal = dataChannelName
-                self.model!.localVideoMid = self.transceiverVideo!.mid
+            // buildl tranceivers
+            let initalize = RTCRtpTransceiverInit()
+            initalize.direction = .sendOnly
+            transceiverAudio = peerConnection!.addTransceiver(with: localAudioTrack!, init: initalize)
+            transceiverVideo = peerConnection!.addTransceiver(with: localVideoTrack!, init: initalize)
+
+            do{
+                let sdp = try await peerConnection!.offer(for: constraint)
+                try await peerConnection!.setLocalDescription(sdp)
                 
-                var tracks = [Track]()
-                tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
-                tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
-                tracks.append(Track(trackId:dataChannelName, mid: "0", type: "local"))
-                self.model!.tracks = tracks
-            }
-            
-            localTracks.append(trAudio)
-            localTracks.append(trVideo)
-            let desc = Calls.SessionDescription( type:"offer",  sdp:sdp.sdp)
-            let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
-            
-            // New Track API Request!
-            await model!.api.newLocalTracks(sessionId: model!.sessionId, newTracks: req){newTracksResponse, error in
-                if(error.count > 0)
-                {
-                    print(error)
-                    return
+                // call API Local Tracks
+                var localTracks = [Calls.LocalTrack]()
+                let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
+                let trVideo = Calls.LocalTrack(location: "local", mid: transceiverVideo!.mid, trackName:transceiverVideo!.sender.track!.trackId)
+                let dataChannelName = "d_" + UUID().uuidString
+                // update UI
+                DispatchQueue.main.async {
+                    self.model!.localAudioTrackId = self.localAudioTrack!.trackId
+                    self.model!.localVideoTrackId = self.localVideoTrack!.trackId
+                    self.model!.dataChannelNameLocal = dataChannelName
+                    self.model!.localVideoMid = self.transceiverVideo!.mid
+                    
+                    var tracks = [Track]()
+                    tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
+                    tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
+                    tracks.append(Track(trackId:dataChannelName, mid: "0", type: "local"))
+                    self.model!.tracks = tracks
                 }
-                guard let sdpStr = newTracksResponse?.sessionDescription.sdp else{
-                    return
-                }
-                let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
-                self.peerConnection!.setRemoteDescription(sdp){ error in
-                    print(error ?? "")
-                }
-                Task{
-                   
-                    let dataChannel = Calls.DataChannelLocal(location:"local", dataChannelName:dataChannelName)
-                    let dataReq = Calls.DataChannelLocalReq(dataChannels:[dataChannel])
-                    await self.model!.api.newDataChannel(sessionId: self.model!.sessionId, dataChannelReq: dataReq){dataChannelRes, error in
-                        if error != nil && error!.count > 0{
-                            print(error ?? "")
-                            return
-                        }
-                        
-                        DispatchQueue.main.async { [self] in
-                            model!.dataChannelIdLocal = dataChannelRes!.dataChannels.first!.id
-                            model!.dataChannelIdRemote = dataChannelRes!.dataChannels.first!.id
-                           
-                            let dataChannelConfig = RTCDataChannelConfiguration()
-                            dataChannelConfig.channelId = Int32( model!.dataChannelIdLocal)
-                            dataChannelConfig.isOrdered = true
-                            dataChannelConfig.isNegotiated = true
-                            //dataChannelConfig.maxPacketLifeTime = 5000 // msec - TODO settings are failing!
-                            dataChannelConfig.maxRetransmits = 5
-                            localDataChannel = peerConnection!.dataChannel(forLabel:dataChannelName , configuration: dataChannelConfig)
-                            if(localDataChannel == nil){
-                                print("Data channel not created!!")
+                
+                localTracks.append(trAudio)
+                localTracks.append(trVideo)
+                var sdpEdited = sdp.sdp
+                sdpEdited = sdpEdited.replacingOccurrences(of: "useinbandfec=1", with: "useinbandfec=1; stereo=1; maxaveragebitrate=510000")
+                let desc = Calls.SessionDescription( type:"offer",  sdp:sdpEdited)
+                let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
+                
+                // New Track API Request!
+                await model!.api.newLocalTracks(sessionId: model!.sessionId, newTracks: req){newTracksResponse, error in
+                    if(error.count > 0)
+                    {
+                        print(error)
+                        return
+                    }
+                    guard let sdpStr = newTracksResponse?.sessionDescription.sdp else{
+                        return
+                    }
+                    print(sdpStr)
+                    let sdp = RTCSessionDescription(type: .answer, sdp: sdpStr)
+                   // print(sdp.sdp)
+                    self.peerConnection!.setRemoteDescription(sdp){ error in
+                        print(error ?? "")
+                    }
+                    Task{
+                        let dataChannel = Calls.DataChannelLocal(location:"local", dataChannelName:dataChannelName)
+                        let dataReq = Calls.DataChannelLocalReq(dataChannels:[dataChannel])
+                        await self.model!.api.newDataChannel(sessionId: self.model!.sessionId, dataChannelReq: dataReq){dataChannelRes, error in
+                            if error != nil && error!.count > 0{
+                                print(error ?? "")
                                 return
                             }
-                            localDataChannel?.delegate = self
-                            self.model!.exec(state:.START_SIGNALING)
+                            
+                            DispatchQueue.main.async { [self] in
+                                model!.dataChannelIdLocal = dataChannelRes!.dataChannels.first!.id
+                                model!.dataChannelIdRemote = dataChannelRes!.dataChannels.first!.id
+                                
+                                let dataChannelConfig = RTCDataChannelConfiguration()
+                                dataChannelConfig.channelId = Int32( model!.dataChannelIdLocal)
+                                dataChannelConfig.isOrdered = true
+                                dataChannelConfig.isNegotiated = true
+                                //dataChannelConfig.maxPacketLifeTime = 5000 // msec - TODO settings are failing!
+                                dataChannelConfig.maxRetransmits = 5
+                                localDataChannel = peerConnection!.dataChannel(forLabel:dataChannelName , configuration: dataChannelConfig)
+                                if(localDataChannel == nil){
+                                    print("Data channel not created!!")
+                                    return
+                                }
+                                localDataChannel?.delegate = self
+                                self.model!.exec(state:.START_SIGNALING)
+                            }
                         }
                     }
                 }
+            }catch{
+                print(error)
             }
-        }catch{
-            print(error)
         }
     }
     
@@ -456,8 +575,15 @@ class WebRTC_Client :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate
         await model!.api.renegotiate(sessionId: model!.sessionId, sessionDescription:sessionDescription){ res in
             DispatchQueue.main.async {
                 self.model!.hasRemoteTracks = "✅"
+                
+                print("SampleRate: \(RTCAudioSession.sharedInstance().session.sampleRate)")
+                print("Channels In: \(RTCAudioSession.sharedInstance().session.inputNumberOfChannels)")
+                print("Channels Out: \(RTCAudioSession.sharedInstance().session.outputNumberOfChannels)")
+                print("Buffer Duration msec: \(1000 * RTCAudioSession.sharedInstance().session.ioBufferDuration)")
             }
         }
+        // We are done!
+        model!.exec(state: .RUNNING)
     }
     
     func getOfffer(completion:  @escaping (_ sdp:RTCSessionDescription? )->()) async{

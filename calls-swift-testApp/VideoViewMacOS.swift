@@ -13,7 +13,7 @@ import MetalKit
 class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
     
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-       
+        renderer?.setSize(size: CGSize(width: frame.width, height: frame.height))
     }
     
     func draw(in view: MTKView) {
@@ -29,6 +29,7 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
             self.metalDevice = metalDevice
         }
         renderer = RTCMTLI420Renderer(device:metalDevice)
+        renderer?.setSize(size: CGSize(width: frame.width, height: frame.height))
         super.init(frame:frame,device:metalDevice)
         let ok = renderer!.addRenderingDestination(self)
         if ok{
@@ -53,11 +54,7 @@ class RTCMTLNSVideoView : MTKView, RTCVideoRenderer, MTKViewDelegate{
         delegate = self
         /// https://webrtc.googlesource.com/src/+/48fcf943fd2a4d52f6e77d7f99eccd1aac577c43/sdk/objc/components/renderer/metal/RTCMTLI420Renderer.mm
     }
- 
-    func drawableSizeWillChange(view: MTKView, size:CGSize){
-        renderer?.setSize(size: size)
-    }
-    
+
     func setSize(_ size :CGSize){
         renderer?.setSize(size: size)
     }

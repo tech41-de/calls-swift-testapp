@@ -33,7 +33,7 @@ class Model : ObservableObject, @unchecked Sendable{
     // Calls API to Cloudflare
     let api = Calls()
     
-    static var model: Model?
+    public nonisolated(unsafe) static var model: Model?
     static func getInstance() ->Model{
         return Model.model!
     }
@@ -45,7 +45,9 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var audioInDevices = [ADevice]()
     @Published var audioOutDevices = [ADevice]()
     @Published var videoDevices = [ADevice]()
-    @Published var audioInDevice = ""
+    
+    @Published var audioInName = ""
+    @Published var audioInDevice : ADevice?
     @Published var audioOutDevice = ""
     @Published var camera = ""
     @Published var isConnected = false
@@ -92,7 +94,7 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var chatReceived = ""
     @Published var pongLatency = 0
     @Published var localVideoMid = ""
-
+    
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{
             if d.name == name{

@@ -147,9 +147,9 @@ class RTCMTLRenderer{
 
     func setupView(view: MTKView){
         _view = view
-       view.device = _device
-       view.preferredFramesPerSecond = 30
-       view.autoResizeDrawable = false
+        view.device = _device
+        view.preferredFramesPerSecond = 30
+        view.autoResizeDrawable = false
         loadAssets()
         _vertexBuffer = _device!.makeBuffer(bytes: cubeVertexData, length:4 * 32, options:.cpuCacheModeWriteCombined) // cpuCacheModeWriteCombined
     }

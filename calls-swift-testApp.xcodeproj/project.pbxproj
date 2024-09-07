@@ -28,8 +28,17 @@
 		408488B82C7877BB003197F1 /* Calls-Swift in Frameworks */ = {isa = PBXBuildFile; productRef = 408488B72C7877BB003197F1 /* Calls-Swift */; };
 		40869E8E2C81AC65001DAF06 /* ChannelDataReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */; };
 		4093E9052C79B71F0007618E /* STM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9042C79B71F0007618E /* STM.swift */; };
-		4093E9072C79D2510007618E /* WebRTC_Client.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9062C79D2510007618E /* WebRTC_Client.swift */; };
+		4093E9072C79D2510007618E /* RTC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4093E9062C79D2510007618E /* RTC.swift */; };
 		4098C2A32C883D5A007C5E98 /* ServiceRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4098C2A22C883D5A007C5E98 /* ServiceRegistry.swift */; };
+		40AB783D2C8B2190007AA832 /* AudioDeviceModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB783C2C8B2190007AA832 /* AudioDeviceModule.swift */; };
+		40AB783F2C8B2AC1007AA832 /* AudioPreProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB783E2C8B2AC1007AA832 /* AudioPreProcessor.swift */; };
+		40AB78412C8B2B41007AA832 /* AudioPostProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB78402C8B2B41007AA832 /* AudioPostProcessor.swift */; };
+		40AB78432C8B2DD5007AA832 /* AudioProcessingModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB78422C8B2DD5007AA832 /* AudioProcessingModule.swift */; };
+		40AB78452C8B3EDE007AA832 /* AUAudioUnitRTCAudioDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB78442C8B3EDE007AA832 /* AUAudioUnitRTCAudioDevice.swift */; };
+		40AB78472C8B3FE1007AA832 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB78462C8B3FE1007AA832 /* Utils.swift */; };
+		40AB78492C8B401B007AA832 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB78482C8B401B007AA832 /* Extensions.swift */; };
+		40AB784B2C8B4067007AA832 /* AVAudioEngineRTCAudioDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB784A2C8B4067007AA832 /* AVAudioEngineRTCAudioDevice.swift */; };
+		40AB784D2C8B40C6007AA832 /* SimpleAudioConvertor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40AB784C2C8B40C6007AA832 /* SimpleAudioConvertor.swift */; };
 		40EB43C02C80B37000901478 /* TestStuff.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40EB43BF2C80B37000901478 /* TestStuff.swift */; };
 /* End PBXBuildFile section */
 
@@ -69,9 +78,18 @@
 		407C2EE62C86F798007AA6DA /* RTCMTLRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTCMTLRenderer.swift; sourceTree = "<group>"; };
 		40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelDataReceiver.swift; sourceTree = "<group>"; };
 		4093E9042C79B71F0007618E /* STM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STM.swift; sourceTree = "<group>"; };
-		4093E9062C79D2510007618E /* WebRTC_Client.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRTC_Client.swift; sourceTree = "<group>"; };
+		4093E9062C79D2510007618E /* RTC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RTC.swift; sourceTree = "<group>"; };
 		4098C2A12C883732007C5E98 /* calls-swift-testApp copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "calls-swift-testApp copy-Info.plist"; path = "/Users/mat/TECH41/public/calls-swift-testapp/calls-swift-testApp copy-Info.plist"; sourceTree = "<absolute>"; };
 		4098C2A22C883D5A007C5E98 /* ServiceRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceRegistry.swift; sourceTree = "<group>"; };
+		40AB783C2C8B2190007AA832 /* AudioDeviceModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceModule.swift; sourceTree = "<group>"; };
+		40AB783E2C8B2AC1007AA832 /* AudioPreProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPreProcessor.swift; sourceTree = "<group>"; };
+		40AB78402C8B2B41007AA832 /* AudioPostProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPostProcessor.swift; sourceTree = "<group>"; };
+		40AB78422C8B2DD5007AA832 /* AudioProcessingModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProcessingModule.swift; sourceTree = "<group>"; };
+		40AB78442C8B3EDE007AA832 /* AUAudioUnitRTCAudioDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AUAudioUnitRTCAudioDevice.swift; sourceTree = "<group>"; };
+		40AB78462C8B3FE1007AA832 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		40AB78482C8B401B007AA832 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		40AB784A2C8B4067007AA832 /* AVAudioEngineRTCAudioDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AVAudioEngineRTCAudioDevice.swift; sourceTree = "<group>"; };
+		40AB784C2C8B40C6007AA832 /* SimpleAudioConvertor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleAudioConvertor.swift; sourceTree = "<group>"; };
 		40EB43BF2C80B37000901478 /* TestStuff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStuff.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -92,6 +110,8 @@
 		407885F62C770F780071FE5F = {
 			isa = PBXGroup;
 			children = (
+				40AB784C2C8B40C6007AA832 /* SimpleAudioConvertor.swift */,
+				40AB78482C8B401B007AA832 /* Extensions.swift */,
 				407886012C770F780071FE5F /* calls-swift-testApp */,
 				407886002C770F780071FE5F /* Products */,
 				4098C2A12C883732007C5E98 /* calls-swift-testApp copy-Info.plist */,
@@ -109,8 +129,8 @@
 		407886012C770F780071FE5F /* calls-swift-testApp */ = {
 			isa = PBXGroup;
 			children = (
-				407C2EDF2C86D21F007AA6DA /* objc */,
 				4000FB532C7F4BC700B3928F /* Structs.swift */,
+				4098C2A22C883D5A007C5E98 /* ServiceRegistry.swift */,
 				4000FB4C2C7F326200B3928F /* SignalClient.swift */,
 				407886442C778C650071FE5F /* Info.plist */,
 				407886062C770F790071FE5F /* Assets.xcassets */,
@@ -127,13 +147,19 @@
 				407886362C772C150071FE5F /* MeView.swift */,
 				407886202C7712040071FE5F /* calls-swift-testApp-Bridging-Header.h */,
 				4093E9042C79B71F0007618E /* STM.swift */,
-				4093E9062C79D2510007618E /* WebRTC_Client.swift */,
+				4093E9062C79D2510007618E /* RTC.swift */,
 				40EB43BF2C80B37000901478 /* TestStuff.swift */,
 				40869E8D2C81AC65001DAF06 /* ChannelDataReceiver.swift */,
 				407C2EE22C86D2D1007AA6DA /* VideoViewMacOS.swift */,
 				407C2EE42C86E546007AA6DA /* RTCMTLI420Renderer.swift */,
 				407C2EE62C86F798007AA6DA /* RTCMTLRenderer.swift */,
-				4098C2A22C883D5A007C5E98 /* ServiceRegistry.swift */,
+				40AB783C2C8B2190007AA832 /* AudioDeviceModule.swift */,
+				40AB783E2C8B2AC1007AA832 /* AudioPreProcessor.swift */,
+				40AB78402C8B2B41007AA832 /* AudioPostProcessor.swift */,
+				40AB78422C8B2DD5007AA832 /* AudioProcessingModule.swift */,
+				40AB78442C8B3EDE007AA832 /* AUAudioUnitRTCAudioDevice.swift */,
+				40AB78462C8B3FE1007AA832 /* Utils.swift */,
+				40AB784A2C8B4067007AA832 /* AVAudioEngineRTCAudioDevice.swift */,
 			);
 			path = "calls-swift-testApp";
 			sourceTree = "<group>";
@@ -144,13 +170,6 @@
 				4078860A2C770F790071FE5F /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
-			sourceTree = "<group>";
-		};
-		407C2EDF2C86D21F007AA6DA /* objc */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = objc;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -238,18 +257,27 @@
 				40EB43C02C80B37000901478 /* TestStuff.swift in Sources */,
 				4078861F2C7711540071FE5F /* Main.swift in Sources */,
 				407C2EE72C86F798007AA6DA /* RTCMTLRenderer.swift in Sources */,
+				40AB78412C8B2B41007AA832 /* AudioPostProcessor.swift in Sources */,
 				4078862C2C7720680071FE5F /* AudioDeviceManager.swift in Sources */,
+				40AB78472C8B3FE1007AA832 /* Utils.swift in Sources */,
+				40AB78432C8B2DD5007AA832 /* AudioProcessingModule.swift in Sources */,
+				40AB784D2C8B40C6007AA832 /* SimpleAudioConvertor.swift in Sources */,
+				40AB783F2C8B2AC1007AA832 /* AudioPreProcessor.swift in Sources */,
 				4000FB542C7F4BC700B3928F /* Structs.swift in Sources */,
 				407886392C7733550071FE5F /* Controller.swift in Sources */,
-				4093E9072C79D2510007618E /* WebRTC_Client.swift in Sources */,
+				4093E9072C79D2510007618E /* RTC.swift in Sources */,
 				407C2EE32C86D2D1007AA6DA /* VideoViewMacOS.swift in Sources */,
 				40869E8E2C81AC65001DAF06 /* ChannelDataReceiver.swift in Sources */,
 				407886352C772BFF0071FE5F /* YouView.swift in Sources */,
+				40AB78452C8B3EDE007AA832 /* AUAudioUnitRTCAudioDevice.swift in Sources */,
+				40AB783D2C8B2190007AA832 /* AudioDeviceModule.swift in Sources */,
 				4093E9052C79B71F0007618E /* STM.swift in Sources */,
+				40AB784B2C8B4067007AA832 /* AVAudioEngineRTCAudioDevice.swift in Sources */,
 				407886372C772C150071FE5F /* MeView.swift in Sources */,
 				4078862A2C771FAD0071FE5F /* VideoDeviceManager.swift in Sources */,
 				4098C2A32C883D5A007C5E98 /* ServiceRegistry.swift in Sources */,
 				407886282C771DD10071FE5F /* Model.swift in Sources */,
+				40AB78492C8B401B007AA832 /* Extensions.swift in Sources */,
 				407886242C7717F10071FE5F /* Global.swift in Sources */,
 				4000FB4D2C7F326200B3928F /* SignalClient.swift in Sources */,
 				407886192C7710E60071FE5F /* ContentView.swift in Sources */,

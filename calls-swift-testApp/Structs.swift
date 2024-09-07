@@ -20,6 +20,7 @@ enum States{
     case START_SIGNALING
     case INVITE
     case NEW_REMOTE_TRACKS
+    case RUNNING
 }
 
 public struct ADevice : Hashable{

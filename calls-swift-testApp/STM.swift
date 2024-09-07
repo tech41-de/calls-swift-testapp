@@ -19,12 +19,14 @@ class STM : ObservableObject, StateExecutor{
         if (state == model.currentstate ){
             return
         }
-        model.currentstate = state
+        Task{@MainActor in
+            self.model.currentstate = state
+        }
         switch(state){
             
         case .COLD:
             break
-
+            
         case .BOOT:
             if defaults.string(forKey: "appSecret") == nil{
                 defaults.set("https://rtc.live.cloudflare.com/v1/apps/", forKey: "serverURL")
@@ -42,8 +44,10 @@ class STM : ObservableObject, StateExecutor{
             break
             
         case .AUDIO_SETUP:
-            AudioDeviceManager(model:model).setup()
-            exec(state: .VIDEOO_SETUP)
+            DispatchQueue.main.async { [self] in
+                AudioDeviceManager().setup()
+                exec(state: .VIDEOO_SETUP)
+            }
             break
             
         case .VIDEOO_SETUP:
@@ -56,7 +60,7 @@ class STM : ObservableObject, StateExecutor{
             
         case .START_STREAM:
             Task{
-                await controller.webRtcClient!.setupStream()
+                await controller.rtc!.setupStream()
             }
             break
 
@@ -65,19 +69,19 @@ class STM : ObservableObject, StateExecutor{
                 return
             }
             Task{
-                await controller.webRtcClient!.setupPeer()
+                await controller.rtc!.setupPeer()
             }
             break
         
         case .NEW_SESSION:
             Task{
-                await controller.webRtcClient!.newSession()
+                await controller.rtc!.newSession()
             }
             break
             
         case .NEW_LOCAL_TRACKS:
             Task{
-               await controller.webRtcClient!.localTracks()
+               await controller.rtc!.localTracks()
             }
             break
             
@@ -102,9 +106,12 @@ class STM : ObservableObject, StateExecutor{
             
         case  .NEW_REMOTE_TRACKS:
             Task{
-                await controller.webRtcClient!.remoteTracks()
+                await controller.rtc!.remoteTracks()
             }
             break
+            
+        case .RUNNING:
+            print("Running")
         }
     }
 }

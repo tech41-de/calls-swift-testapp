@@ -66,7 +66,7 @@ class SignalClient : WebSocketDelegate{
                         self.model.trackIdVideoRemote = res.session.tracks[1].trackId
                         self.model.dataChannelNameRemote = res.session.tracks[2].trackId
                         Task{
-                            await self.controller.webRtcClient!.remoteTracks()
+                            await self.controller.rtc!.remoteTracks()
                         }
                         self.sendUpdateSignal(receiver: "")
                     }
@@ -78,7 +78,7 @@ class SignalClient : WebSocketDelegate{
                         self.model.trackIdVideoRemote = res.session.tracks[1].trackId
                         self.model.dataChannelNameRemote = res.session.tracks[2].trackId
                         Task{
-                            await self.controller.webRtcClient!.remoteTracks()
+                            await self.controller.rtc!.remoteTracks()
                         }
                     }
                 }

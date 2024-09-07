@@ -75,23 +75,15 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
     func setSize(size:CGSize){
         /*
         if size.width < size.height{
-            // Portrait
-            _width = 480
-            _height = 640
-            _chromaWidth = 480 / 2
-            _chromaHeight = 640 / 2
+            print("going portrait")
         }else{
-            // Landscape
-            _width = 640
-            _height = 480
-            _chromaWidth = 640 / 2
-            _chromaHeight = 480 / 2
+            print("going landscpe")
         }
+        _width = Int(size.width)
+        _height = Int(size.height)
+        _chromaWidth = Int(size.width / 2)
+        _chromaHeight = Int(size.height / 2)
          */
-       // _width = Int(size.width)
-       //  _height = Int(size.height)
-        //_chromaWidth = Int(size.width / 2)
-        //_chromaHeight = Int(size.height / 2)
     }
     
     // Overrides
@@ -114,14 +106,17 @@ class RTCMTLI420Renderer : RTCMTLRenderer{
 
         // Luminance (y) texture - Format is 420 https://en.wikipedia.org/wiki/Y%E2%80%B2UV
         // For savety pinning to the frame size
+        var tWidth = _width
+        var tHeight = _height
         if ((_descriptor == nil) || _width != frame.width || _height != frame.height) {
-            _width = Int(frame.width)
-            _height = Int(frame.height)
-            _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:_width, height:_height, mipmapped:false)
+            tWidth = Int(frame.width)
+            tHeight = Int(frame.height)
+            _descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: MTLPixelFormat.r8Unorm, width:tWidth, height:tHeight, mipmapped:false)
             _descriptor!.usage = .shaderRead
             _yTexture = device!.makeTexture(descriptor: _descriptor!)
         }
-        _yTexture!.replace(region: MTLRegionMake2D(0, 0, _width, _height), mipmapLevel:0, withBytes: buffer.dataY, bytesPerRow: Int(buffer.strideY))
+
+        try _yTexture!.replace(region: MTLRegionMake2D(0, 0, tWidth, tHeight), mipmapLevel:0, withBytes: buffer.dataY, bytesPerRow: Int(buffer.strideY))
 
         // Chroma textures
         // For savety pinning to the frame size

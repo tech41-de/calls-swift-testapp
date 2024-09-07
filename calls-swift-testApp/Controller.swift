@@ -15,15 +15,14 @@ class Controller : ObservableObject{
     let BLOCKSIZE = 1500
     let jsonDecoder = JSONDecoder()
     let jsonEncoder = JSONEncoder()
-    
-   // var model : Model?
-    var webRtcClient : WebRTC_Client?
+
+    var rtc : RTC?
     var jobId :Int32 = 0
     var pingSendAt = 0
     
     init(){
-        webRtcClient = WebRTC_Client()
-        webRtcClient!.setup(model: model, controller : self)
+        rtc = RTC()
+        rtc!.setup(model: model, controller : self)
     }
 
     func chatSend(text:String){
@@ -33,7 +32,7 @@ class Controller : ObservableObject{
                 let msg = ChannelMsg(type: .chat, sender: model.sessionId, reciever: "", obj: chatMsg, sendDate: Int(Date().timeIntervalSince1970 * 1000.0))
                 let datas = try jsonEncoder.encode(msg)
                 let jsons = String(decoding: datas, as: UTF8.self)
-                webRtcClient!.sendText(json: jsons)
+                rtc!.sendText(json: jsons)
             }
             catch{
                 print(error)
@@ -89,7 +88,7 @@ class Controller : ObservableObject{
             do{
                 let data = try jsonEncoder.encode(msg)
                 let json = String(decoding: data, as: UTF8.self)
-                webRtcClient!.sendText(json: json)
+                rtc!.sendText(json: json)
             }
             catch{
                 print(error)
@@ -98,16 +97,12 @@ class Controller : ObservableObject{
     }
     
     func updateCameraInputDevice(name:String){
-        webRtcClient!.switchVideo()
+        rtc!.switchVideo()
     }
     
+    @MainActor
     func updateAudioInputDevice(name:String){
-        guard let device = model.getAudioInDevice(name: name)else{
-            return
-        }
-        model.audioInDevice = name
-        UserDefaults.standard.set(name, forKey: "audioIn")
-        AudioDeviceManager(model:model).setInputDevice(device:device)
+        rtc?.switchAudio(name:name)
     }
     
     func updateAudioOutputDevice(name:String){
@@ -116,6 +111,6 @@ class Controller : ObservableObject{
         }
         model.audioOutDevice = name
         UserDefaults.standard.set(name, forKey: "audioOut")
-        AudioDeviceManager(model:model).setOutputDevice(device: device)
+        AudioDeviceManager().setOutputDevice(device: device)
     }
 }

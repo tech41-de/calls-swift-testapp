@@ -9,77 +9,224 @@ import Foundation
 import AVFoundation
 import AudioToolbox
 import CoreAudio
-
+import WebRTC
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
-class AudioDeviceManager{
+class AudioDeviceManager : NSObject, RTCAudioSessionDelegate{
+    @Service var model: Model
+    let session = RTCAudioSession.sharedInstance()
     
-    let model:Model
-    
-    init(model:Model){
-        self.model = model
+    func requestMicrophonePermission(completion: @escaping (Bool) -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .audio) {
+        case .authorized:
+            completion(true)
+            
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { granted in
+                if granted {
+                    completion(granted)
+                } else {
+                    completion(granted)
+                }
+            }
+            
+        case .denied, .restricted:
+            //SystemSettingsHandler.openSystemSetting(for: "microphone")
+            completion(false)
+            
+        @unknown default:
+            completion(false)
+        }
     }
     
+    func audioSessionDidBeginInterruption(_ ssession:RTCAudioSession){
+        print("audioSessionDidBeginInterruption")
+    }
+
+    /** Called on a system notification thread when AVAudioSession ends an
+     *  interruption event.
+     */
+    func audioSessionDidEndInterruption(_ session:RTCAudioSession, shouldResumeSession :Bool){
+        print("audioSessionDidEndInterruption")
+    }
+
+    /** Called on a system notification thread when AVAudioSession changes the
+     *  route.
+     */
+    func audioSessionDidChangeRoute(_ session:RTCAudioSession, reason:AVAudioSession.RouteChangeReason, previousRoute:AVAudioSessionRouteDescription){
+        print("audioSessionDidChangeRoute")
+    }
+
+    /** Called on a system notification thread when AVAudioSession media server
+     *  terminates.
+     */
+    func audioSessionMediaServerTerminated(_ session:RTCAudioSession){
+        print("audioSessionMediaServerTerminated")
+    }
+
+    /** Called on a system notification thread when AVAudioSession media server
+     *  restarts.
+     */
+    func audioSessionMediaServerReset(_ session:RTCAudioSession){
+        print("audioSessionMediaServerReset")
+    }
+
+    // TODO(tkchin): Maybe handle SilenceSecondaryAudioHintNotification.
+
+   func audioSession(_ session:RTCAudioSession, didChangeCanPlayOrRecord:Bool){
+       print("audioSession didChangeCanPlayOrRecord \(didChangeCanPlayOrRecord)")
+    }
+
+    /** Called on a WebRTC thread when the audio device is notified to begin
+     *  playback or recording.
+     */
+    func audioSessionDidStartPlayOrRecord(_ session:RTCAudioSession){
+        print("audioSessionDidStartPlayOrRecord")
+    }
+
+    /** Called on a WebRTC thread when the audio device is notified to stop
+     *  playback or recording.
+     */
+    func audioSessionDidStopPlayOrRecord(_ session:RTCAudioSession){
+        print("audioSessionDidStopPlayOrRecord")
+    }
+
+    /** Called when the AVAudioSession output volume value changes. */
+    func audioSession( _ session:RTCAudioSession, didChangeOutputVolume:Float){
+        print("didChangeOutputVolume \(didChangeOutputVolume)")
+    }
+
+    /** Called when the audio device detects a playout glitch. The argument is the
+     *  number of glitches detected so far in the current audio playout session.
+     */
+    func audioSession(_ session:RTCAudioSession,didDetectPlayoutGlitch:Int64){
+        print("didDetectPlayoutGlitch \(didDetectPlayoutGlitch)")
+    }
+
+    /** Called when the audio session is about to change the active state.
+     */
+    func audioSession(_ session:RTCAudioSession, willSetActive:Bool){
+        print("")
+    }
+
+    /** Called after the audio session sucessfully changed the active state.
+     */
+    func audioSession(_ session:RTCAudioSession, didSetActive:Bool){
+        print("")
+    }
+
+    /** Called after the audio session failed to change the active state.
+     */
+    func audioSession(_ session:RTCAudioSession, failedToSetActive:Bool, error: any Error){
+        print("")
+    }
+
+    func audioSession(_ session:RTCAudioSession, audioUnitStartFailedWithError:any Error){
+        print("")
+    }
+
+    func setupNotifications() {
+        // Get the default notification center instance.
+        let nc = NotificationCenter.default
+        nc.addObserver(self,
+                       selector: #selector(handleRouteChange),
+                       name: AVAudioSession.routeChangeNotification,
+                       object: nil)
+    }
+
+    @objc func handleRouteChange(notification: Notification) {
+        print(notification)
+    }
+
+    @MainActor
     func setup(){
-        let session = AVAudioSession.sharedInstance()
-        session.requestRecordPermission(){ ok in
-            if !ok{
-                return
-            }
-            do{
-                try session.setCategory(.playAndRecord, mode:.videoChat , policy:.default , options: [.mixWithOthers, .allowBluetooth])
-                try session.setActive(true, options: .notifyOthersOnDeactivation)
-                try session.overrideOutputAudioPort(AVAudioSession.PortOverride.none)
-            }catch{
-                print(error)
+        session.add(self) // delegate
+        setupNotifications()
+        
+        requestMicrophonePermission(){ hasPermission in
+            if !hasPermission{
+                print("no audio permission")
+            }else{
+                print("audio permission granted")
             }
         }
-        
-        guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
-           print("No inputs available ")
-           return
-       }
-        
-        DispatchQueue.main.async {
-            self.model.audioInDevices.removeAll()
-            for input in availableInputs{
-                var device = ADevice()
-                device.id = 0
-                device.name = input.portName
-                device.uid = input.uid
-                self.model.audioInDevices.append(device)
-            }
+    //AVAudioSession.sharedInstance()
+        session.lockForConfiguration()
+        do{
+           // session.useManualAudio = true //  Why this hack?
+            try session.setCategory(.playAndRecord, mode: .default, options:  [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP, .duckOthers, .mixWithOthers])
+            try session.setActive(true)
+           // session.useManualAudio = false // Why this hack?
+        }catch{
+            print(error)
         }
+        session.unlockForConfiguration()
         
-        let outputs = AVAudioSession.sharedInstance().currentRoute.outputs
-        DispatchQueue.main.async {
-            self.model.audioOutDevices.removeAll()
-            for out in outputs{
-                var device = ADevice()
-                device.id = 0
-                device.name = out.portName
-                device.uid = out.uid
-                self.model.audioOutDevices.append(device)
-            }
+        // In devices
+        self.model.audioInDevices.removeAll()
+        for input in session.session.availableInputs!{
+            var device = ADevice()
+            device.id = 0
+            device.name = input.portName
+            device.uid = input.uid
+            self.model.audioInDevices.append(device)
+          //  print( "Appending to input list \(device.name)")
         }
-        self.model.audioInDevice = AVAudioSession.sharedInstance().availableInputs?[0].portName ?? ""
-        self.model.audioOutDevice = AVAudioSession.sharedInstance().currentRoute.outputs[0].portName
+        self.model.audioInDevice = self.model.audioInDevices.last!
+        self.model.audioInName = self.model.audioInDevices.last?.name ?? ""
+       // print("available inputs \(model.audioInDevices.count)")
+
+        setInputDevice(device: self.model.audioInDevices.last!)
+
+        // out device
+        let outputs = session.currentRoute.outputs
+        self.model.audioOutDevices.removeAll()
+        for out in outputs{
+            var device = ADevice()
+            device.id = 0
+            device.name = out.portName
+            device.uid = out.uid
+            self.model.audioOutDevices.append(device)
+            print("out device \( device.name)")
+        }
+        print("available outputs \(model.audioOutDevices.count)")
+        self.model.audioOutDevice = self.model.audioOutDevices.last?.name ?? ""
+      
+        //setOutputDevice(device: self.model.audioOutDevices.last!)
     }
     
     func setInputDevice(device: ADevice){
         do {
-            guard let availableInputs = AVAudioSession.sharedInstance().availableInputs else {
-               print("No inputs available ")
-               return
-           }
+            let avSession = AVAudioSession.sharedInstance()
+            guard let availableInputs = avSession.availableInputs else {
+                print("No inputs available ")
+                return
+            }
+            print("Have inputs \(availableInputs.count)")
             for d in availableInputs{
+                print("testing for  available: \( d.portName) requested: \(device.name)")
                 if d.portName == device.name{
-                    try AVAudioSession.sharedInstance().setPreferredInput(d)
+                    print("Setting in Device \( d.portName)")
+                    //let session = RTCAudioSession.sharedInstance()
+                   // session.lockForConfiguration()
+                    try avSession.setPreferredInput(d)
+                    print("Preferrred device set to \(d.portName)")
+                    
+                    for d in RTC.factory.audioDeviceModule.inputDevices{
+                        if d.deviceId == d.deviceId{
+                            print("Setting Audio Device to \(d)")
+                           // WebRTC_Client.factory.audioDeviceModule.inputDevice = d
+                            
+                            RTC.factory.audioDeviceModule.trySetInputDevice(d)
+                        }
+                    }
+                   
+                   // session.unlockForConfiguration()
                 }
             }
-           
-            } catch {
-                print("Unable to set the built-in mic as the preferred input.")
+        }
+        catch {
+            print("Unable to set the built-in mic as the preferred input.")
         }
     }
     
@@ -93,11 +240,10 @@ class AudioDeviceManager{
 
 #if  os(macOS) || targetEnvironment(macCatalyst)
 class AudioDeviceManager{
+    @Service var model: Model
     
-    let model:Model
-    
-    init(model:Model){
-        self.model = model
+    init(){
+
     }
     
     func setup(){

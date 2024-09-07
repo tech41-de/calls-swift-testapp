@@ -66,6 +66,7 @@ struct ContentView: View {
     @State var filePath = ""
     @State var fileUrl :URL?
     @State var closeTrackForceFlag  = false
+    @State var isYouViewPortrait  = true
     
 
     func getSession(){
@@ -135,8 +136,10 @@ struct ContentView: View {
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
                 Button("Enter"){
-                    m.room = room
-                    stm.exec(state: .START_SESSION)
+                    if m.currentstate == .START_STREAM || m.currentstate == .RUNNING{
+                        m.room = room
+                        stm.exec(state: .START_SESSION)
+                    }
                 } .buttonStyle(MyButtonStyle())
                 Text(":")
                 TextField("room", text: $room).disableAutocorrection(true)
@@ -171,10 +174,16 @@ struct ContentView: View {
                         let width = g.size.width / 2 - 2
                         MeView(model:m, width:width).scaleEffect(x: -1, y: 1).frame(width:width).offset(x:0)
                         Divider().frame(width:2)
-                        YouView(model:m, width:width).frame(width:width).offset(x:width)
+                        let w = isYouViewPortrait ? width * 9 / 15 :  width
+                        let h = g.size.height
+                        YouView(model:m, width:width, height : h).frame(width:w).offset(x:width)
                             .onAppear(){
-                                m.videoWidth = g.size.width / 2
-                                m.videoHeight = g.size.height
+                                if isYouViewPortrait{
+                                   
+                                }else{
+                                    m.videoWidth = g.size.width / 2
+                                    m.videoHeight = g.size.height
+                                }
                             }
                     }
                 }.frame(minHeight:200, maxHeight:300)
@@ -264,8 +273,8 @@ struct ContentView: View {
                             Button("Close"){
                                 if m.sessionId != ""{
                                     Task{
-                                        await controller.webRtcClient!.removeTrack(mid: trackMid)
-                                        await controller.webRtcClient!.getOfffer(){ sdp in
+                                        await controller.rtc!.removeTrack(mid: trackMid)
+                                        await controller.rtc!.getOfffer(){ sdp in
                                             Task{
                                                 let desc = Calls.SessionDescription(type:"offer", sdp:sdp!.sdp)
                                                 let local = Calls.CloseTrackObject(mid: trackMid)
@@ -279,7 +288,7 @@ struct ContentView: View {
                                                     
                                                     if res!.requiresImmediateRenegotiation{
                                                         Task{
-                                                            await controller.webRtcClient!.renegotiate()
+                                                            await controller.rtc!.renegotiate()
                                                         }
                                                     }
                                                 }
@@ -298,7 +307,7 @@ struct ContentView: View {
                 HStack{
                     ScrollView(.vertical){
                         TextField("", text: $chatReceived, axis: .vertical)
-                            .textSelection(.enabled)
+                            .textSelection(.disabled)
                             .disableAutocorrection(true)
                             .lineLimit(8, reservesSpace: true)
                             .multilineTextAlignment(.leading)
@@ -339,8 +348,7 @@ struct ContentView: View {
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
 
-                
-                Picker(selection: $m.audioInDevice.onChange(audioInChanged), label:Text("Audio In")) {
+                Picker(selection: $m.audioInName.onChange(audioInChanged), label:Text("Audio In")) {
                     ForEach(m.audioInDevices, id: \.self) {
                         Text($0.name).tag($0.name)
                     }
