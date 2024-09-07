@@ -56,6 +56,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     private static var postProcessor = AudioPostProcessor()
     private static var audioProcessingModule : RTCDefaultAudioProcessingModule = .init()
     
+    static let videoSenderCapabilites = factory.rtpSenderCapabilities(forKind: kRTCMediaStreamTrackKindVideo)
+    static let audioSenderCapabilites = factory.rtpSenderCapabilities(forKind: kRTCMediaStreamTrackKindAudio)
+    
     static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
         let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
@@ -66,24 +69,48 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                                         audioProcessingModule: audioProcessingModule)
     }()
     
-    /*
-    private static let factory: RTCPeerConnectionFactory = {
-        RTCInitializeSSL()
-        let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
-        let videoDecoderFactory = RTCDefaultVideoDecoderFactory()
-        let audioProcessingModule =  RTCDefaultAudioProcessingModule()
+    static func createPeerConnection(_ configuration: RTCConfiguration,
+                                         constraints: RTCMediaConstraints) -> RTCPeerConnection?
+        {
+            DispatchQueue.WebRTCQueue.sync { factory.peerConnection(with: configuration,
+                                                                                    constraints: constraints,
+                                                                                    delegate: nil) }
+        }
     
-        audioProcessingModule.renderPreProcessingDelegate = preProcessor
-        audioProcessingModule.capturePostProcessingDelegate = postProcessor
-        
-        
-        let factory = RTCPeerConnectionFactory(
-            encoderFactory: RTCDefaultVideoEncoderFactory(),
-            decoderFactory: RTCDefaultVideoDecoderFactory(),
-            audioDevice: RTCAudioDevice())
-        return factory
-    }()
-     */
+    static func createSessionDescription(type: RTCSdpType, sdp: String) -> RTCSessionDescription {
+        DispatchQueue.WebRTCQueue.sync { RTCSessionDescription(type: type, sdp: sdp) }
+    }
+    
+    static func createVideoCapturer() -> RTCVideoCapturer {
+        DispatchQueue.WebRTCQueue.sync { RTCVideoCapturer() }
+    }
+    
+    static func createVideoSource(forScreenShare: Bool) -> RTCVideoSource {
+           DispatchQueue.WebRTCQueue.sync { factory.videoSource(forScreenCast: forScreenShare) }
+       }
+
+   static func createVideoTrack(source: RTCVideoSource) -> RTCVideoTrack {
+       DispatchQueue.WebRTCQueue.sync { factory.videoTrack(with: source, trackId: "v_" + UUID().uuidString) }
+   }
+    
+    static func createAudioSource(_ constraints: RTCMediaConstraints?) -> RTCAudioSource {
+        DispatchQueue.WebRTCQueue.sync { factory.audioSource(with: constraints) }
+    }
+
+    static func createAudioTrack(source: RTCAudioSource) -> RTCAudioTrack {
+        DispatchQueue.WebRTCQueue.sync { factory.audioTrack(with: source, trackId: "a_" + UUID().uuidString) }
+    }
+
+    static func createDataChannelConfiguration(ordered: Bool = true, maxRetransmits: Int32 = -1) -> RTCDataChannelConfiguration{
+        let result = DispatchQueue.WebRTCQueue.sync { RTCDataChannelConfiguration() }
+        result.isOrdered = ordered
+        result.maxRetransmits = maxRetransmits
+        return result
+    }
+
+    static func createDataBuffer(data: Data) -> RTCDataBuffer {
+        DispatchQueue.WebRTCQueue.sync { RTCDataBuffer(data: data, isBinary: true) }
+    }
     
     override init(){
         super.init()
@@ -261,14 +288,15 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     func setupAudio(){
         // opus/48000/2
         // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
-        let audioSource = RTC.factory.audioSource(with: getRTCMediaAudioInConstraints())
-        localAudioTrack = RTC.factory.audioTrack(with: audioSource, trackId: "a_" + UUID().uuidString)
+        let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints())
+        localAudioTrack = RTC.createAudioTrack(source: audioSource)
     }
     
     func setupStream() async{
-        let videoSource = RTC.factory.videoSource()
-        videoLocalId = "v_" + UUID().uuidString
-        localVideoTrack = RTC.factory.videoTrack(with: videoSource, trackId: videoLocalId)
+        let videoSource = RTC.createVideoSource(forScreenShare: false)
+        localVideoTrack = RTC.createVideoTrack(source: videoSource)
+        videoLocalId = localVideoTrack!.trackId
+        
         let dm = VideoDeviceManager(model:model!)
         let camera = dm.getDevice(name: model!.camera)
         let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
@@ -278,6 +306,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             }
             return
         }
+
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
         do{
             try await capturer.startCapture(with: camera!, format: format!, fps: fps)
@@ -297,25 +326,22 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         config.sdpSemantics = .unifiedPlan
         config.continualGatheringPolicy = .gatherContinually
         config.bundlePolicy = .maxBundle
-       // let constraints = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints: ["DtlsSrtpKeyAgreement":kRTCMediaConstraintsValueTrue])
-  
-       // AudioDeviceModule.shared.setup()
         
-        
-        guard let peerConnection = RTC.factory.peerConnection(with: config, constraints: getDefaultConstraints(), delegate: nil) else {
+        guard let peerConnection = RTC.createPeerConnection(config, constraints: getDefaultConstraints()) else {
             fatalError("Could not create new RTCPeerConnection")
         }
+
         self.peerConnection = peerConnection
         peerConnection.delegate = self
         
-
         // Start an inactive audio session as required by Cloudflare Calls
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .inactive
         peerConnection.addTransceiver(of: .audio, init: initalize)
         
         do{
-            let sdp = try await peerConnection.offer(for: constraint)
+ 
+            let sdp = try await peerConnection.offer(for: getRTCMediaAudioInConstraints())
             try await peerConnection.setLocalDescription(sdp)
             DispatchQueue.main.async {
                 self.model!.hasSDPLocal = "✅"
@@ -426,7 +452,13 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 localTracks.append(trAudio)
                 localTracks.append(trVideo)
                 var sdpEdited = sdp.sdp
-                sdpEdited = sdpEdited.replacingOccurrences(of: "useinbandfec=1", with: "useinbandfec=1; stereo=1; maxaveragebitrate=510000")
+                if sdpEdited.contains("useinbandfec=1"){
+                    sdpEdited = sdpEdited.replacingOccurrences(of: "useinbandfec=1", with: "useinbandfec=1; stereo=1; maxaveragebitrate=510000")
+                    print("useinbandfec=1 replaced in SDP")
+                    print(sdpEdited)
+                }else{
+                    print("useinbandfec=1 not found in SDP")
+                }
                 let desc = Calls.SessionDescription( type:"offer",  sdp:sdpEdited)
                 let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
                 
