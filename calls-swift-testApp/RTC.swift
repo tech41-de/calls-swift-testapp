@@ -59,6 +59,10 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     static let videoSenderCapabilites = factory.rtpSenderCapabilities(forKind: kRTCMediaStreamTrackKindVideo)
     static let audioSenderCapabilites = factory.rtpSenderCapabilities(forKind: kRTCMediaStreamTrackKindAudio)
     
+    static var audioDeviceModule:RTCAudioDeviceModule{
+        factory.audioDeviceModule
+    }
+    
     static let factory: RTCPeerConnectionFactory = {
         RTCInitializeSSL()
         let videoEncoderFactory = RTCDefaultVideoEncoderFactory()
@@ -208,10 +212,16 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         for s in senders{
             if s.track?.kind == "audio"{
                 s.track!.isEnabled = false
+                #if os(iOS)
                 AudioDeviceManager().setInputDevice(device:device)
-                setupAudio()
-                s.track = localAudioTrack
-                s.track!.isEnabled = true
+                #else
+                AudioDeviceManager().setInputDevice(device:device)
+                #endif
+                //setupAudio()
+                let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints())
+                replaceAudioTrack(peerConnection: peerConnection!, newAudioSource: audioSource)
+               // s.track = localAudioTrack
+               // s.track!.isEnabled = true
                 print("localAudioTrack reset")
             }
         }
@@ -244,9 +254,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
    
     
     func getRTCMediaAudioInConstraints() ->RTCMediaConstraints{
-        print("setting deviceID \(model!.audioInDevice!.uid)")
         let constrain  = RTCMediaConstraints(mandatoryConstraints: [
-            "deviceId":model!.audioInDevice!.uid,
             "offerToReceiveAudio": "true",
             "echoCancellation": "false",
             "autoGainControl": "false",
@@ -289,6 +297,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         // opus/48000/2
         // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
         let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints())
+        audioSource.volume = 10
         localAudioTrack = RTC.createAudioTrack(source: audioSource)
     }
     
@@ -338,7 +347,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .inactive
         peerConnection.addTransceiver(of: .audio, init: initalize)
-        
+
         do{
  
             let sdp = try await peerConnection.offer(for: getRTCMediaAudioInConstraints())
@@ -410,6 +419,30 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             if transceiver.mid == mid{
                 peerConnection?.removeTrack(transceiver.sender)
             }
+        }
+    }
+    
+    // Assuming you have a valid RTCPeerConnection and RTCAudioSource objects
+    func replaceAudioTrack(peerConnection: RTCPeerConnection, newAudioSource: RTCAudioSource) {
+        // Create a new audio track from the new audio source
+        let newAudioTrack = RTC.factory.audioTrack(with: newAudioSource, trackId: model!.localAudioTrackId)
+        
+        // Get the existing audio sender from the peer connection
+        if let audioSender = peerConnection.senders.first(where: { $0.track?.kind == "audio" }) {
+            // Replace the existing audio track with the new one
+            audioSender.track = newAudioTrack
+            
+            /*
+            audioSender.replaceTrack(newAudioTrack) { error in
+                if let error = error {
+                    print("Error replacing audio track: \(error.localizedDescription)")
+                } else {
+                    print("Audio track replaced successfully.")
+                }
+            }
+             */
+        } else {
+            print("No audio sender found to replace the track.")
         }
     }
 
@@ -608,10 +641,13 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             DispatchQueue.main.async {
                 self.model!.hasRemoteTracks = "✅"
                 
+                #if os(iOS)
+                print("preferredInput: \(RTCAudioSession.sharedInstance().session.preferredInput?.portName)")
                 print("SampleRate: \(RTCAudioSession.sharedInstance().session.sampleRate)")
                 print("Channels In: \(RTCAudioSession.sharedInstance().session.inputNumberOfChannels)")
                 print("Channels Out: \(RTCAudioSession.sharedInstance().session.outputNumberOfChannels)")
                 print("Buffer Duration msec: \(1000 * RTCAudioSession.sharedInstance().session.ioBufferDuration)")
+                #endif
             }
         }
         // We are done!

@@ -274,7 +274,7 @@ class AudioDeviceManager{
                 self.model.audioInputDefaultDevice = self.getDefaultInDevice(forScope: kAudioObjectPropertyScopeOutput)
                 self.model.audioOutputDefaultDevice = self.getDefaultOutDevice(forScope: kAudioObjectPropertyScopeInput)
                 
-                let deviceIn = self.model.getAudioInDevice(name: self.model.audioInDevice)
+                let deviceIn = self.model.getAudioInDevice(name: self.model.audioInName)
                 if(deviceIn != nil){
                     self.setInputDevice(device:deviceIn!)
                 }
@@ -610,11 +610,11 @@ class AudioDeviceFinder {
             }
             // set defaullts if we have any
             if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
-                model.audioInDevice = UserDefaults.standard.string(forKey: "audioIn")!
+                model.audioInName = UserDefaults.standard.string(forKey: "audioIn")!
                 
             }else{
                 if model.audioInDevices.count > 0{
-                    model.audioInDevice = model.audioInDevices[model.audioInDevices.count - 1].name
+                    model.audioInName = model.audioInDevices[model.audioInDevices.count - 1].name
                 }else{
                     print("There are no Audio In devices")
                 }
