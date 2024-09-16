@@ -35,8 +35,32 @@ class SignalClient : WebSocketDelegate{
         
     }
     
+    func invite(room:String){
+        var roomParsed = room.lowercased()
+        var shortStr : String.SubSequence
+        if roomParsed.count > 32{
+            let index = roomParsed.index(roomParsed.startIndex, offsetBy: 32)
+            shortStr = roomParsed.prefix(upTo: index)
+            roomParsed = (String(shortStr))
+        }
+        roomParsed = roomParsed.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
+        
+        let uri = "wss://api.pcalls.net/v0/invite/" + roomParsed + "/websocket"
+        let request = URLRequest(url: URL(string: uri)!)
+        socket = WebSocket(request:request)
+        socket!.delegate = self
+        socket!.connect()
+    }
+    
     func sendUpdateSignal(receiver:String){
-        let session = Session(sessionId: model.sessionId, tracks:model.tracks, room: model.room)
+        var tracks = [Track]()
+        for track in model.tracks{
+            if track.type == "local"{
+                let trackCopy = Track(trackId:track.trackId, mid: track.mid, type: "remote", kind: track.kind)
+                tracks.append(trackCopy)
+            }
+        }
+        let session = Session(sessionId: model.sessionId, tracks:tracks, room: model.room)
         let req = SignalReq(cmd:"update", receiver:receiver, session:session )
         send(req: req)
     }
@@ -59,12 +83,29 @@ class SignalClient : WebSocketDelegate{
             do{
                 let data = string.data(using: .utf8) // non-nil
                 let res = try decoder.decode(SignalRes.self, from: data!)
+                
+                // Invite
                 if res.cmd == "invite" && res.session.sessionId != model.sessionId{
                     DispatchQueue.main.async {
                         self.model.sessionIdRemote = res.session.sessionId
-                        self.model.trackIdAudioRemote = res.session.tracks[0].trackId
-                        self.model.trackIdVideoRemote = res.session.tracks[1].trackId
-                        self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        if res.session.tracks.count > 0{
+                            print( res.session.tracks[0].type)
+                            if  res.session.tracks[0].kind == "audio"{
+                                self.model.trackIdAudioRemote = res.session.tracks[0].trackId
+                            }else if  res.session.tracks[0].kind == "video"{
+                                self.model.trackIdVideoRemote = res.session.tracks[0].trackId
+                            }
+                        }
+                        if res.session.tracks.count > 1{
+                            if  res.session.tracks[1].kind == "audio"{
+                                self.model.trackIdAudioRemote = res.session.tracks[1].trackId
+                            }else if  res.session.tracks[1].kind == "video"{
+                                self.model.trackIdVideoRemote = res.session.tracks[1].trackId
+                            }
+                        }
+                        if res.session.tracks.count > 2{
+                            self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        }
                         Task{
                             await self.controller.rtc!.remoteTracks()
                         }
@@ -74,9 +115,24 @@ class SignalClient : WebSocketDelegate{
                 if res.cmd == "update" && res.session.sessionId != model.sessionId{
                     DispatchQueue.main.async {
                         self.model.sessionIdRemote = res.session.sessionId
-                        self.model.trackIdAudioRemote = res.session.tracks[0].trackId
-                        self.model.trackIdVideoRemote = res.session.tracks[1].trackId
-                        self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        if res.session.tracks.count > 0{
+                            print( res.session.tracks[0].type)
+                            if  res.session.tracks[0].kind == "audio"{
+                                self.model.trackIdAudioRemote = res.session.tracks[0].trackId
+                            }else if  res.session.tracks[0].kind == "video"{
+                                self.model.trackIdVideoRemote = res.session.tracks[0].trackId
+                            }
+                        }
+                        if res.session.tracks.count > 1{
+                            if  res.session.tracks[1].kind == "audio"{
+                                self.model.trackIdAudioRemote = res.session.tracks[1].trackId
+                            }else if  res.session.tracks[1].kind == "video"{
+                                self.model.trackIdVideoRemote = res.session.tracks[1].trackId
+                            }
+                        }
+                        if  res.session.tracks.count > 2{
+                            self.model.dataChannelNameRemote = res.session.tracks[2].trackId
+                        }
                         Task{
                             await self.controller.rtc!.remoteTracks()
                         }
@@ -120,22 +176,6 @@ class SignalClient : WebSocketDelegate{
     func send(msg:String){
         socket!.write(string: msg){
         }
-    }
-    
-    func invite(room:String){
-        var roomParsed = room.lowercased()
-        var shortStr : String.SubSequence
-        if roomParsed.count > 32{
-            let index = roomParsed.index(roomParsed.startIndex, offsetBy: 32)
-            shortStr = roomParsed.prefix(upTo: index)
-            roomParsed = (String(shortStr))
-        }
-        roomParsed = roomParsed.addingPercentEncoding(withAllowedCharacters: .alphanumerics)!
-        let uri = "wss://api.pcalls.net/v0/invite/" + roomParsed + "/websocket"
-        let request = URLRequest(url: URL(string: uri)!)
-        socket = WebSocket(request:request)
-        socket!.delegate = self
-        socket!.connect()
     }
     
     deinit {

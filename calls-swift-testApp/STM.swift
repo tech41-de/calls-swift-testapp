@@ -98,7 +98,15 @@ class STM : ObservableObject, StateExecutor{
             
         case .INVITE:
             Task{
-                let session = Session(sessionId: model.sessionId, tracks:model.tracks, room: model.room)
+                // We are signaling the tracks as remote tracks
+                var tracks = [Track]()
+                for track in model.tracks{
+                    if track.type == "local"{
+                        let trackCopy = Track(trackId:track.trackId, mid: track.mid, type: "remote", kind: track.kind)
+                        tracks.append(trackCopy)
+                    }
+                }
+                let session = Session(sessionId: model.sessionId, tracks:tracks, room: model.room)
                 let req = SignalReq(cmd:"invite" ,receiver:"", session:session )
                 signalClient.send(req: req)
             }

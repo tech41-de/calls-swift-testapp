@@ -33,11 +33,13 @@ public struct Track : Codable{
     public var trackId : String
     public var mid : String
     public var type  :String
+    public var kind  :String
     
-    public init(trackId : String, mid : String, type : String){
+    public init(trackId : String, mid : String, type : String, kind:String){
         self.trackId = trackId
         self.mid = mid
         self.type = type
+        self.kind = kind
     }
 }
 

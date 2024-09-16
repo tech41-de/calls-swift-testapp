@@ -476,9 +476,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                     self.model!.localVideoMid = self.transceiverVideo!.mid
                     
                     var tracks = [Track]()
-                    tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local"))
-                    tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local"))
-                    tracks.append(Track(trackId:dataChannelName, mid: "0", type: "local"))
+                    tracks.append(Track(trackId: self.transceiverAudio!.sender.track!.trackId, mid: self.transceiverAudio!.mid, type: "local", kind:"audio"))
+                    tracks.append(Track(trackId: self.transceiverVideo!.sender.track!.trackId, mid: self.transceiverVideo!.mid, type: "local", kind:"video"))
+                    tracks.append(Track(trackId:dataChannelName, mid: "0", type: "local", kind:"data"))
                     self.model!.tracks = tracks
                 }
                 
