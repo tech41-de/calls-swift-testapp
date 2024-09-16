@@ -581,6 +581,20 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 await model!.api.newDataChannelRemote(sessionId: model!.sessionId, dataChannelReq:dataChannelReq){ [self] newDataTrackRes, error in
                     if error != nil && error!.count > 0 {
                         print(error ?? "")
+                        // Have no data Channel
+                        if isRenegotiate{
+                            Task{
+                                if res.sessionDescription.type == "answer"{
+                                    print("this is wrong, should be an offer")
+                                    return
+                                }
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                    Task{
+                                        await self.renegotiate()
+                                    }
+                                }
+                            }
+                        }
                         return
                     }
                     let dataRemoteId = newDataTrackRes!.dataChannels.first!.id

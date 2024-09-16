@@ -55,7 +55,7 @@ class SignalClient : WebSocketDelegate{
     func sendUpdateSignal(receiver:String){
         var tracks = [Track]()
         for track in model.tracks{
-            if track.type == "local"{
+            if (track.type == "local" ){
                 let trackCopy = Track(trackId:track.trackId, mid: track.mid, type: "remote", kind: track.kind)
                 tracks.append(trackCopy)
             }
