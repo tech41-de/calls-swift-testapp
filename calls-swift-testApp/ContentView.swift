@@ -10,6 +10,7 @@ import SwiftUI
 import Calls_Swift
 
 struct MyButtonStyle: ButtonStyle {
+
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
             .padding(5)
@@ -68,7 +69,9 @@ struct ContentView: View {
     @State var closeTrackForceFlag  = false
     @State var isYouViewPortrait  = true
     
-
+    @State var sdpOffer = "offer"
+    @State var sdpAnswer = "answer"
+    
     func getSession(){
         Task{
             await m.api.getSession(sessionId: m.sessionId){res, error in
@@ -140,13 +143,28 @@ struct ContentView: View {
                         m.room = room
                         stm.exec(state: .START_SESSION)
                     }
-                } .buttonStyle(MyButtonStyle())
+                }.buttonStyle(MyButtonStyle())
                 Text(":")
                 TextField("room", text: $room).disableAutocorrection(true)
                 Spacer()
-                Button(m.isDebug ? "hide" : "show"){
-                    m.isDebug =  !m.isDebug
-                }.buttonStyle(MyButtonStyle())
+                Button("Home"){
+                    
+                    m.displayMode = DisplayMode.HOME
+                }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .HOME ? 2 : 0)
+                Button("Debug"){
+                    m.displayMode = .DEBUG
+                }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .DEBUG ? 2 : 0)
+                Button("SDP Offer"){
+                    Task{
+                        await controller.rtc?.getOfffer{sdp in
+                            sdpOffer = sdp?.sdp ?? ""
+                        }
+                    }
+                    m.displayMode = .OFFER
+                }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .OFFER ? 2 : 0)
+                Button("SDP Answer"){
+                    m.displayMode = .ANSWER
+                }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .ANSWER ? 2 : 0)
             }
             
             if !isHidden{
@@ -190,7 +208,7 @@ struct ContentView: View {
             }
             
             // Debug Fields Start
-            if m.isDebug{
+            if m.displayMode == .DEBUG{
                 // Tracks
                 VStack{
                     Text("Local Tracks")
@@ -220,15 +238,7 @@ struct ContentView: View {
                 // Remote
                 VStack{
                     Text("Remote Tracks")
-                    /*
-                     Button("Set Remote Tracks"){
-                     Model.shared.sessionIdRemote = sessionIdRemote
-                     Model.shared.trackIdAudioRemote = trackIdAudioRemote
-                     Model.shared.trackIdVideoRemote = trackIdVideoRemote
-                     Model.shared.dataChannelNameRemote = remoteDataChannelName
-                     Controller().setRemoteTracks()
-                     }.buttonStyle(MyButtonStyle())
-                     */
+
                     HStack{
                         TextField("Session Id Remote", text: $sessionIdRemote).textSelection(.enabled).font(.system(size: 11))
                         Text("Session Id").font(.system(size: 11))
@@ -255,7 +265,6 @@ struct ContentView: View {
                             if m.sessionId != ""{
                                 getSession()
                             }
-                            
                         }.buttonStyle(MyButtonStyle())
                         
                         TextField("sessionData", text: $sessionData, axis: .vertical).textSelection(.enabled).lineLimit(6, reservesSpace: true).font(.system(size: 11))
@@ -302,43 +311,79 @@ struct ContentView: View {
                 }
             }
             
-            VStack{
-                Text("Chat")
-                HStack{
-                    ScrollView(.vertical){
-                        TextField("", text: $chatReceived, axis: .vertical)
+            // Offer Fields Start =============================================
+            if m.displayMode == .OFFER{
+                VStack{
+                    Text("Offer")
+                    ScrollView(.vertical, showsIndicators: true){
+                        TextField("", text: $sdpOffer, axis: .vertical)
                             .textSelection(.disabled)
                             .disableAutocorrection(true)
-                            .lineLimit(8, reservesSpace: true)
+                            .lineLimit(200, reservesSpace: false)
                             .multilineTextAlignment(.leading)
                     }
-                    
-                }
-            }.padding(5).border(.gray, width: 1)
-            HStack{
-                TextField("chat", text: $ChatSend)
-                    .textSelection(.enabled)
-                    .disableAutocorrection(true)
-                Button("Send"){
-                    if ChatSend.count == 0{
-                        return // don't send empty lines
-                    }
-                    Task{
-                        controller.chatSend(text:ChatSend)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            m.chatReceived += ChatSend + "\n"
-                            chatReceived = m.chatReceived
-                            ChatSend = ""
-                        }
-                    }
-                }.buttonStyle(MyButtonStyle())
+                }.padding(5).border(.gray, width: 1)
             }
-            HStack{
-                Text("Ping")
-                Button("Send"){
-                    controller.ping()
-                }.buttonStyle(MyButtonStyle())
-                Text(pongLatency)
+            
+            // Answer Fields Start
+            if m.displayMode == .ANSWER{
+                VStack{
+                    Text("Answer")
+                    Button("Set"){
+                        Task{
+                            
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                    ScrollView(.vertical, showsIndicators: true){
+                        TextField("", text: $sdpAnswer, axis: .vertical)
+                            .textSelection(.disabled)
+                            .disableAutocorrection(true)
+                            .lineLimit(200, reservesSpace: true)
+                            .multilineTextAlignment(.leading)
+                        
+                      
+                    }
+                }.padding(5).border(.gray, width: 1)
+            }
+            if m.displayMode == .HOME || m.displayMode == .DEBUG {
+                VStack{
+                    Text("Chat")
+                    HStack{
+                        ScrollView(.vertical){
+                            TextField("", text: $chatReceived, axis: .vertical)
+                                .textSelection(.disabled)
+                                .disableAutocorrection(true)
+                                .lineLimit(8, reservesSpace: true)
+                                .multilineTextAlignment(.leading)
+                        }
+                        
+                    }
+                }.padding(5).border(.gray, width: 1)
+                HStack{
+                    TextField("chat", text: $ChatSend)
+                        .textSelection(.enabled)
+                        .disableAutocorrection(true)
+                    Button("Send"){
+                        if ChatSend.count == 0{
+                            return // don't send empty lines
+                        }
+                        Task{
+                            controller.chatSend(text:ChatSend)
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                m.chatReceived += ChatSend + "\n"
+                                chatReceived = m.chatReceived
+                                ChatSend = ""
+                            }
+                        }
+                    }.buttonStyle(MyButtonStyle())
+                }
+                HStack{
+                    Text("Ping")
+                    Button("Send"){
+                        controller.ping()
+                    }.buttonStyle(MyButtonStyle())
+                    Text(pongLatency)
+                }
             }
             Spacer()
             HStack(){

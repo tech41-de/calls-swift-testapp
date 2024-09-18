@@ -90,7 +90,7 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var videoHeight :CGFloat = 0
     @Published var room = ""
     @Published var tracks = [Track]()
-    @Published var isDebug = false
+    @Published var displayMode = DisplayMode.HOME
     @Published var chatReceived = ""
     @Published var pongLatency = 0
     @Published var localVideoMid = ""

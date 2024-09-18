@@ -186,4 +186,12 @@ public struct FileMsg: PeerMsg{
     public var checkSume : String
 }
 
+enum DisplayMode{
+    case NONE
+    case HOME
+    case DEBUG
+    case OFFER
+    case ANSWER
+}
+
 
