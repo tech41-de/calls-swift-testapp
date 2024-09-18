@@ -485,6 +485,8 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 localTracks.append(trAudio)
                 localTracks.append(trVideo)
                 var sdpEdited = sdp.sdp
+                
+                /* rewriting SDP test to improve Audio Quality
                 if sdpEdited.contains("useinbandfec=1"){
                     sdpEdited = sdpEdited.replacingOccurrences(of: "useinbandfec=1", with: "useinbandfec=1; stereo=1; maxaveragebitrate=510000")
                     print("useinbandfec=1 replaced in SDP")
@@ -492,6 +494,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 }else{
                     print("useinbandfec=1 not found in SDP")
                 }
+                 */
                 let desc = Calls.SessionDescription( type:"offer",  sdp:sdpEdited)
                 let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
                 

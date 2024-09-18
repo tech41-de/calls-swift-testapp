@@ -315,13 +315,12 @@ struct ContentView: View {
             if m.displayMode == .OFFER{
                 VStack{
                     Text("Offer")
-                    ScrollView(.vertical, showsIndicators: true){
                         TextField("", text: $sdpOffer, axis: .vertical)
                             .textSelection(.disabled)
                             .disableAutocorrection(true)
                             .lineLimit(200, reservesSpace: false)
                             .multilineTextAlignment(.leading)
-                    }
+                            .font(.system(size: 15))
                 }.padding(5).border(.gray, width: 1)
             }
             
@@ -340,6 +339,7 @@ struct ContentView: View {
                             .disableAutocorrection(true)
                             .lineLimit(200, reservesSpace: true)
                             .multilineTextAlignment(.leading)
+                            .font(.system(size: 15))
                         
                       
                     }
