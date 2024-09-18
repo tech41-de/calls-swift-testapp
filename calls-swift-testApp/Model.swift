@@ -92,7 +92,7 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var tracks = [Track]()
     @Published var displayMode = DisplayMode.HOME
     @Published var chatReceived = ""
-    @Published var pongLatency = 0
+    @Published var pongLatency = 0.0
     @Published var localVideoMid = ""
     
     func getAudioInDevice(name:String)->ADevice?{

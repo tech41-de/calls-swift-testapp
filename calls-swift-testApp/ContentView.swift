@@ -446,7 +446,7 @@ struct ContentView: View {
             trackIdVideoRemote = m.trackIdVideoRemote
             remoteDataChannelName = m.dataChannelNameRemote
             chatReceived = m.chatReceived
-            pongLatency = "\(Double(m.pongLatency) / 1000.0) sec"
+            pongLatency = String(format: "%.2f", m.pongLatency * 10000000) + " msec"
           }
     }
 }

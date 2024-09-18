@@ -104,7 +104,7 @@ public struct ChannelMsg: Codable{
     public var sender : String
     public var reciever : String
     public var obj :PeerMsg
-    public var sendDate : Int
+    public var sendDate : Double
     
     enum CodingKeys: String, CodingKey {
         case type
@@ -114,7 +114,7 @@ public struct ChannelMsg: Codable{
         case sendDate
     }
     
-    public init(type: MsgType, sender:String, reciever:String, obj:PeerMsg, sendDate: Int){
+    public init(type: MsgType, sender:String, reciever:String, obj:PeerMsg, sendDate: Double){
         self.type = type
         self.sender = sender
         self.reciever = reciever
@@ -127,7 +127,7 @@ public struct ChannelMsg: Codable{
         type = try container.decode(MsgType.self, forKey: .type)
         sender = try container.decode(String.self, forKey: .sender)
         reciever = try container.decode(String.self, forKey: .reciever)
-        sendDate = try container.decode(Int.self, forKey: .sendDate)
+        sendDate = try container.decode(Double.self, forKey: .sendDate)
         switch(type){
             
         case .chat:
@@ -170,7 +170,9 @@ public struct ChannelMsg: Codable{
 
 public struct PingMsg: PeerMsg{}
 
-public struct PongMsg: PeerMsg{}
+public struct PongMsg: PeerMsg{
+    public var orgTime : Double
+}
 
 public struct ChatMsg: PeerMsg{
     public var text : String

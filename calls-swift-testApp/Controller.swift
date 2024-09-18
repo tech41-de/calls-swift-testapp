@@ -18,7 +18,7 @@ class Controller : ObservableObject{
 
     var rtc : RTC?
     var jobId :Int32 = 0
-    var pingSendAt = 0
+    var pingSendAt = 0.0
     
     init(){
         rtc = RTC()
@@ -29,7 +29,7 @@ class Controller : ObservableObject{
         Task{
             do{
                 let chatMsg = ChatMsg(text: text)
-                let msg = ChannelMsg(type: .chat, sender: model.sessionId, reciever: "", obj: chatMsg, sendDate: Int(Date().timeIntervalSince1970 * 1000.0))
+                let msg = ChannelMsg(type: .chat, sender: model.sessionId, reciever: "", obj: chatMsg, sendDate: Date().timeIntervalSince1970)
                 let datas = try jsonEncoder.encode(msg)
                 let jsons = String(decoding: datas, as: UTF8.self)
                 rtc!.sendText(json: jsons)
@@ -59,16 +59,21 @@ class Controller : ObservableObject{
                 
             case .ping:
                 Task{
-                    pingSendAt = Int(Date().timeIntervalSince1970 * 1000.0)
-                    let msg = ChannelMsg(type: .pong, sender: self.model.sessionId, reciever: "", obj: PongMsg(), sendDate:pingSendAt)
-                    sendMsg(msg:msg)
+                    pingSendAt = Date().timeIntervalSince1970
+                    let pongMsg = ChannelMsg(type: .pong, sender: self.model.sessionId, reciever: "", obj: PongMsg(
+                        orgTime:msg.sendDate
+                    ), sendDate:pingSendAt)
+                    sendMsg(msg:pongMsg)
                 }
                 break
                 
             case .pong:
+                let str = String(decoding: data!, as: UTF8.self)
+                print(str)
+                let pongMsg = msg.obj as? PongMsg
                 DispatchQueue.main.async {
-                    let now = Int(Date().timeIntervalSince1970 * 1000.0)
-                    self.model.pongLatency = now - msg.sendDate
+                    let now = Date().timeIntervalSince1970
+                    self.model.pongLatency = (now - pongMsg!.orgTime) / 1000.0
                 }
                 break
  
@@ -79,7 +84,7 @@ class Controller : ObservableObject{
     }
     
     func ping(){
-        let msg = ChannelMsg(type: .ping, sender: model.sessionId, reciever: "", obj: PingMsg(), sendDate:Int(Date().timeIntervalSince1970))
+        let msg = ChannelMsg(type: .ping, sender: model.sessionId, reciever: "", obj: PingMsg(), sendDate:Date().timeIntervalSince1970)
         sendMsg(msg:msg)
     }
 
