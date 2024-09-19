@@ -251,7 +251,6 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
          ])
        return constrain
     }
-   
     
     func getRTCMediaAudioInConstraints(deviceId:String) ->RTCMediaConstraints{
         let constrain  = RTCMediaConstraints(mandatoryConstraints: [
@@ -298,6 +297,56 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         await setupStream()
     }
     
+    let filterArray = ["/8000", "telephone-event"]
+    func isFilter(line:String)->Bool{
+        if !line.starts(with:"a=rtpmap"){
+            return false
+        }
+        for f in filterArray{
+            print(line )
+            if line.contains(String(f)){
+                return true
+            }
+        }
+        return false
+    }
+    
+    func rewriteSDP(sdp : String)->String{
+        if !Model.getInstance().isRed{
+            return sdp
+        }
+        let lines = sdp.split(whereSeparator: \.isNewline)
+        //let search = "red/48000/2"
+        let search = "opus/48000/2"
+        var number = ""
+        var newSdp = ""
+        for line in lines{
+            if line.contains(search){
+                var lineMod = String(line)
+                lineMod = lineMod.replacingOccurrences(of: "a=rtpmap:", with: "", options: .literal, range: nil)
+                lineMod = lineMod.replacingOccurrences(of: " " + search, with: "", options: .literal, range: nil)
+                number = lineMod
+            }
+        }
+        
+        for line in lines{
+            if line.starts(with: "m=audio"){
+                newSdp.append("m=audio " + number + " UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126 \n")
+                continue
+            }
+            if line.starts(with: "a=fmtp:111 minptime=10;useinbandfec=1"){
+                newSdp.append("a=fmtp:111 ptime=5;useinbandfec=1;stereo=1;maxplaybackrate=48000;maxaveragebitrat=128000;sprop-stereo=1")
+                continue
+            }
+        
+            if isFilter(line:String(line)){
+                continue
+            }
+            newSdp += line + "\n"
+        }
+        return newSdp
+    }
+    
     func setupStream() async{
         let videoSource = RTC.createVideoSource(forScreenShare: false)
         localVideoTrack = RTC.createVideoTrack(source: videoSource)
@@ -314,7 +363,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         }
         let capturer = RTCCameraVideoCapturer(delegate: videoSource)
         do{
-            try await capturer.startCapture(with: camera!, format: format!, fps: 30)
+            try await capturer.startCapture(with: camera!, format: format!, fps: fps)
             if videoCapturer != nil{
                 await videoCapturer?.stopCapture()
             }
@@ -326,13 +375,16 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         
         // Start an inactive audio session as required by Cloudflare Calls
         let initalize = RTCRtpTransceiverInit()
-        initalize.direction = .inactive
+        initalize.direction = .sendOnly
         peerConnection!.addTransceiver(of: .audio, init: initalize)
-
         do{
- 
-            let sdp = try await peerConnection!.offer(for: getRTCMediaAudioInConstraints(deviceId:model!.audioInDevice!.uid))
-            try await peerConnection!.setLocalDescription(sdp)
+            let res = try await peerConnection!.offer(for: getRTCMediaAudioInConstraints(deviceId:model!.audioInDevice!.uid))
+            var newSdp = res.sdp
+            newSdp = rewriteSDP(sdp:res.sdp)
+            print(newSdp)
+            model!.sdpOffer = newSdp
+            let desc : RTCSessionDescription = RTCSessionDescription(type: .offer, sdp: newSdp)
+            try await peerConnection!.setLocalDescription(desc)
             DispatchQueue.main.async {
                 self.model!.hasSDPLocal = "✅"
             }
@@ -341,7 +393,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             print(error)
         }
     }
-
+    
     /*========================================================================
      Session
      ========================================================================*/
@@ -349,7 +401,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         let c = RTCMediaConstraints(mandatoryConstraints: nil,optionalConstraints:nil)
         do{
             let sdpMe = try await peerConnection!.offer(for: c)
-            try await self.peerConnection!.setLocalDescription(sdpMe);
+            let newSdp = rewriteSDP(sdp: sdpMe.sdp)
+            let desc : RTCSessionDescription = RTCSessionDescription(type: .offer, sdp: newSdp)
+            try await self.peerConnection!.setLocalDescription(desc);
           
             await model!.api.newSession(sdp: sdpMe.sdp){ [self] sessionId, sdp, error in
                 if error.count > 0{
@@ -358,7 +412,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                     return
                 }
                 let desc = RTCSessionDescription(type: .answer , sdp: sdp)
-          
+                model!.sdpAnswer = desc.sdp
                 Task{
                     do{
                         try await peerConnection!.setRemoteDescription(desc);

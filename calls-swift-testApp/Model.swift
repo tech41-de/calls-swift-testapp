@@ -42,6 +42,8 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var hasSDPLocal = "❌"
     @Published var hasSDPRemote = "❌"
     @Published var sdpRemote = ""
+    @Published var sdpOffer = ""
+    @Published var sdpAnswer = ""
     @Published var audioInDevices = [ADevice]()
     @Published var audioOutDevices = [ADevice]()
     @Published var videoDevices = [ADevice]()
@@ -95,6 +97,8 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var chatReceived = ""
     @Published var pongLatency = 0.0
     @Published var localVideoMid = ""
+    
+    @Published var isRed = true
     
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{

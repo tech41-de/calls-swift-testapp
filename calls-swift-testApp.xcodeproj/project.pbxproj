@@ -104,8 +104,6 @@
 		407885F62C770F780071FE5F = {
 			isa = PBXGroup;
 			children = (
-				40AB784C2C8B40C6007AA832 /* SimpleAudioConvertor.swift */,
-				40AB78482C8B401B007AA832 /* Extensions.swift */,
 				407886012C770F780071FE5F /* calls-swift-testApp */,
 				407886002C770F780071FE5F /* Products */,
 				4098C2A12C883732007C5E98 /* calls-swift-testApp copy-Info.plist */,
@@ -123,6 +121,8 @@
 		407886012C770F780071FE5F /* calls-swift-testApp */ = {
 			isa = PBXGroup;
 			children = (
+				40AB784C2C8B40C6007AA832 /* SimpleAudioConvertor.swift */,
+				40AB78482C8B401B007AA832 /* Extensions.swift */,
 				4000FB532C7F4BC700B3928F /* Structs.swift */,
 				4098C2A22C883D5A007C5E98 /* ServiceRegistry.swift */,
 				4000FB4C2C7F326200B3928F /* SignalClient.swift */,

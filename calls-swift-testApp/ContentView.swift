@@ -71,7 +71,8 @@ struct ContentView: View {
     
     @State var sdpOffer = "offer"
     @State var sdpAnswer = "answer"
-    
+    @State var isRed = true
+
     func getSession(){
         Task{
             await m.api.getSession(sessionId: m.sessionId){res, error in
@@ -147,6 +148,13 @@ struct ContentView: View {
                 Text(":")
                 TextField("room", text: $room).disableAutocorrection(true)
                 Spacer()
+                
+                Toggle(isOn: $isRed) {
+                    Text("RED audio")
+                }.toggleStyle(.switch)
+                
+                Spacer()
+                
                 Button("Home"){
                     
                     m.displayMode = DisplayMode.HOME
@@ -155,14 +163,11 @@ struct ContentView: View {
                     m.displayMode = .DEBUG
                 }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .DEBUG ? 2 : 0)
                 Button("SDP Offer"){
-                    Task{
-                        await controller.rtc?.getOfffer{sdp in
-                            sdpOffer = sdp?.sdp ?? ""
-                        }
-                    }
+                    sdpOffer = m.sdpOffer
                     m.displayMode = .OFFER
                 }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .OFFER ? 2 : 0)
                 Button("SDP Answer"){
+                    sdpAnswer = m.sdpAnswer
                     m.displayMode = .ANSWER
                 }.buttonStyle(MyButtonStyle()).border(.yellow, width:  m.displayMode == .ANSWER ? 2 : 0)
             }
@@ -424,6 +429,8 @@ struct ContentView: View {
             stm.exec(state: .BOOT)
         }
         .onReceive(timer) { input in
+            
+            m.isRed = isRed
            
             // flags
             hasConfig = m.hasConfig ? "✅" : "❌"
