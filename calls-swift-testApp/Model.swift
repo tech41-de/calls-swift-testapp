@@ -33,7 +33,7 @@ class Model : ObservableObject, @unchecked Sendable{
     // Calls API to Cloudflare
     let api = Calls()
     
-    public nonisolated(unsafe) static var model: Model?
+    public  static var model: Model?
     static func getInstance() ->Model{
         return Model.model!
     }

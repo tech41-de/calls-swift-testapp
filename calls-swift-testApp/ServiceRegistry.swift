@@ -39,7 +39,7 @@ class ServiceContainer{
     private static var factories: [String: () -> Any] = [:]
     private static var cache: [String: Any] = [:]
     
-    public nonisolated(unsafe) static func resolve<Service>(_ resolveType: ServiceType = .singleton, _ type: Service.Type) -> Service? {
+    public static func resolve<Service>(_ resolveType: ServiceType = .singleton, _ type: Service.Type) -> Service? {
         let serviceName = String(describing: type.self)
 
         switch resolveType {
@@ -68,7 +68,7 @@ class ServiceContainer{
         }
     }
     
-    public nonisolated(unsafe) static func register<Service>(type: Service.Type, _ factory: @autoclosure @escaping () -> Service) {
+    public static func register<Service>(type: Service.Type, _ factory: @autoclosure @escaping () -> Service) {
         factories[String(describing: type.self)] = factory
     }
 }

@@ -261,7 +261,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             "noiseSuppression":"false",
             "channelCount":"2",
             "sampleRate":"48000",
-            "sampleSize":"16",
+            "sampleSize":"32",
             "latency":"0",
             "volume":"1.0",
             "devicdId":deviceId
@@ -311,12 +311,21 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         return false
     }
     
+    func rewriteSDPAnswer(sdp : String)->String{
+        var newSDP = sdp.replacingOccurrences(of:"UDP/TLS/RTP/SAVPF 111 0 8", with:"UDP/TLS/RTP/SAVPF 111", options: .literal, range: nil)
+        newSDP = newSDP.replacingOccurrences(of:"a=fmtp:111 minptime=10;useinbandfec=1", with: "a=fmtp:111 'useinbandfec=1', 'useinbandfec=1; stereo=1; sprop-stereo=1; maxaveragebitrate=510000;", options: .literal, range: nil)
+        return newSDP
+    }
+    
     func rewriteSDP(sdp : String)->String{
-        if !Model.getInstance().isRed{
-            var newSDP  = sdp.replacingOccurrences(of:"a=fmtp:111 minptime=10;useinbandfec=1", with:"a=fmtp:111 ptime=5;useinbandfec=1;stereo=1;maxplaybackrate=48000;maxaveragebitrat=128000;sprop-stereo=1", options: .literal, range: nil)
-            newSDP = newSDP.replacingOccurrences(of:"m=audio 9 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", with:"m=audio 111 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", options: .literal, range: nil)
-            return  newSDP
+        if !Model.getInstance().isRed{ // cbr=1
+            var newSDP = sdp.replacingOccurrences(of:"a=fmtp:111 minptime=10;useinbandfec=1", with: "a=fmtp:111 'useinbandfec=1', 'useinbandfec=1; stereo=1; sprop-stereo=1; maxaveragebitrate=510000;", options: .literal, range: nil)
+           // var newSDP  = sdp.replacingOccurrences(of:"a=fmtp:111 minptime=10;useinbandfec=1", with:"a=fmtp:111 ptime=5;useinbandfec=1;stereo=1;maxplaybackrate=48000;maxaveragebitrat=128000;sprop-stereo=1", options: .literal, range: nil)
+            //newSDP = newSDP.replacingOccurrences(of:"m=audio 9 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", with:"m=audio 111 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", options: .literal, range: nil)
+            return newSDP// newSDP
         }
+        
+        
         let lines = sdp.split(whereSeparator: \.isNewline)
         //let search = "red/48000/2"
         let search = "opus/48000/2"
@@ -413,8 +422,10 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                     print("Does the server URl have a slash (/) at the end?")
                     return
                 }
-                let desc = RTCSessionDescription(type: .answer , sdp: sdp)
-                model!.sdpAnswer = desc.sdp
+                
+                let newSDP = rewriteSDPAnswer(sdp:sdp)
+                let desc = RTCSessionDescription(type: .answer , sdp: newSDP)
+                model!.sdpAnswer = newSDP
                 Task{
                     do{
                         try await peerConnection!.setRemoteDescription(desc);
@@ -497,7 +508,10 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
 
             do{
                 let sdp = try await peerConnection!.offer(for: constraint)
-                try await peerConnection!.setLocalDescription(sdp)
+                let newSdp = rewriteSDP(sdp: sdp.sdp)
+                let desc : RTCSessionDescription = RTCSessionDescription(type: .offer, sdp: newSdp)
+                
+                try await peerConnection!.setLocalDescription(desc)
                 
                 // call API Local Tracks
                 var localTracks = [Calls.LocalTrack]()
@@ -520,19 +534,11 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 
                 localTracks.append(trAudio)
                 localTracks.append(trVideo)
-                var sdpEdited = sdp.sdp
+
+                let sdpEdited = desc.sdp
                 
-                /* rewriting SDP test to improve Audio Quality
-                if sdpEdited.contains("useinbandfec=1"){
-                    sdpEdited = sdpEdited.replacingOccurrences(of: "useinbandfec=1", with: "useinbandfec=1; stereo=1; maxaveragebitrate=510000")
-                    print("useinbandfec=1 replaced in SDP")
-                    print(sdpEdited)
-                }else{
-                    print("useinbandfec=1 not found in SDP")
-                }
-                 */
-                let desc = Calls.SessionDescription( type:"offer",  sdp:sdpEdited)
-                let req =  Calls.NewTracksLocal(sessionDescription: desc, tracks:localTracks)
+                let descNew = Calls.SessionDescription( type:"offer",  sdp:sdpEdited)
+                let req =  Calls.NewTracksLocal(sessionDescription: descNew, tracks:localTracks)
                 
                 // New Track API Request!
                 await model!.api.newLocalTracks(sessionId: model!.sessionId, newTracks: req){newTracksResponse, error in
