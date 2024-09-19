@@ -114,8 +114,8 @@ class Controller : ObservableObject{
         guard let device = model.getAudioInDevice(name: name)else{
             return
         }
-        model.audioOutDevice = name
+        model.audioOutName = name
         UserDefaults.standard.set(name, forKey: "audioOut")
-       // AudioDeviceManager().setOutputDevice(device: device)
+        AudioDeviceManager().setOutputDevice(device: device)
     }
 }

@@ -11,6 +11,8 @@ import WebRTC
 
 class VideoDeviceManager{
     
+
+    
     let model:Model
     init(model:Model){
         self.model = model
@@ -21,7 +23,18 @@ class VideoDeviceManager{
         findDevices() 
     }
     
-    func chooseFormat(device : AVCaptureDevice, width:CGFloat,fps :Int)-> (AVCaptureDevice.Format?, Int){
+    func chooseFormat(device : AVCaptureDevice, width:CGFloat,fpsMax :Int)-> (AVCaptureDevice.Format?, Int){
+        
+        /*
+        let format = (RTCCameraVideoCapturer.supportedFormats(for: device).sorted { (f1, f2) -> Bool in
+            let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
+            let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
+            return width1 < width2
+        }).last
+        
+        return (format ,60)
+         */
+
         let formats = (RTCCameraVideoCapturer.supportedFormats(for: device).sorted { (f1, f2) -> Bool in
             let width1 = CMVideoFormatDescriptionGetDimensions(f1.formatDescription).width
             let width2 = CMVideoFormatDescriptionGetDimensions(f2.formatDescription).width
@@ -34,8 +47,8 @@ class VideoDeviceManager{
                 if w >= Int(width){
                     let franges = f.videoSupportedFrameRateRanges.sorted { return $0.maxFrameRate < $1.maxFrameRate }
                     for fr in franges{
-                        if Int(fr.maxFrameRate) >= fps{
-                            return (f,fps)
+                        if Int(fr.maxFrameRate) >= fpsMax{
+                            return (f,fpsMax)
                         }else{
                             return (f,Int(fr.maxFrameRate))
                         }
@@ -48,6 +61,7 @@ class VideoDeviceManager{
     }
     
     func getDevice(name:String) ->AVCaptureDevice?{ // .continuityCamera .external
+        
         var items = [AVCaptureDevice.DeviceType.builtInWideAngleCamera, AVCaptureDevice.DeviceType.builtInWideAngleCamera]
 #if os(macOS)
         if #available(macOS 14.0, *) {
@@ -60,6 +74,7 @@ class VideoDeviceManager{
 #else
         
 #endif
+
         let device = AVCaptureDevice.DiscoverySession.init(deviceTypes: items, mediaType: .video, position:.unspecified)
         for device in device.devices{
             if device.localizedName == name{
@@ -67,6 +82,7 @@ class VideoDeviceManager{
             }
         }
         return nil
+
     }
     
     @MainActor

@@ -408,6 +408,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"calls-swift-testApp/Preview Content\"";
 				DEVELOPMENT_TEAM = W2V29MV569;
 				ENABLE_HARDENED_RUNTIME = YES;
+				"ENABLE_HARDENED_RUNTIME[sdk=macosx*]" = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "calls-swift-testApp/Info.plist";

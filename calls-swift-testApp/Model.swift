@@ -47,8 +47,9 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var videoDevices = [ADevice]()
     
     @Published var audioInName = ""
+    @Published var audioOutName = ""
     @Published var audioInDevice : ADevice?
-    @Published var audioOutDevice = ""
+    @Published var audioOutDevice : ADevice?
     @Published var camera = ""
     @Published var isConnected = false
     @Published var currentstate = States.COLD

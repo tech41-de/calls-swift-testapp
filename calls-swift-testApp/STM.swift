@@ -53,27 +53,18 @@ class STM : ObservableObject, StateExecutor{
         case .VIDEOO_SETUP:
             DispatchQueue.main.async { [self] in
                 VideoDeviceManager(model:model).setup()
-                exec(state: .START_STREAM)
+                exec(state: .START_PEER)
             }
            
             break
             
-        case .START_STREAM:
-            Task{
-                await controller.rtc!.setupStream()
-            }
-            break
-
-        case .START_SESSION: // fired from New Session Buttton
-            if(model.room.count < 1){
-                return
-            }
+        case .START_PEER:
             Task{
                 await controller.rtc!.setupPeer()
             }
             break
-        
-        case .NEW_SESSION:
+
+        case .START_SESSION: // fired from New Session Buttton
             Task{
                 await controller.rtc!.newSession()
             }
@@ -81,7 +72,7 @@ class STM : ObservableObject, StateExecutor{
             
         case .NEW_LOCAL_TRACKS:
             Task{
-               await controller.rtc!.localTracks()
+                await controller.rtc!.localTracks(deviceId: Model.getInstance().audioInDevice!.uid)
             }
             break
             

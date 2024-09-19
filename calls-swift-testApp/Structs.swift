@@ -13,9 +13,8 @@ enum States{
     case CONFIGURE
     case AUDIO_SETUP
     case VIDEOO_SETUP
-    case START_STREAM
-    case START_SESSION // setup Peer
-    case NEW_SESSION // Cloudflare New Session
+    case START_PEER// setup Peer
+    case START_SESSION
     case NEW_LOCAL_TRACKS
     case START_SIGNALING
     case INVITE

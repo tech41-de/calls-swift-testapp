@@ -139,7 +139,7 @@ struct ContentView: View {
                 Text("\(hasRemoteTracks)").font(.system(size: fontSize))
                 Spacer()
                 Button("Enter"){
-                    if m.currentstate == .START_STREAM || m.currentstate == .RUNNING{
+                    if m.currentstate == .START_PEER || m.currentstate == .RUNNING{
                         m.room = room
                         stm.exec(state: .START_SESSION)
                     }
@@ -399,7 +399,7 @@ struct ContentView: View {
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
                 
-                Picker(selection: $m.audioOutDevice.onChange(audioOutChanged), label:Text("Audio Out")) {
+                Picker(selection: $m.audioOutName.onChange(audioOutChanged), label:Text("Audio Out")) {
                     ForEach(m.audioOutDevices, id: \.self) {
 
                         Text($0.name).tag($0.name)

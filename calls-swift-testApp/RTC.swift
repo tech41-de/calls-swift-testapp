@@ -218,7 +218,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 AudioDeviceManager().setInputDevice(device:device)
                 #endif
                 //setupAudio()
-                let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints())
+                let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints(deviceId: device.uid))
                 replaceAudioTrack(peerConnection: peerConnection!, newAudioSource: audioSource)
                // s.track = localAudioTrack
                // s.track!.isEnabled = true
@@ -253,7 +253,7 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     }
    
     
-    func getRTCMediaAudioInConstraints() ->RTCMediaConstraints{
+    func getRTCMediaAudioInConstraints(deviceId:String) ->RTCMediaConstraints{
         let constrain  = RTCMediaConstraints(mandatoryConstraints: [
             "offerToReceiveAudio": "true",
             "echoCancellation": "false",
@@ -264,69 +264,22 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
             "sampleRate":"48000",
             "sampleSize":"16",
             "latency":"0",
-            "volume":"1.0"
+            "volume":"1.0",
+            "devicdId":deviceId
         ],
          optionalConstraints: [
             "DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue
          ])
        return constrain
     }
-    
-    func getRTCMediaAudioOutConstraints() ->RTCMediaConstraints{
-        let constrain  = RTCMediaConstraints(mandatoryConstraints: [
-            "deviceId":model!.audioOutDevice,
-            "offerToReceiveAudio": "true",
-            "echoCancellation": "false",
-            "autoGainControl": "false",
-            "googEchoCancellation": "false",
-            "noiseSuppression":"false",
-            "channelCount":"2",
-            "sampleRate":"48000",
-            "sampleSize":"16",
-            "latency":"0",
-            "volume":"1.0"
-        ],
-         optionalConstraints: [
-            "DtlsSrtpKeyAgreement": kRTCMediaConstraintsValueTrue
-         ])
-       return constrain
-    }
-    
+
     @MainActor
-    func setupAudio(){
+    func setupAudio(deviceId:String){
         // opus/48000/2
         // https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints
-        let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints())
+        let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints(deviceId:deviceId))
         audioSource.volume = 10
         localAudioTrack = RTC.createAudioTrack(source: audioSource)
-    }
-    
-    func setupStream() async{
-        let videoSource = RTC.createVideoSource(forScreenShare: false)
-        localVideoTrack = RTC.createVideoTrack(source: videoSource)
-        videoLocalId = localVideoTrack!.trackId
-        
-        let dm = VideoDeviceManager(model:model!)
-        let camera = dm.getDevice(name: model!.camera)
-        let (format,fps) = dm.chooseFormat(device:camera!, width:640,fps: 30)
-        if format == nil{
-            DispatchQueue.main.async {
-                self.model!.disableVideo = true
-            }
-            return
-        }
-
-        let capturer = RTCCameraVideoCapturer(delegate: videoSource)
-        do{
-            try await capturer.startCapture(with: camera!, format: format!, fps: fps)
-            if videoCapturer != nil{
-                await videoCapturer?.stopCapture()
-            }
-            videoCapturer = capturer
-        }catch{
-            print(error)
-        }
-        localVideoTrack!.add(model!.meView)
     }
     
     func setupPeer() async{
@@ -342,26 +295,53 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
 
         self.peerConnection = peerConnection
         peerConnection.delegate = self
+        await setupStream()
+    }
+    
+    func setupStream() async{
+        let videoSource = RTC.createVideoSource(forScreenShare: false)
+        localVideoTrack = RTC.createVideoTrack(source: videoSource)
+        videoLocalId = localVideoTrack!.trackId
+        
+        let dm = VideoDeviceManager(model:model!)
+        let camera = dm.getDevice(name: model!.camera)
+        let (format,fps) = dm.chooseFormat(device:camera!, width:640,fpsMax: 30)
+        if format == nil{
+            DispatchQueue.main.async {
+                self.model!.disableVideo = true
+            }
+            return
+        }
+        let capturer = RTCCameraVideoCapturer(delegate: videoSource)
+        do{
+            try await capturer.startCapture(with: camera!, format: format!, fps: 30)
+            if videoCapturer != nil{
+                await videoCapturer?.stopCapture()
+            }
+            videoCapturer = capturer
+        }catch{
+            print(error)
+        }
+        localVideoTrack!.add(model!.meView)
         
         // Start an inactive audio session as required by Cloudflare Calls
         let initalize = RTCRtpTransceiverInit()
         initalize.direction = .inactive
-        peerConnection.addTransceiver(of: .audio, init: initalize)
+        peerConnection!.addTransceiver(of: .audio, init: initalize)
 
         do{
  
-            let sdp = try await peerConnection.offer(for: getRTCMediaAudioInConstraints())
-            try await peerConnection.setLocalDescription(sdp)
+            let sdp = try await peerConnection!.offer(for: getRTCMediaAudioInConstraints(deviceId:model!.audioInDevice!.uid))
+            try await peerConnection!.setLocalDescription(sdp)
             DispatchQueue.main.async {
                 self.model!.hasSDPLocal = "✅"
-                self.model!.exec(state: .NEW_SESSION)
             }
         }
         catch{
             print(error)
         }
     }
-    
+
     /*========================================================================
      Session
      ========================================================================*/
@@ -449,9 +429,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     /*========================================================================
      Local Tracks
      ========================================================================*/
-    func localTracks() async{
+    func localTracks(deviceId:String) async{
         Task { @MainActor in
-             setupAudio()
+            setupAudio(deviceId:deviceId)
             
             // buildl tranceivers
             let initalize = RTCRtpTransceiverInit()
