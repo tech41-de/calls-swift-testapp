@@ -71,7 +71,7 @@ struct ContentView: View {
     
     @State var sdpOffer = "offer"
     @State var sdpAnswer = "answer"
-    @State var isRed = true
+    @State var isRed = false
 
     func getSession(){
         Task{

@@ -313,7 +313,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
     
     func rewriteSDP(sdp : String)->String{
         if !Model.getInstance().isRed{
-            return sdp
+            var newSDP  = sdp.replacingOccurrences(of:"a=fmtp:111 minptime=10;useinbandfec=1", with:"a=fmtp:111 ptime=5;useinbandfec=1;stereo=1;maxplaybackrate=48000;maxaveragebitrat=128000;sprop-stereo=1", options: .literal, range: nil)
+            newSDP = newSDP.replacingOccurrences(of:"m=audio 9 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", with:"m=audio 111 UDP/TLS/RTP/SAVPF 111 63 9 102 0 8 13 110 126", options: .literal, range: nil)
+            return  newSDP
         }
         let lines = sdp.split(whereSeparator: \.isNewline)
         //let search = "red/48000/2"

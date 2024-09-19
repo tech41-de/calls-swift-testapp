@@ -98,7 +98,7 @@ class Model : ObservableObject, @unchecked Sendable{
     @Published var pongLatency = 0.0
     @Published var localVideoMid = ""
     
-    @Published var isRed = true
+    @Published var isRed = false
     
     func getAudioInDevice(name:String)->ADevice?{
         for d in audioInDevices{
