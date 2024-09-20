@@ -246,6 +246,7 @@ class AudioDeviceManager{
 
     }
     
+    @MainActor
     func setup(){
         
         #if targetEnvironment(macCatalyst)
@@ -267,13 +268,14 @@ class AudioDeviceManager{
         setupAudio()
     }
 
+    @MainActor
     func setupAudio(){
         requestMicrophonePermission(){ hasPermission in
             if hasPermission{
                 AudioDeviceFinder.findDevices(model:self.model)
                 self.model.audioInputDefaultDevice = self.getDefaultInDevice(forScope: kAudioObjectPropertyScopeOutput)
                 self.model.audioOutputDefaultDevice = self.getDefaultOutDevice(forScope: kAudioObjectPropertyScopeInput)
-                
+  
                 let deviceIn = self.model.getAudioInDevice(name: self.model.audioInName)
                 if(deviceIn != nil){
                     self.setInputDevice(device:deviceIn!)
@@ -584,74 +586,73 @@ class AudioDeviceFinder {
         return nil
     }
     
+    @MainActor
     static func findDevices(model:Model) {
-        DispatchQueue.main.async {
-            var propsize:UInt32 = 0
-            
-            var address:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
-                mSelector:AudioObjectPropertySelector(kAudioHardwarePropertyDevices),
-                mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
-                mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
-            
-            var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
-            
-            if (result != 0) {
-                return
-            }
-            
-            let numDevices = Int(propsize / UInt32(MemoryLayout<AudioDeviceID>.size))
-            
-            var devids = [AudioDeviceID]()
-            for _ in 0..<numDevices {
-                devids.append(AudioDeviceID())
-            }
-            
-            result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
-            if (result != 0) {
-                return
-            }
-            
-            model.audioInDevices.removeAll()
-            model.audioOutDevices.removeAll()
-            for i in 0..<numDevices {
-                let audioDevice = AudioDevices(deviceID:devids[i])
-                if (audioDevice.hasInput) {
-                    guard let name = audioDevice.name else{
-                        continue
-                    }
-                    model.audioInDevices.append(ADevice(uid:audioDevice.uid!, name:name, id:audioDevice.audioDeviceID))
+        var propsize:UInt32 = 0
+        
+        var address:AudioObjectPropertyAddress = AudioObjectPropertyAddress(
+            mSelector:AudioObjectPropertySelector(kAudioHardwarePropertyDevices),
+            mScope:AudioObjectPropertyScope(kAudioObjectPropertyScopeGlobal),
+            mElement:AudioObjectPropertyElement(kAudioObjectPropertyElementMain))
+        
+        var result:OSStatus = AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &address, UInt32(MemoryLayout<AudioObjectPropertyAddress>.size), nil, &propsize)
+        
+        if (result != 0) {
+            return
+        }
+        
+        let numDevices = Int(propsize / UInt32(MemoryLayout<AudioDeviceID>.size))
+        
+        var devids = [AudioDeviceID]()
+        for _ in 0..<numDevices {
+            devids.append(AudioDeviceID())
+        }
+        
+        result = AudioObjectGetPropertyData(AudioObjectID(kAudioObjectSystemObject), &address, 0, nil, &propsize, &devids);
+        if (result != 0) {
+            return
+        }
+        
+        model.audioInDevices.removeAll()
+        model.audioOutDevices.removeAll()
+        for i in 0..<numDevices {
+            let audioDevice = AudioDevices(deviceID:devids[i])
+            if (audioDevice.hasInput) {
+                guard let name = audioDevice.name else{
+                    continue
                 }
-                if (audioDevice.hasOutput) {
-                    guard let name = audioDevice.name else{
-                        continue
-                    }
-                    model.audioOutDevices.append(ADevice(uid:audioDevice.uid! , name:name, id:audioDevice.audioDeviceID))
-                }
+                model.audioInDevices.append(ADevice(uid:audioDevice.uid!, name:name, id:audioDevice.audioDeviceID))
             }
-            // set defaullts if we have any
-            if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
-                model.audioInName = UserDefaults.standard.string(forKey: "audioIn")!
+            if (audioDevice.hasOutput) {
+                guard let name = audioDevice.name else{
+                    continue
+                }
+                model.audioOutDevices.append(ADevice(uid:audioDevice.uid! , name:name, id:audioDevice.audioDeviceID))
+            }
+        }
+        // set defaullts if we have any
+        if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
+            model.audioInName = UserDefaults.standard.string(forKey: "audioIn")!
+            model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
+            
+        }else{
+            if model.audioInDevices.count > 0{
+                model.audioInName = model.audioInDevices[model.audioInDevices.count - 1].name
                 model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
-                
             }else{
-                if model.audioInDevices.count > 0{
-                    model.audioInName = model.audioInDevices[model.audioInDevices.count - 1].name
-                    model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
-                }else{
-                    print("There are no Audio In devices")
-                }
+                print("There are no Audio In devices")
             }
-            
-            if  (UserDefaults.standard.string(forKey: "audioOut") != nil){
-                model.audioOutName = UserDefaults.standard.string(forKey: "audioOut")!
+        }
+        
+        if  (UserDefaults.standard.string(forKey: "audioOut") != nil){
+            model.audioOutName = UserDefaults.standard.string(forKey: "audioOut")!
+            model.audioOutDevice =  audioInNameToDevice(name:model.audioInName)
+        }else{
+            if model.audioOutDevices.count > 0{
+                model.audioOutName = model.audioOutDevices[model.audioOutDevices.count - 1].name
                 model.audioOutDevice =  audioInNameToDevice(name:model.audioInName)
             }else{
-                if model.audioOutDevices.count > 0{
-                    model.audioOutName = model.audioOutDevices[model.audioOutDevices.count - 1].name
-                    model.audioOutDevice =  audioInNameToDevice(name:model.audioInName)
-                }else{
-                    print("There are no Audio Out devices")
-                }
+                print("There are no Audio Out devices")
             }
         }
     }

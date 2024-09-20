@@ -513,6 +513,8 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
                 
                 try await peerConnection!.setLocalDescription(desc)
                 
+ 
+                
                 // call API Local Tracks
                 var localTracks = [Calls.LocalTrack]()
                 let trAudio = Calls.LocalTrack(location: "local", mid: transceiverAudio!.mid, trackName:transceiverAudio!.sender.track!.trackId)
