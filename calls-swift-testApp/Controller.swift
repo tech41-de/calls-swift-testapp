@@ -115,6 +115,7 @@ class Controller : ObservableObject{
             return
         }
         model.audioOutName = name
+        model.audioOutDevice = device
         UserDefaults.standard.set(name, forKey: "audioOut")
         AudioDeviceManager().setOutputDevice(device: device)
     }

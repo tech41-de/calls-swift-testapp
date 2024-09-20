@@ -207,16 +207,17 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         model!.audioInName = name
         model!.audioInDevice = device
         UserDefaults.standard.set(name, forKey: "audioIn")
+        #if os(iOS)
+        AudioDeviceManager().setInputDevice(device:device)
+        #else
+        AudioDeviceManager().setInputDevice(device:device)
+        #endif
         
         let senders = peerConnection!.senders
         for s in senders{
             if s.track?.kind == "audio"{
                 s.track!.isEnabled = false
-                #if os(iOS)
-                AudioDeviceManager().setInputDevice(device:device)
-                #else
-                AudioDeviceManager().setInputDevice(device:device)
-                #endif
+               
                 //setupAudio()
                 let audioSource = RTC.createAudioSource(getRTCMediaAudioInConstraints(deviceId: device.uid))
                 replaceAudioTrack(peerConnection: peerConnection!, newAudioSource: audioSource)
@@ -389,6 +390,9 @@ class RTC :NSObject, RTCPeerConnectionDelegate, RTCDataChannelDelegate{
         initalize.direction = .sendOnly
         peerConnection!.addTransceiver(of: .audio, init: initalize)
         do{
+            if model!.audioInDevice == nil{
+                
+            }
             let res = try await peerConnection!.offer(for: getRTCMediaAudioInConstraints(deviceId:model!.audioInDevice!.uid))
             var newSdp = res.sdp
             newSdp = rewriteSDP(sdp:res.sdp)
