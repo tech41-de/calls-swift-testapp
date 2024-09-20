@@ -637,13 +637,13 @@ class AudioDeviceFinder {
             for d in  model.audioInDevices{
                 if d.name == name{
                     model.audioInName = name
+                    model.audioInDevice = d
                 }
             }
             if model.audioInName  == ""{
                 model.audioInName = model.audioInDevices[0].name
+                model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
             }
-            model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
-            
         }else{
             if model.audioInDevices.count > 0{
                 model.audioInName = model.audioInDevices[model.audioInDevices.count - 1].name
@@ -658,10 +658,12 @@ class AudioDeviceFinder {
             for d in  model.audioOutDevices{
                 if d.name == name{
                     model.audioOutName = name
+                    model.audioOutDevice = d
                 }
             }
             if model.audioOutName == ""{
                 model.audioOutName = model.audioOutDevices[0].name
+                model.audioOutDevice = model.audioOutDevices[0]
             }
             model.audioOutDevice =  audioInNameToDevice(name:model.audioInName)
         }else{
