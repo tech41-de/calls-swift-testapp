@@ -117,6 +117,7 @@ struct ContentView: View {
     }
     
     func audioOutChanged(_ tag: String) {
+        print(tag)
         controller.updateAudioOutputDevice(name: tag)
     }
 
@@ -406,7 +407,6 @@ struct ContentView: View {
                 
                 Picker(selection: $m.audioOutName.onChange(audioOutChanged), label:Text("Audio Out")) {
                     ForEach(m.audioOutDevices, id: \.self) {
-
                         Text($0.name).tag($0.name)
                     }
                 }.pickerStyle(.menu).frame(maxWidth:220)
@@ -421,6 +421,12 @@ struct ContentView: View {
                 defaults.setValue("", forKey: "appSecret")
                 defaults.setValue(false, forKey: "isHidden")
             }
+            m.camera = UserDefaults.standard.string(forKey: "videoIn") ?? ""
+            m.audioInName = UserDefaults.standard.string(forKey: "audioIn") ?? ""
+            m.audioOutName = UserDefaults.standard.string(forKey: "audioOut") ?? ""
+            print( m.camera)
+            print(m.audioInName)
+            print(m.audioOutName)
             serverURL = defaults.string(forKey: "serverURL")!
             appId = defaults.string(forKey: "appId")!
             appSecret = defaults.string(forKey: "appSecret")!

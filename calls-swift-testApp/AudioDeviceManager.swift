@@ -275,7 +275,8 @@ class AudioDeviceManager{
                 AudioDeviceFinder.findDevices(model:self.model)
                 self.model.audioInputDefaultDevice = self.getDefaultInDevice(forScope: kAudioObjectPropertyScopeOutput)
                 self.model.audioOutputDefaultDevice = self.getDefaultOutDevice(forScope: kAudioObjectPropertyScopeInput)
-  
+                print(self.model.audioInName)
+                print(self.model.audioOutName)
                 let deviceIn = self.model.getAudioInDevice(name: self.model.audioInName)
                 if(deviceIn != nil){
                     self.setInputDevice(device:deviceIn!)
@@ -636,9 +637,10 @@ class AudioDeviceFinder {
             for d in  model.audioInDevices{
                 if d.name == name{
                     model.audioInName = name
-                }else{
-                    model.audioInName = model.audioInDevices[0].name
                 }
+            }
+            if model.audioInName  == ""{
+                model.audioInName = model.audioInDevices[0].name
             }
             model.audioInDevice =  audioInNameToDevice(name:model.audioInName)
             
@@ -656,9 +658,10 @@ class AudioDeviceFinder {
             for d in  model.audioOutDevices{
                 if d.name == name{
                     model.audioOutName = name
-                }else{
-                    model.audioOutName = model.audioOutDevices[0].name
                 }
+            }
+            if model.audioOutName == ""{
+                model.audioOutName = model.audioOutDevices[0].name
             }
             model.audioOutDevice =  audioInNameToDevice(name:model.audioInName)
         }else{
