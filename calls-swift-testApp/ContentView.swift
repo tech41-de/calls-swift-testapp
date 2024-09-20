@@ -422,8 +422,6 @@ struct ContentView: View {
                 defaults.setValue(false, forKey: "isHidden")
             }
             m.camera = UserDefaults.standard.string(forKey: "videoIn") ?? ""
-            m.audioInName = UserDefaults.standard.string(forKey: "audioIn") ?? ""
-            m.audioOutName = UserDefaults.standard.string(forKey: "audioOut") ?? ""
             print( m.camera)
             print(m.audioInName)
             print(m.audioOutName)

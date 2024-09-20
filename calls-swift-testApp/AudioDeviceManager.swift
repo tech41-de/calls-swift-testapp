@@ -634,6 +634,7 @@ class AudioDeviceFinder {
         // set defaullts if we have any
         if  (UserDefaults.standard.string(forKey: "audioIn") != nil){
             let name = UserDefaults.standard.string(forKey: "audioIn")!
+            model.audioInName = ""
             for d in  model.audioInDevices{
                 if d.name == name{
                     model.audioInName = name
@@ -655,6 +656,7 @@ class AudioDeviceFinder {
         
         if  (UserDefaults.standard.string(forKey: "audioOut") != nil){
             let name = UserDefaults.standard.string(forKey: "audioOut")!
+            model.audioOutName = ""
             for d in  model.audioOutDevices{
                 if d.name == name{
                     model.audioOutName = name
